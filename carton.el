@@ -117,11 +117,13 @@
 (defun carton-define-package-string ()
   "Return `define-package' string."
   (format
-   "(define-package \"%s\" \"%s\"\n  \"%s\"\n  '(%s))\n"
+   "(define-package \"%s\" \"%s\"\n  \"%s\"%s)\n"
    (carton-package-name carton-package)
    (carton-package-version carton-package)
    (carton-package-description carton-package)
-   (carton-dependency-string)))
+   (let ((dependency-string (carton-dependency-string)))
+     (if (equal dependency-string "")
+         "" (format "\n  '(%s)" dependency-string)))))
 
 (defun carton-dependency-string ()
   "Return dependencies as string."
