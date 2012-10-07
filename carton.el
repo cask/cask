@@ -31,6 +31,7 @@
 
 ;;; Code:
 
+(require 'package)
 (eval-when-compile
   (require 'cl))
 
