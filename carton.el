@@ -63,9 +63,6 @@
 (defvar carton-package nil
   "Project package information.")
 
-(defvar carton-sources nil
-  "List of sources.")
-
 (defun carton-setup (project-path)
   "Setup carton for project at PROJECT-PATH."
   (setq carton-project-path (directory-file-name project-path))
@@ -80,7 +77,7 @@
 
 (defun source (name url)
   "Add source with NAME and URL."
-  (add-to-list 'carton-sources (make-carton-source :name name :url url)))
+  (add-to-list 'package-archives `(,name . ,url)))
 
 (defun package (name version description)
   "Define package with NAME, VERSION and DESCRIPTION."
@@ -101,10 +98,6 @@
   "Install dependencies."
   (if (file-exists-p package-user-dir)
       (delete-directory package-user-dir t nil))
-  (dolist (source carton-sources)
-    (let ((name (carton-source-name source))
-          (url (carton-source-url source)))
-      (add-to-list 'package-archives `(,name . ,url))))
   (package-refresh-contents)
   (dolist (package (append carton-development-dependencies carton-runtime-dependencies))
     (package-install (carton-dependency-name package))))

@@ -25,12 +25,10 @@
       (should (equal (carton-dependency-version package) "0.0.1")))))
 
 (ert-deftest test-source ()
-  "Should add source to list of sources."
-  (let (carton-sources)
+  "Should add source to `package-archives'."
+  (let (package-archives)
     (source "name" "url")
-    (let ((source (car carton-sources)))
-      (should (equal (carton-source-name source) "name"))
-      (should (equal (carton-source-url source) "url")))))
+    (should (equal package-archives '(("name" . "url"))))))
 
 (ert-deftest test-carton-define-package-string ()
   "Should return correct `define-package' string."
