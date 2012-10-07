@@ -97,9 +97,17 @@
     (add-to-list dependency-list dependency t)))
 
 (defun carton-install ()
-  ""
-  ;; TODO
-  )
+  "Install dependencies."
+  (let ((package-user-dir (expand-file-name ".cartons" carton-project-path)))
+    (if (file-exists-p package-user-dir)
+        (delete-directory package-user-dir t nil))
+    (dolist (source carton-sources)
+      (let ((name (carton-source-name source))
+            (url (carton-source-url source)))
+        (add-to-list 'package-archives `(,name . ,url))))
+    (package-refresh-contents)
+    (dolist (package carton-runtime-dependencies)
+      (package-install (carton-dependency-name package)))))
 
 (defun carton-package ()
   "Package this project."
