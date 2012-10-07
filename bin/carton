@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [ -z "$EMACS" ] ; then
+  EMACS=emacs
+fi
+
+CARTON_EL=$(dirname $(dirname $BASH_SOURCE))/carton.el
+
+if [[ $# -eq 0 ]]; then
+  COMMAND=install
+else
+  if [[ $1 == "package" ]]; then
+    COMMAND=package
+  else
+    if [[ $1 == "install" ]]; then
+      COMMAND=install
+    else
+      echo "Could not find task '$1'."
+      echo "usage: carton [install]"
+      echo "       carton package"
+
+      exit 1
+    fi
+  fi
+fi
+
+EMACS --batch --load $CARTON_EL -Q --eval "(progn (carton-initialize \"${PWD}\") (carton-${COMMAND}))"
