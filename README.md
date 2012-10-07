@@ -75,7 +75,8 @@ package with:
 ### Local Emacs installation
 
 When using carton in your local Emacs installation, make sure
-`carton.el` is in your path, and add this to your `.emacs` file.
+`carton.el` is in your path, and add this to your `.emacs` file (yes,
+we would all be very happy if something like this would be included in Emacs).
 
     (require 'carton)
     (carton-setup)
