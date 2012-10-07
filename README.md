@@ -1,13 +1,14 @@
 # Carton
 
-Think of Carton for Emacs as what Bundler is for Ruby. Carton aims to
-solve make dependency management in Emacs easy. This includes both
-your local Emacs installation and Emacs package development. Carton is
-based on ELPA, which now is a part of Emacs.
+Carton for Emacs is what Bundler is to Ruby. It aims to make ELPA
+dependency management in Emacs painless (as painless as it can
+be). This includes both your local Emacs installation and Emacs
+package development.
 
 ## Installation
 
-Clone this repo on your computer and add the `carton` binary to your `PATH`.
+Clone this repository on your computer and add the `bin` directory to
+your `PATH`.
 
 $ cd /path/to/code
 $ git clone https://github.com/rejeep/carton.git
@@ -27,7 +28,7 @@ Example:
 
 ### package
 
-Define this package. Used only for package development.
+Define this package (used only for package development).
 
     (package NAME VERSION DESCRIPTION)
     
@@ -54,29 +55,35 @@ Set scope to development dependencies.
 Example:
 
     (development
-     (depends-on "ecukes "0.2.1"))
+     (depends-on "ecukes" "0.2.1")
+     (depends-on "espuds" "0.1.0"))
 
 ## Usage
 
-Create a file called `Carton` in your project root and specify dependencies.
-
-### Local Emacs installation
-
-Install all packages in your carton file:
-
-    $ carton
-    
-There should now be a folder called `elpa`, with all specified packages.
-
-### Package development
-
-Install all development dependencies in your carton file:
+Create a file called `Carton` in your project root and specify
+dependencies. To install all dependencies, run:
 
     $ carton [install]
     
-There should now be a folder called `elpa`, with all specified dependencies.
+This will create a `.cartons` directory, containing all dependencies.
 
-To create the `-pkg.el` file, run:
+If you add a package to your `Carton` file, you can install only that
+package with:
+
+    $ carton update
+
+### Local Emacs installation
+
+When using carton in your local Emacs installation, make sure
+`carton.el` is in your path, and add this to your `.emacs` file.
+
+    (require 'carton)
+    (carton-setup)
+    (package-initialize)
+
+### Package development
+
+To create a `-pkg.el` file, run:
 
     $ carton package
 
