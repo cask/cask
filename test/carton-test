@@ -1,0 +1,15 @@
+#!/usr/bin/env emacs --script
+
+(let ((current-directory (file-name-directory load-file-name)))
+  (setq carton-test-path (expand-file-name "." current-directory))
+  (setq carton-root-path (expand-file-name ".." current-directory)))
+
+(add-to-list 'load-path carton-root-path)
+(add-to-list 'load-path carton-test-path)
+
+(require 'ert)
+(require 'carton)
+
+(load (expand-file-name "carton-test.el" carton-test-path))
+
+(ert-run-tests-batch t)
