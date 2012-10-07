@@ -23,7 +23,7 @@ Add an ELPA mirror.
     
 Example:
     
-    (source "marmalade" "http://marmalade-repo.org/packages")
+    (source "melpa" "http://melpa.milkbox.net/packages/")
 
 ### package
 
@@ -84,7 +84,7 @@ To create the `-pkg.el` file, run:
 
 ### Local Emacs installation
 
-    (source "marmalade" "http://marmalade-repo.org/packages")
+    (source "melpa" http://melpa.milkbox.net/packages/")
      
     (depends-on "magit")
     (depends-on "drag-stuff")
@@ -92,7 +92,7 @@ To create the `-pkg.el` file, run:
 
 ### Package development
 
-    (source "marmalade" "http://marmalade-repo.org/packages")
+    (source "melpa" "http://melpa.milkbox.net/packages/")
      
     (package "ecukes" "0.2.1" "Cucumber for Emacs.")
      
