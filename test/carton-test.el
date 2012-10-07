@@ -62,3 +62,9 @@
 (ert-deftest test-carton-dependency-string-no-dependencies ()
   "Should return correct dependency string when no dependencies."
   (should (equal (carton-dependency-string) "")))
+
+(ert-deftest test-carton-dependency-string-no-version ()
+  "Should return correct dependency string."
+  (let (carton-runtime-dependencies)
+    (depends-on "foo")
+    (should (equal (carton-dependency-string) "(foo \"\")"))))
