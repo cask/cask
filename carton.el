@@ -89,7 +89,7 @@
 
 (defun depends-on (name &optional version)
   "Add dependency with NAME and VERSION."
-  (let ((dependency (make-carton-dependency :name name :version version))
+  (let ((dependency (make-carton-dependency :name (intern name) :version version))
         (dependency-list
          (if carton-development 'carton-development-dependencies 'carton-runtime-dependencies)))
     (add-to-list dependency-list dependency t)))
