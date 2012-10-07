@@ -34,7 +34,7 @@
 
 (ert-deftest test-carton-define-package-string ()
   "Should return correct `define-package' string."
-  (let (carton-runtime-dependencies)
+  (let (carton-runtime-dependencies carton-package)
     (package "foo" "0.0.1" "Foo.")
     (depends-on "bar" "0.0.2")
     (depends-on "baz" "0.0.3")
