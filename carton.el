@@ -105,7 +105,7 @@
        (lambda (package)
          (let ((name (carton-dependency-name package)))
            (unless (package-installed-p name)
-             (package-install (carton-dependency-name package)))))
+             (package-install name))))
        carton-dependencies))))
 
 (defun carton-package ()
