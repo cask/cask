@@ -106,7 +106,7 @@
             (url (carton-source-url source)))
         (add-to-list 'package-archives `(,name . ,url))))
     (package-refresh-contents)
-    (dolist (package carton-runtime-dependencies)
+    (dolist (package (append carton-development-dependencies carton-runtime-dependencies))
       (package-install (carton-dependency-name package)))))
 
 (defun carton-package ()
