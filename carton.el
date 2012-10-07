@@ -66,8 +66,8 @@
 (defvar carton-sources nil
   "List of sources.")
 
-(defun carton-initialize (project-path)
-  "Initialize carton for project at PROJECT-PATH."
+(defun carton-setup (project-path)
+  "Setup carton for project at PROJECT-PATH."
   (setq carton-project-path (directory-file-name project-path))
   (setq carton-project-name (file-name-nondirectory carton-project-path))
   (setq carton-file (expand-file-name "Carton" carton-project-path))

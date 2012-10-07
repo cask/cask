@@ -24,4 +24,4 @@ else
   fi
 fi
 
-EMACS --batch --load $CARTON_EL -Q --eval "(progn (carton-initialize \"${PWD}\") (carton-${COMMAND}))"
+EMACS --batch --load $CARTON_EL -Q --eval "(progn (carton-setup \"${PWD}\") (carton-${COMMAND}))"
