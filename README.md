@@ -72,7 +72,7 @@ There should now be a folder called `elpa`, with all specified packages.
 
 Install all development dependencies in your carton file:
 
-    $ carton
+    $ carton [install]
     
 There should now be a folder called `elpa`, with all specified dependencies.
 
