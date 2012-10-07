@@ -96,11 +96,13 @@
 
 (defun carton-install ()
   "Install dependencies."
-  (if (file-exists-p package-user-dir)
-      (delete-directory package-user-dir t nil))
-  (package-refresh-contents)
-  (dolist (package (append carton-development-dependencies carton-runtime-dependencies))
-    (package-install (carton-dependency-name package))))
+  (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
+    (when carton-dependencies
+      (if (file-exists-p package-user-dir)
+          (delete-directory package-user-dir t nil))
+      (package-refresh-contents)
+      (dolist (package carton-dependencies)
+        (package-install (carton-dependency-name package))))))
 
 (defun carton-package ()
   "Package this project."
