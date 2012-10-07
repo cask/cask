@@ -95,12 +95,10 @@
          (if carton-development 'carton-development-dependencies 'carton-runtime-dependencies)))
     (add-to-list dependency-list dependency t)))
 
-(defun carton-install (&optional soft)
+(defun carton-install ()
   "Install dependencies."
   (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
     (when carton-dependencies
-      (if (and (not soft) (file-exists-p package-user-dir))
-          (delete-directory package-user-dir t nil))
       (package-refresh-contents)
       (package-initialize)
       (mapc
@@ -109,10 +107,6 @@
            (unless (package-installed-p name)
              (package-install (carton-dependency-name package)))))
        carton-dependencies))))
-
-(defun carton-update ()
-  "Only install packages that have been added since last install."
-  (carton-install t))
 
 (defun carton-package ()
   "Package this project."
