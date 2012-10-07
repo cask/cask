@@ -10,9 +10,9 @@ package development.
 Clone this repository on your computer and add the `bin` directory to
 your `PATH`.
 
-$ cd /path/to/code
-$ git clone https://github.com/rejeep/carton.git
-$ export PATH="/path/to/code/carton/bin:$PATH"
+    $ cd /path/to/code
+    $ git clone https://github.com/rejeep/carton.git
+    $ export PATH="/path/to/code/carton/bin:$PATH"
 
 ## DSL
 
