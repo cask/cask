@@ -72,6 +72,7 @@
   (setq carton-project-name (file-name-nondirectory carton-project-path))
   (setq carton-file (expand-file-name "Carton" carton-project-path))
   (setq carton-package-file (expand-file-name (concat carton-project-name "-pkg.el") carton-project-path))
+  (setq package-user-dir (expand-file-name ".cartons" carton-project-path))
   (unless (file-exists-p carton-file)
     (error "Could not locate `Carton` file.")
     (kill-emacs 1))
@@ -98,16 +99,15 @@
 
 (defun carton-install ()
   "Install dependencies."
-  (let ((package-user-dir (expand-file-name ".cartons" carton-project-path)))
-    (if (file-exists-p package-user-dir)
-        (delete-directory package-user-dir t nil))
-    (dolist (source carton-sources)
-      (let ((name (carton-source-name source))
-            (url (carton-source-url source)))
-        (add-to-list 'package-archives `(,name . ,url))))
-    (package-refresh-contents)
-    (dolist (package (append carton-development-dependencies carton-runtime-dependencies))
-      (package-install (carton-dependency-name package)))))
+  (if (file-exists-p package-user-dir)
+      (delete-directory package-user-dir t nil))
+  (dolist (source carton-sources)
+    (let ((name (carton-source-name source))
+          (url (carton-source-url source)))
+      (add-to-list 'package-archives `(,name . ,url))))
+  (package-refresh-contents)
+  (dolist (package (append carton-development-dependencies carton-runtime-dependencies))
+    (package-install (carton-dependency-name package))))
 
 (defun carton-package ()
   "Package this project."
