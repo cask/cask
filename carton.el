@@ -63,8 +63,9 @@
 (defvar carton-package nil
   "Project package information.")
 
-(defun carton-setup (project-path)
+(defun carton-setup (&optional project-path)
   "Setup carton for project at PROJECT-PATH."
+  (or project-path (setq project-path "~/.emacs.d"))
   (setq carton-project-path (directory-file-name project-path))
   (setq carton-project-name (file-name-nondirectory carton-project-path))
   (setq carton-file (expand-file-name "Carton" carton-project-path))
