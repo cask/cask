@@ -117,3 +117,11 @@ To create a `-pkg.el` file, run:
     (development
      (depends-on "el-mock")
      (depends-on "ert"))
+
+## Contribution
+
+Be sure to!
+
+Run the tests with:
+
+    $ ./test/carton-test
