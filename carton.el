@@ -129,7 +129,7 @@
    (lambda (package)
      (let ((name (carton-dependency-name package))
            (version (carton-dependency-version package)))
-       (format "(\"%s\" \"%s\")" name version)))
+       (format "(%s \"%s\")" name version)))
    carton-runtime-dependencies " "))
 
 (provide 'carton)
