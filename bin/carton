@@ -15,11 +15,15 @@ else
     if [[ $1 == "install" ]]; then
       COMMAND=install
     else
-      echo "Could not find task '$1'."
-      echo "usage: carton [install]"
-      echo "       carton package"
+      if [[ $1 == "update" ]]; then
+        COMMAND=update
+      else
+        echo "Could not find task '$1'."
+        echo "usage: carton [install]"
+        echo "       carton package"
 
-      exit 1
+        exit 1
+      fi
     fi
   fi
 fi
