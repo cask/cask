@@ -118,6 +118,13 @@ To create a `-pkg.el` file, run:
      (depends-on "el-mock")
      (depends-on "ert"))
 
+## I still don't get it, give me some real examples
+
+These are some projects using Carton:
+
+* <https://github.com/rejeep/emacs>
+* <https://github.com/rejeep/wrap-region>
+
 ## Contribution
 
 Be sure to!
