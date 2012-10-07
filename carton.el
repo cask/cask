@@ -73,7 +73,8 @@
   (setq carton-package-file (expand-file-name (concat carton-project-name "-pkg.el") carton-project-path))
   (unless (file-exists-p carton-file)
     (error "Could not locate `Carton` file.")
-    (kill-emacs 1)))
+    (kill-emacs 1))
+  (load carton-file t t))
 
 (defun source (name url)
   "Add source with NAME and URL."
@@ -101,7 +102,6 @@
 
 (defun carton-package ()
   "Package this project."
-  (load carton-file t t)
   (let ((content (carton-define-package-string)))
     (with-temp-file carton-package-file (insert content))))
 
