@@ -75,7 +75,7 @@
   (unless (file-exists-p carton-file)
     (error "Could not locate `Carton` file.")
     (kill-emacs 1))
-  (load carton-file t t))
+  (load carton-file t t t))
 
 (defun source (name url)
   "Add source with NAME and URL."
