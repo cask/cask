@@ -127,6 +127,14 @@ These are some projects using Carton:
 
 * <https://github.com/rejeep/emacs>
 * <https://github.com/rejeep/wrap-region>
+* <https://github.com/rejeep/espuds>
+* <https://github.com/rejeep/enclose>
+* <https://github.com/rejeep/ruby-end>
+* <https://github.com/rejeep/ruby-tools>
+* <https://github.com/rejeep/drag-stuff>
+* <https://github.com/rejeep/html-script-src>
+* <https://github.com/rejeep/citrus-mode>
+* <https://github.com/rejeep/ansi>
 
 ## Contribution
 
