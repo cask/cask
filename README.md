@@ -67,10 +67,6 @@ dependencies. To install all dependencies, run:
 
     $ carton [install]
     
-If you add a package to your `Carton` file, you can install only that
-package with:
-
-    $ carton update
 This will create a `elpa` directory, containing all dependencies.
 
 ### Local Emacs installation
