@@ -90,6 +90,14 @@ Run the `carton` command to install. Then add this to your `.emacs` file.
 To create a `-pkg.el` file, run:
 
     $ carton package
+    
+To run some Emacs Lisp code with ELPA load paths all set up for you, use:
+
+    $ carton exec [COMMAND]
+    
+Example:
+
+    $ carton exec make test
 
 ## Example
 
