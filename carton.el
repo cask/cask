@@ -70,7 +70,7 @@
   (setq carton-project-name (file-name-nondirectory carton-project-path))
   (setq carton-file (expand-file-name "Carton" carton-project-path))
   (setq carton-package-file (expand-file-name (concat carton-project-name "-pkg.el") carton-project-path))
-  (setq package-user-dir (expand-file-name ".cartons" carton-project-path))
+  (setq package-user-dir (expand-file-name "elpa" carton-project-path))
   (unless (file-exists-p carton-file)
     (error "Could not locate `Carton` file.")
     (kill-emacs 1))

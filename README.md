@@ -67,12 +67,11 @@ dependencies. To install all dependencies, run:
 
     $ carton [install]
     
-This will create a `.cartons` directory, containing all dependencies.
-
 If you add a package to your `Carton` file, you can install only that
 package with:
 
     $ carton update
+This will create a `elpa` directory, containing all dependencies.
 
 ### Local Emacs installation
 
@@ -85,7 +84,7 @@ your `Carton` file:
 
 Run the `carton` command to install. Then add this to your `.emacs` file.
 
-    (add-to-list 'load-path (car (file-expand-wildcards "~/.emacs.d/.cartons/carton-*")))
+    (add-to-list 'load-path (car (file-expand-wildcards "~/.emacs.d/elpa/carton-*")))
     (require 'carton)
     (carton-setup)
     (package-initialize)
