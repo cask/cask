@@ -134,4 +134,4 @@ Be sure to!
 
 Run the tests with:
 
-    $ ./test/carton-test
+    $ make
