@@ -19,8 +19,9 @@ else
         EMACSLOADPATH=$(emacs -Q --batch --eval '(message (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) ${@:2}
       else
         echo "Could not find task '$1'."
-        echo "usage: carton [install]"
+        echo "usage: carton [INSTALL]"
         echo "       carton package"
+        echo "       carton exec [COMMAND]"
          
         exit 1
       fi
