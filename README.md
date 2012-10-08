@@ -71,19 +71,37 @@ This will create a `elpa` directory, containing all dependencies.
 
 ### Local Emacs installation
 
-_(yes, this is very annying and we would all be very happy if something like this would be included in Emacs by default)_
+There are two ways to use Carton for your local Emacs installation.
 
-When using carton for your local Emacs installation, add `carton` to
-your `Carton` file:
+#### The preferred way...
+
+First off, run the `carton` command to install all dependencies.
+
+Create an alias for your Emacs command. This will be different
+depending on your Emacs installation. Example:
+
+    alias emacs="carton exec /usr/local/Cellar/emacs/24.2/Emacs.app/Contents/MacOS/Emacs"
+    
+Add this to your `.emacs` file.
+
+    (package-initialize)
+
+And you should be up and running.
+    
+#### ...and the annoying way
+
+Add `carton` to your `Carton` file:
 
     (depends-on "carton")
 
-Run the `carton` command to install. Then add this to your `.emacs` file.
+Run the `carton` command to install all dependencies. Then add this to
+your `.emacs` file.
 
     (add-to-list 'load-path (car (file-expand-wildcards "~/.emacs.d/elpa/carton-*")))
     (require 'carton)
     (carton-setup)
     (package-initialize)
+
 
 ### Package development
 
