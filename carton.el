@@ -133,6 +133,4 @@
        (format "(%s \"%s\")" name (or version ""))))
    carton-runtime-dependencies " "))
 
-(provide 'carton)
-
 ;;; carton.el ends here
