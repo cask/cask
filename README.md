@@ -16,57 +16,13 @@ your `PATH`.
     $ git clone https://github.com/rejeep/carton.git
     $ export PATH="/path/to/code/carton/bin:$PATH"
 
-## DSL
-
-### source
-
-Add an ELPA mirror.
-
-    (source NAME URL)
-    
-Example:
-    
-    (source "melpa" "http://melpa.milkbox.net/packages/")
-
-### package
-
-Define this package (used only for package development).
-
-    (package NAME VERSION DESCRIPTION)
-    
-Example:
-
-    (package "ecukes" "0.2.1" "Cucumber for Emacs.")
-
-### depends-on
-
-Add a runtime dependency.
-
-    (depends-on NAME VERSION)
-    
-Example:
-
-    (depends-on "magit" "0.8.1")
-
-### development
-
-Set scope to development dependencies.
-
-    (development [DEPENDENCIES])
-    
-Example:
-
-    (development
-     (depends-on "ecukes" "0.2.1")
-     (depends-on "espuds" "0.1.0"))
-
 ## Usage
 
 Create a file called `Carton` in your project root and specify
 dependencies. To install all dependencies, run:
 
     $ carton [install]
-    
+
 This will create a `elpa` directory, containing all dependencies.
 
 ### Local Emacs installation
@@ -82,21 +38,65 @@ That's it!
 To create a `-pkg.el` file, run:
 
     $ carton package
-    
+
 To run some Emacs Lisp code with ELPA load paths all set up for you, use:
 
     $ carton exec [COMMAND]
-    
+
 Example:
 
     $ carton exec make test
+
+## DSL
+
+### source
+
+Add an ELPA mirror.
+
+    (source NAME URL)
+
+Example:
+
+    (source "melpa" "http://melpa.milkbox.net/packages/")
+
+### package
+
+Define this package (used only for package development).
+
+    (package NAME VERSION DESCRIPTION)
+
+Example:
+
+    (package "ecukes" "0.2.1" "Cucumber for Emacs.")
+
+### depends-on
+
+Add a runtime dependency.
+
+    (depends-on NAME VERSION)
+
+Example:
+
+    (depends-on "magit" "0.8.1")
+
+### development
+
+Set scope to development dependencies.
+
+    (development [DEPENDENCIES])
+
+Example:
+
+    (development
+     (depends-on "ecukes" "0.2.1")
+     (depends-on "espuds" "0.1.0"))
 
 ## Example
 
 ### Local Emacs installation
 
     (source "melpa" http://melpa.milkbox.net/packages/")
-     
+
     (depends-on "magit")
     (depends-on "drag-stuff")
     (depends-on "wrap-region")
@@ -104,9 +104,9 @@ Example:
 ### Package development
 
     (source "melpa" "http://melpa.milkbox.net/packages/")
-     
+
     (package "ecukes" "0.2.1" "Cucumber for Emacs.")
-     
+
     (depends-on "ansi")
 
     (development
