@@ -16,7 +16,7 @@ else
       COMMAND=install
     else
       if [[ $1 == "exec" ]]; then
-        EMACSLOADPATH=$(emacs -Q --batch --eval '(message (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) ${@:2}
+        EMACSLOADPATH=$($EMACS -Q --batch --eval '(message (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) ${@:2}
       else
         echo "Could not find task '$1'."
         echo "usage: carton [INSTALL]"
@@ -30,5 +30,5 @@ else
 fi
 
 if [[ -n $COMMAND ]]; then
-  EMACS --batch --load $CARTON_EL --eval "(progn (carton-setup \"${PWD}\") (carton-${COMMAND}))"
+  $EMACS --batch --load $CARTON_EL --eval "(progn (carton-setup \"${PWD}\") (carton-${COMMAND}))"
 fi
