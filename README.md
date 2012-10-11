@@ -9,12 +9,18 @@ package development.
 
 ## Installation
 
-Clone this repository on your computer and add the `bin` directory to
-your `PATH`.
+To automatically install Carton, run this command:
 
-    $ cd /path/to/code
+    curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
+
+You can also clone the repository.
+
     $ git clone https://github.com/rejeep/carton.git
+    
+Don't forget to add Carton's bin to your `PATH`.
+    
     $ export PATH="/path/to/code/carton/bin:$PATH"
+    
 
 ## Usage
 
