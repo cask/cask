@@ -5,7 +5,7 @@ if [ -z "$EMACS" ] ; then
 fi
 
 CARTON_EL=$(dirname $(dirname $BASH_SOURCE))/carton.el
-USER=$(`eval whoami`)
+USER=$(echo $(eval whoami))
 
 if [[ $# -eq 0 ]]; then
   COMMAND=install
