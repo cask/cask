@@ -29,7 +29,11 @@ dependencies. To install all dependencies, run:
 
     $ carton [install]
 
-This will create a directory called`elpa`, containing all dependencies.
+This will create a directory called `elpa`, containing all dependencies.
+
+To update package version, run:
+
+    $ carton update
 
 ### Local Emacs installation
 

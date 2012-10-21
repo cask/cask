@@ -107,6 +107,16 @@
              (package-install name))))
        carton-dependencies))))
 
+(defun carton-update ()
+  "Update packages that have new versions."
+  (package-refresh-contents)
+  (package-initialize)
+  (package-menu--generate nil nil) ;; WTF ELPA, really???
+  (mapc
+   (lambda (package)
+     (package-install (car package)))
+   (package-menu--find-upgrades)))
+
 (defun carton-package ()
   "Package this project."
   (let ((content (carton-define-package-string)))
