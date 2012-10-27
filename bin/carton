@@ -5,6 +5,7 @@ if [ -z "$EMACS" ] ; then
 fi
 
 CARTON_EL=$(dirname $(dirname $BASH_SOURCE))/carton.el
+USER=$(echo $(eval whoami))
 
 if [[ $# -eq 0 ]]; then
   COMMAND=install
@@ -28,5 +29,5 @@ else
 fi
 
 if [[ -n $COMMAND ]]; then
-  $EMACS --batch --load $CARTON_EL --eval "(progn (carton-setup \"${PWD}\") (carton-${COMMAND}))"
+  $EMACS --batch --user $USER --load $CARTON_EL --eval "(progn (carton-setup \"${PWD}\") (carton-${COMMAND}))"
 fi
