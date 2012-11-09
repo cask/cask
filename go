@@ -7,7 +7,7 @@ if [ -d "$CARTON_DIR" ]; then
 
   exit 1
 else
-  git clone https://github.com/rejeep/carton.git $CARTON_DIR &> /dev/null
+  git clone https://github.com/rejeep/carton.git $CARTON_DIR 2> /dev/null
 
   echo "Successfully installed Carton! Now, add the carton binary to your PATH."
   echo '  export PATH="'${CARTON_DIR}'/bin:$PATH"'
