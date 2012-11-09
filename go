@@ -2,7 +2,7 @@
 
 CARTON_DIR="$HOME/.carton"
 
-if [[ -d $CARTON_DIR ]]; then
+if [ -d "$CARTON_DIR" ]; then
   echo "Carton is already installed at '$CARTON_DIR'"
 
   exit 1
