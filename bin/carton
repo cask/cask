@@ -4,7 +4,11 @@ if [ -z "$EMACS" -o -z "`which $EMACS`" ] ; then
   EMACS=emacs
 fi
 
-CARTON_EL=$(dirname $(dirname $BASH_SOURCE))/carton.el
+if [ -z "$CARTON_DIR" -o ! -d "$CARTON_DIR" ] ; then
+  $CARTON_DIR=$(dirname $(dirname $BASH_SOURCE))
+fi
+ 
+CARTON_EL=$CARTON_DIR/carton.el
 
 if [[ $# -eq 0 ]]; then
   COMMAND=install
