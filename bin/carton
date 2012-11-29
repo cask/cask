@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$EMACS" ] ; then
+if [ -z "$EMACS" -o -z "`which $EMACS`" ] ; then
   EMACS=emacs
 fi
 
