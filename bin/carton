@@ -5,7 +5,7 @@ if [ -z "$EMACS" ] || [ -z "`which $EMACS`" ] ; then
 fi
 
 if [ -z "$CARTON_DIR" -o ! -d "$CARTON_DIR" ] ; then
-  $CARTON_DIR=$(dirname $(dirname $BASH_SOURCE))
+  CARTON_DIR=$(dirname $(dirname $BASH_SOURCE))
 fi
  
 CARTON_EL=$CARTON_DIR/carton.el
