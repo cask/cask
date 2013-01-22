@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 CARTON_DIR="$HOME/.carton"
 
