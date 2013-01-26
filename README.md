@@ -7,6 +7,8 @@ dependency management in Emacs painless (as painless as it can
 be). This includes both your local Emacs installation and Emacs
 package development.
 
+[<img src="http://img.youtube.com/vi/gzFxNO_X5yA/0.jpg">](https://www.youtube.com/watch?v=gzFxNO_X5yA)
+
 ## Installation
 
 To automatically install Carton, run this command:
