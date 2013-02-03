@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z "$EMACS" ] || [ -z "`which $EMACS`" ] ; then
+if [ -z "$EMACS" ] || [ -z "$(which $EMACS)" ] ; then
   EMACS=emacs
 fi
 
