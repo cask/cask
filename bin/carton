@@ -5,7 +5,7 @@ if [ -z "$EMACS" ] || [ -z "`which $EMACS`" ] ; then
 fi
 
 if [ -z "$CARTON_DIR" -o ! -d "$CARTON_DIR" ] ; then
-  CARTON_DIR="$(dirname $(dirname $BASH_SOURCE))"
+  CARTON_DIR="$(dirname $(dirname $(readlink -f $0)))"
 fi
 TEMPLATE_DIR="$CARTON_DIR/templates"
 
