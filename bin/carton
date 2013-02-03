@@ -4,8 +4,14 @@ if [ -z "$EMACS" ] || [ -z "$(which $EMACS)" ] ; then
   EMACS=emacs
 fi
 
+# Use an environment variable to pass the name to the Emacs process.  We cannot
+# give it as command line argument because that would cause Emacs to visit the
+# file, printing a lot of superfluous messages.
+export CARTON_STARTUP_SCRIPT="$0"
+CARTON_PATH=$($EMACS -Q --batch --eval '(princ (file-truename (getenv "CARTON_STARTUP_SCRIPT")))')
+
 if [ -z "$CARTON_DIR" -o ! -d "$CARTON_DIR" ] ; then
-  CARTON_DIR="$(dirname $(dirname $(readlink -f $0)))"
+  CARTON_DIR="$(dirname $(dirname $CARTON_PATH))"
 fi
 TEMPLATE_DIR="$CARTON_DIR/templates"
 
