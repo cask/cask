@@ -111,7 +111,7 @@
   "Update packages that have new versions."
   (package-refresh-contents)
   (package-initialize)
-  (package-menu--generate nil nil) ;; WTF ELPA, really???
+  (package-menu--generate nil t) ;; WTF ELPA, really???
   (mapc
    (lambda (package)
      (package-install (car package)))
