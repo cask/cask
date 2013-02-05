@@ -116,7 +116,13 @@
     (mapc
      (lambda (package)
        (package-install (car package)))
-     (package-menu--find-upgrades))))
+     (package-menu--find-upgrades))
+    ;; Delete obsolete packages
+    (mapc
+     (lambda (package)
+       (package-delete (symbol-name (car package))
+                       (package-version-join (caadr package))))
+     package-obsolete-alist)))
 
 (defun carton-package ()
   "Package this project."
