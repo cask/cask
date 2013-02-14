@@ -5,7 +5,7 @@
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/rejeep/carton
 
