@@ -22,6 +22,8 @@ if [[ $# -eq 0 ]]; then
 else
   if [[ $1 == "package" ]]; then
     COMMAND=package
+  elif [[ $1 == "version" ]]; then
+    COMMAND=version
   elif [[ $1 == "install" ]]; then
     COMMAND=install
   elif [[ $1 == "update" ]]; then

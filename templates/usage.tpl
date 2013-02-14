@@ -6,6 +6,7 @@ COMMANDS:
  update                 Update dependencies
  exec                   Execute command with correct dependencies
  init                   Create basic Carton file
+ version                Show the package version
 
 OPTIONS:
  -h, --help             Display this help message
