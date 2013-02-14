@@ -1,6 +1,7 @@
 ;;; carton.el --- Emacs dependency management made easy
 
 ;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2013 Sebastian Wiesner
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
