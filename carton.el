@@ -1,6 +1,6 @@
 ;;; carton.el --- Emacs dependency management made easy
 
-;; Copyright (C) 2012 Johan Andersson
+;; Copyright (C) 2012, 2013 Johan Andersson
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
@@ -123,6 +123,10 @@
        (package-delete (symbol-name (car package))
                        (package-version-join (caadr package))))
      package-obsolete-alist)))
+
+(defun carton-version ()
+  "Print the version of this project."
+  (princ (format "%s\n" (carton-package-version carton-package))))
 
 (defun carton-package ()
   "Package this project."
