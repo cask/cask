@@ -124,6 +124,10 @@
                        (package-version-join (caadr package))))
      package-obsolete-alist)))
 
+(defun carton-version ()
+  "Print the version of this project."
+  (princ (format "%s\n" (carton-package-version carton-package))))
+
 (defun carton-package ()
   "Package this project."
   (let ((content (carton-define-package-string)))
