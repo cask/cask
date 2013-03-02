@@ -1,0 +1,8 @@
+(source "melpa" "http://melpa.milkbox.net/packages/")
+ 
+(package "Carton" "0.1.1" "Emacs dependency management made easy")
+
+(depends-on "s" "1.3.1")
+
+(development
+ (depends-on "el-mock"))
