@@ -1,3 +1,35 @@
+(require 'el-mock)
+(require 's)
+
+(ert-deftest test-carton-setup ()
+  "Should setup."
+  (carton-setup
+   (expand-file-name "super" carton-test-path))
+  (should (equal "super" carton-project-name))
+  (should (s-ends-with? "carton/test/super" carton-project-path))
+  (should (s-ends-with? "carton/test/super/Carton" carton-file))
+  (should (s-ends-with? "test/super/super-pkg.el" carton-package-file)))
+
+(ert-deftest test-carton-package-user-dir-when-not-custom ()
+  "Should set `package-user-dir' when not custom."
+  (with-mock
+   (stub file-exists-p => t)
+   (stub locate-user-emacs-file => "~/.emacs.d/elpa")
+   (let ((package-user-dir "~/.emacs.d/elpa"))
+     (carton-setup
+      (expand-file-name "super" carton-test-path))
+     (should (s-ends-with? "carton/test/super/elpa" package-user-dir)))))
+
+(ert-deftest test-carton-package-user-dir-when-custom ()
+  "Should not set `package-user-dir' when custom."
+  (with-mock
+   (stub file-exists-p => t)
+   (stub locate-user-emacs-file => "~/.emacs.d/elpa")
+   (let ((package-user-dir "custom/path/to/elpa"))
+     (carton-setup
+      (expand-file-name "super" carton-test-path))
+     (should (s-ends-with? "custom/path/to/elpa" package-user-dir)))))
+
 (ert-deftest test-carton-package ()
   "Should define package."
   (let (carton-package)
