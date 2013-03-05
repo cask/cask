@@ -145,8 +145,9 @@ These are some projects using Carton:
 * <https://github.com/rejeep/ruby-tools>
 * <https://github.com/rejeep/drag-stuff>
 * <https://github.com/rejeep/html-script-src>
-* <https://github.com/rejeep/citrus-mode>
-* <https://github.com/rejeep/ansi>
+* <https://github.com/bbatsov/projectile>
+* <https://github.com/tkf/emacs-jedi>
+* ...
 
 ## Contribution
 
