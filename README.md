@@ -112,7 +112,7 @@ Example:
 
 ### Local Emacs installation
 
-    (source "melpa" http://melpa.milkbox.net/packages/")
+    (source "melpa" "http://melpa.milkbox.net/packages/")
 
     (depends-on "magit")
     (depends-on "drag-stuff")
