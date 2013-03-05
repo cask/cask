@@ -50,6 +50,9 @@ Add this to your `.emacs` file.
 
 That's it!
 
+To automatically keep the `Carton` file up to date with what you
+install from ELPA, check out <https://github.com/rdallasgray/pallet>.
+
 ### Package development
 
 To create a `-pkg.el` file, run:
