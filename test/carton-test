@@ -9,4 +9,4 @@
 (load (expand-file-name "carton.el" carton-root-path) t t)
 (load (expand-file-name "carton-test.el" carton-test-path) t t)
 
-(ert-run-tests-batch t)
+(ert-run-tests-batch-and-exit t)
