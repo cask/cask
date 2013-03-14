@@ -1,4 +1,4 @@
-# Carton
+# Carton [![Build Status](https://secure.travis-ci.org/rejeep/carton.png)](http://travis-ci.org/rejeep/carton)
 
 ![Carton](https://raw.github.com/rejeep/carton/master/carton.png)
 
