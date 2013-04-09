@@ -73,7 +73,7 @@
   (when (equal (eval (car (get 'package-user-dir 'standard-value))) package-user-dir)
     (setq package-user-dir (expand-file-name "elpa" carton-project-path)))
   (unless (file-exists-p carton-file)
-    (error "Could not locate `Carton` file.")
+    (error "Could not locate `Carton` file")
     (kill-emacs 1))
   (load carton-file t t t))
 
