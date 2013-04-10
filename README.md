@@ -18,11 +18,11 @@ To automatically install Carton, run this command:
 You can also clone the repository.
 
     $ git clone https://github.com/rejeep/carton.git
-    
+
 Don't forget to add Carton's bin to your `PATH`.
-    
+
     $ export PATH="/path/to/code/carton/bin:$PATH"
-    
+
 
 ## Usage
 
@@ -98,6 +98,18 @@ Add a runtime dependency.
 Example:
 
     (depends-on "magit" "0.8.1")
+
+### package-file
+
+Define this package and its runtime dependencies from the package headers of a
+file (used only for package development).  The name of the file is relative to
+the directory containing the `Carton` file.
+
+    (package-file FILENAME)
+
+Example:
+
+    (package-file "foo.el")
 
 ### development
 

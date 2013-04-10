@@ -38,6 +38,23 @@
     (should (equal (carton-package-version carton-package) "0.0.1"))
     (should (equal (carton-package-description carton-package) "Foo."))))
 
+(ert-deftest test-carton-package-file ()
+  "Should define package file."
+  (let ((carton-project-path carton-test-path)
+        carton-package
+        carton-runtime-dependencies carton-development-dependencies)
+    (carton-eval '((package-file "sample-package.el")))
+    (should (equal (carton-package-name carton-package) "sample-package"))
+    (should (equal (carton-package-version carton-package) "1.0beta1"))
+    (should (equal (carton-package-description carton-package)
+                   "Sample package for tests"))
+    (let ((package (nth 0 carton-runtime-dependencies)))
+      (should (equal (carton-dependency-name package) 'foo))
+      (should (equal (carton-dependency-version package) "1.0")))
+    (let ((package (nth 1 carton-runtime-dependencies)))
+      (should (equal (carton-dependency-name package) 'bar))
+      (should (equal (carton-dependency-version package) "1.1beta3")))))
+
 (ert-deftest test-depends-on-runtime ()
   "Should add as runtime dependency."
   (let (carton-runtime-dependencies carton-development-dependencies)

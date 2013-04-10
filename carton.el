@@ -80,10 +80,32 @@ Return all directives in the Carton file as list."
 
 (defun carton-add-dependency (name &optional version scope)
   "Add the dependency NAME with VERSION in SCOPE."
-  (let ((dependency (make-carton-dependency :name (intern name)
-                                            :version version))
-        (dep-list (carton-get-dep-list-for-scope scope)))
+  (let* ((name (if (stringp name) (intern name) name))
+         (dependency (make-carton-dependency :name name :version version))
+         (dep-list (carton-get-dep-list-for-scope scope)))
     (add-to-list dep-list dependency t)))
+
+(defun carton-parse-package-info (info)
+  "Parse package INFO as returned by `package-buffer-info'."
+  ;; We have to convert the INFO vector to a list first, because pcase does not
+  ;; support pattern matching on vectors.
+  (pcase-let* ((info (append info nil))
+               (`(,name ,requires ,description ,version _) info))
+    (setq carton-package (make-carton-package :name name
+                                              :version version
+                                              :description description))
+    (dolist (req requires)
+      (pcase-let ((`(,name ,version) req))
+        (carton-add-dependency name (package-version-join version))))))
+
+(defun carton-parse-package-file (filename)
+  "Parse a package file from FILENAME.
+
+Extract name, version, description and runtime dependencies from
+the package headers in FILENAME."
+  (with-temp-buffer
+    (insert-file-contents (expand-file-name filename carton-project-path))
+    (carton-parse-package-info (package-buffer-info))))
 
 (defun carton-eval (forms &optional scope)
   "Evaluate carton FORMS in SCOPE.
@@ -97,6 +119,7 @@ SCOPE may be nil or :development."
        (setq carton-package (make-carton-package :name name
                                                  :version version
                                                  :description description)))
+      (`(package-file ,filename) (carton-parse-package-file filename))
       (`(depends-on ,name ,version) (carton-add-dependency name version scope))
       (`(depends-on ,name) (carton-add-dependency name nil scope))
       (`(development . ,body) (carton-eval body :development))
