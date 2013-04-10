@@ -1,2 +1,2 @@
 all:
-	carton exec ${EMACS} --script ./test/carton-test -Q -nw
+	carton exec ${EMACS} --script ./test/carton-testrunner -Q -nw
