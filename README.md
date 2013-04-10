@@ -163,6 +163,7 @@ These are some projects using Carton:
 * <https://github.com/rejeep/html-script-src>
 * <https://github.com/bbatsov/projectile>
 * <https://github.com/tkf/emacs-jedi>
+* <https://github.com/lunaryorn/flycheck>
 * ...
 
 ## Contribution
