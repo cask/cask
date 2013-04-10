@@ -153,17 +153,17 @@ Example:
 
 These are some projects using Carton:
 
-* <https://github.com/rejeep/emacs>
-* <https://github.com/rejeep/wrap-region>
-* <https://github.com/rejeep/espuds>
-* <https://github.com/rejeep/enclose>
-* <https://github.com/rejeep/ruby-end>
-* <https://github.com/rejeep/ruby-tools>
-* <https://github.com/rejeep/drag-stuff>
-* <https://github.com/rejeep/html-script-src>
-* <https://github.com/bbatsov/projectile>
-* <https://github.com/tkf/emacs-jedi>
-* <https://github.com/lunaryorn/flycheck>
+* [rejeep/emacs](https://github.com/rejeep/emacs)
+* [wrap-region](https://github.com/rejeep/wrap-region)
+* [espuds](https://github.com/rejeep/espuds)
+* [enclose](https://github.com/rejeep/enclose)
+* [ruby-end](https://github.com/rejeep/ruby-end)
+* [ruby-tools](https://github.com/rejeep/ruby-tools)
+* [drag-stuff](https://github.com/rejeep/drag-stuff)
+* [html-script-src](https://github.com/rejeep/html-script-src)
+* [projectile](https://github.com/bbatsov/projectile)
+* [emacs-jedi](https://github.com/tkf/emacs-jedi)
+* [flycheck](https://github.com/lunaryorn/flycheck)
 * ...
 
 ## Contribution
