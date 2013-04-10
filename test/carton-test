@@ -1,3 +1,7 @@
 #!/bin/sh
 
-emacs -Q --script "$(dirname $0)/carton-testrunner.el"
+if [ -z "$EMACS" ]; then
+  export EMACS=emacs
+fi
+
+carton exec "${EMACS}" -Q --script "$(dirname $0)/carton-testrunner.el"
