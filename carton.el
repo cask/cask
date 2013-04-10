@@ -64,6 +64,44 @@
 (defvar carton-package nil
   "Project package information.")
 
+(defun carton-read (filename)
+  "Read a carton file from FILENAME.
+
+Return all directives in the Carton file as list."
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (read (format "(%s)" (buffer-substring-no-properties (point-min) (point-max))))))
+
+(defun carton-get-dep-list-for-scope (scope)
+  "Get the dependency list symbol for SCOPE."
+  (if (eq scope :development)
+      'carton-development-dependencies
+    'carton-runtime-dependencies))
+
+(defun carton-add-dependency (name &optional version scope)
+  "Add the dependency NAME with VERSION in SCOPE."
+  (let ((dependency (make-carton-dependency :name (intern name)
+                                            :version version))
+        (dep-list (carton-get-dep-list-for-scope scope)))
+    (add-to-list dep-list dependency t)))
+
+(defun carton-eval (forms &optional scope)
+  "Evaluate carton FORMS in SCOPE.
+
+SCOPE may be nil or :development."
+  (dolist (form forms)
+    (pcase form
+      (`(source ,name ,url)
+       (add-to-list 'package-archives (cons name url)))
+      (`(package ,name ,version ,description)
+       (setq carton-package (make-carton-package :name name
+                                                 :version version
+                                                 :description description)))
+      (`(depends-on ,name ,version) (carton-add-dependency name version scope))
+      (`(depends-on ,name) (carton-add-dependency name nil scope))
+      (`(development . ,body) (carton-eval body :development))
+      (_ (error "Unknown directive: %S" form)))))
+
 (defun carton-setup (project-path)
   "Setup carton for project at PROJECT-PATH."
   (setq carton-project-path (directory-file-name project-path))
@@ -73,28 +111,9 @@
   (when (equal (eval (car (get 'package-user-dir 'standard-value))) package-user-dir)
     (setq package-user-dir (expand-file-name "elpa" carton-project-path)))
   (unless (file-exists-p carton-file)
-    (error "Could not locate `Carton` file.")
+    (error "Could not locate `Carton` file")
     (kill-emacs 1))
-  (load carton-file t t t))
-
-(defun source (name url)
-  "Add source with NAME and URL."
-  (add-to-list 'package-archives `(,name . ,url)))
-
-(defun package (name version description)
-  "Define package with NAME, VERSION and DESCRIPTION."
-  (setq carton-package (make-carton-package :name name :version version :description description)))
-
-(defmacro development (&rest body)
-  "Scope to development dependencies."
-  `(let ((carton-development t)) ,@body))
-
-(defun depends-on (name &optional version)
-  "Add dependency with NAME and VERSION."
-  (let ((dependency (make-carton-dependency :name (intern name) :version version))
-        (dependency-list
-         (if carton-development 'carton-development-dependencies 'carton-runtime-dependencies)))
-    (add-to-list dependency-list dependency t)))
+  (carton-eval (carton-read carton-file)))
 
 (defun carton-install ()
   "Install dependencies."
