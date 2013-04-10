@@ -41,6 +41,10 @@ To update package version, run:
 
     $ carton update
 
+To list all dependencies, run:
+
+    $ carton list
+
 ### Local Emacs installation
 
 Add this to your `.emacs` file.
@@ -66,10 +70,6 @@ To run some Emacs Lisp code with ELPA load paths all set up for you, use:
 Example:
 
     $ carton exec make test
-
-To list all dependencies:
-
-    $ carton list
 
 ## DSL
 
