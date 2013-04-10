@@ -33,7 +33,7 @@
 (ert-deftest test-carton-package ()
   "Should define package."
   (let (carton-package)
-    (package "foo" "0.0.1" "Foo.")
+    (carton-eval '((package "foo" "0.0.1" "Foo.")))
     (should (equal (carton-package-name carton-package) "foo"))
     (should (equal (carton-package-version carton-package) "0.0.1"))
     (should (equal (carton-package-description carton-package) "Foo."))))
@@ -41,7 +41,7 @@
 (ert-deftest test-depends-on-runtime ()
   "Should add as runtime dependency."
   (let (carton-runtime-dependencies carton-development-dependencies)
-    (depends-on "foo" "0.0.1")
+    (carton-eval '((depends-on "foo" "0.0.1")))
     (should-not carton-development-dependencies)
     (let ((package (car carton-runtime-dependencies)))
       (should (equal (carton-dependency-name package) 'foo))
@@ -50,7 +50,7 @@
 (ert-deftest test-depends-on-development ()
   "Should add as development dependency."
   (let (carton-runtime-dependencies carton-development-dependencies)
-    (development (depends-on "foo" "0.0.1"))
+    (carton-eval '((development (depends-on "foo" "0.0.1"))))
     (should-not carton-runtime-dependencies)
     (let ((package (car carton-development-dependencies)))
       (should (equal (carton-dependency-name package) 'foo))
@@ -59,15 +59,16 @@
 (ert-deftest test-source ()
   "Should add source to `package-archives'."
   (let (package-archives)
-    (source "name" "url")
+    (carton-eval '((source "name" "url")))
     (should (equal package-archives '(("name" . "url"))))))
 
 (ert-deftest test-carton-define-package-string ()
   "Should return correct `define-package' string."
   (let (carton-runtime-dependencies carton-package)
-    (package "foo" "0.0.1" "Foo.")
-    (depends-on "bar" "0.0.2")
-    (depends-on "baz" "0.0.3")
+    (carton-eval
+     '((package "foo" "0.0.1" "Foo.")
+       (depends-on "bar" "0.0.2")
+       (depends-on "baz" "0.0.3")))
     (should
      (equal
       (carton-define-package-string)
@@ -76,7 +77,7 @@
 (ert-deftest test-carton-define-package-string-no-dependencies ()
   "Should return correct `define-package' string when no dependencies."
   (let (carton-package)
-    (package "foo" "0.0.1" "Foo.")
+    (carton-eval '((package "foo" "0.0.1" "Foo.")))
     (should
      (equal
       (carton-define-package-string)
@@ -85,8 +86,9 @@
 (ert-deftest test-carton-dependency-string ()
   "Should return correct dependency string."
   (let (carton-runtime-dependencies)
-    (depends-on "foo" "0.0.1")
-    (depends-on "bar" "0.0.2")
+    (carton-eval
+     '((depends-on "foo" "0.0.1")
+       (depends-on "bar" "0.0.2")))
     (should (equal (carton-dependency-string) "(foo \"0.0.1\") (bar \"0.0.2\")"))))
 
 (ert-deftest test-carton-dependency-string-no-dependencies ()
@@ -96,5 +98,10 @@
 (ert-deftest test-carton-dependency-string-no-version ()
   "Should return correct dependency string."
   (let (carton-runtime-dependencies)
-    (depends-on "foo")
+    (carton-eval '((depends-on "foo")))
     (should (equal (carton-dependency-string) "(foo \"\")"))))
+
+(ert-deftest test-carton-unknown-directive ()
+  "Should error on unknown directive."
+  (let ((data (should-error (carton-eval '((foo "bar"))) :type 'error)))
+    (should (equal (cadr data) "Unknown directive: (foo \"bar\")"))))
