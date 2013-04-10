@@ -7,6 +7,7 @@ COMMANDS:
  exec                   Execute command with correct dependencies
  init                   Create basic Carton file
  version                Show the package version
+ list                   List dependencies
 
 OPTIONS:
  -h, --help             Display this help message
