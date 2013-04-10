@@ -67,6 +67,10 @@ Example:
 
     $ carton exec make test
 
+To list all dependencies:
+
+    $ carton list
+
 ## DSL
 
 ### source

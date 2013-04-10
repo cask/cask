@@ -122,3 +122,23 @@
   "Should error on unknown directive."
   (let ((data (should-error (carton-eval '((foo "bar"))) :type 'error)))
     (should (equal (cadr data) "Unknown directive: (foo \"bar\")"))))
+
+(ert-deftest test-carton-list-no-dependencies ()
+  "Should print three times when no dependencies."
+  (with-mock
+   (mock (princ) :times 3)
+   (carton-list)))
+
+(ert-deftest test-carton-list-with-dependencies ()
+  "Should print eleven times when two runtime dependencies and two development dependencies."
+  (let ((carton-runtime-dependencies
+         (list
+          (make-carton-dependency :name "run-dep-1" :version "v1")
+          (make-carton-dependency :name "run-dep-2" :version "v2")))
+        (carton-development-dependencies
+         (list
+          (make-carton-dependency :name "dev-dep-1" :version "v1")
+          (make-carton-dependency :name "dev-dep-2" :version "v2"))))
+    (with-mock
+     (mock (princ) :times 11)
+     (carton-list))))

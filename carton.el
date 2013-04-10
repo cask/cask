@@ -168,6 +168,23 @@ SCOPE may be nil or :development."
                        (package-version-join (caadr package))))
      package-obsolete-alist)))
 
+(defun carton--print-dependency (dependency)
+  (let ((name (carton-dependency-name dependency))
+        (version (carton-dependency-version dependency)))
+    (princ
+     (if version
+         (format " - %s (%s)" name version)
+       (format " - %s" name)))
+    (princ "\n")))
+
+(defun carton-list ()
+  "Print list of runtime and development dependencies."
+  (princ "### Dependencies ###\n\n")
+  (princ "Runtime:\n")
+  (mapc 'carton--print-dependency carton-runtime-dependencies)
+  (princ "\nDevelopment:\n")
+  (mapc 'carton--print-dependency carton-development-dependencies))
+
 (defun carton-version ()
   "Print the version of this project."
   (princ (format "%s\n" (carton-package-version carton-package))))
