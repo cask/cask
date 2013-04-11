@@ -25,8 +25,10 @@ else
 fi
 
 case "$COMMAND" in
-  package|version|install|update|list|info)
-    "$EMACS" --batch --load "$CARTON_EL" --eval "(progn (carton-setup \"${PWD}\") (carton-${COMMAND}))"
+    package|version|install|update|list|info)
+    export CARTON_PROJECT_PATH="$PWD"
+    export CARTON_COMMAND="$COMMAND"
+    "$EMACS" --batch --load "$CARTON_EL" --funcall carton-handle-commandline
     ;;
   init)
     cat "$TEMPLATE_DIR/init.tpl" > Carton

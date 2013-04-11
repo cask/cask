@@ -137,7 +137,19 @@ SCOPE may be nil or :development."
     (error "Could not locate `Carton` file"))
   (carton-eval (carton-read carton-file)))
 
-(defun carton-install ()
+(defun carton-handle-commandline ()
+  "Handle the command line.
+
+The command line is passed down from the entry script in two variables:
+
+$CARTON_PROJECT_PATH provides the path of the Carton project.
+$CARTON_COMMAND specifies the command to execute."
+  (let ((project-path (getenv "CARTON_PROJECT_PATH"))
+        (command (getenv "CARTON_COMMAND")))
+    (carton-setup project-path)
+    (funcall (intern (format "carton-command-%s" command)))))
+
+(defun carton-command-install ()
   "Install dependencies."
   (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
     (when carton-dependencies
@@ -150,7 +162,7 @@ SCOPE may be nil or :development."
              (package-install name))))
        carton-dependencies))))
 
-(defun carton-update ()
+(defun carton-command-update ()
   "Update packages that have new versions."
   (with-temp-buffer
     (package-refresh-contents)
@@ -176,7 +188,7 @@ SCOPE may be nil or :development."
        (format " - %s" name)))
     (princ "\n")))
 
-(defun carton-list ()
+(defun carton-command-list ()
   "Print list of runtime and development dependencies."
   (princ "### Dependencies ###\n\n")
   (princ (format "Runtime [%s]:\n" (length carton-runtime-dependencies)))
@@ -186,7 +198,7 @@ SCOPE may be nil or :development."
   (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
   (mapc 'carton--print-dependency carton-development-dependencies))
 
-(defun carton-info ()
+(defun carton-command-info ()
   "Print info about this project."
   (cond (carton-package
          (let ((name (carton-package-name carton-package))
@@ -198,11 +210,11 @@ SCOPE may be nil or :development."
            (princ "\n")))
         (t (error "Missing `package` or `package-file` directive"))))
 
-(defun carton-version ()
+(defun carton-command-version ()
   "Print the version of this project."
   (princ (format "%s\n" (carton-package-version carton-package))))
 
-(defun carton-package ()
+(defun carton-command-package ()
   "Package this project."
   (let ((content (carton-define-package-string)))
     (with-temp-file carton-package-file (insert content))))
