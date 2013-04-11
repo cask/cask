@@ -134,8 +134,7 @@ SCOPE may be nil or :development."
   (when (equal (eval (car (get 'package-user-dir 'standard-value))) package-user-dir)
     (setq package-user-dir (expand-file-name "elpa" carton-project-path)))
   (unless (file-exists-p carton-file)
-    (error "Could not locate `Carton` file")
-    (kill-emacs 1))
+    (error "Could not locate `Carton` file"))
   (carton-eval (carton-read carton-file)))
 
 (defun carton-install ()
