@@ -39,6 +39,7 @@
 (defstruct carton-package name version description)
 (defstruct carton-dependency name version)
 (defstruct carton-source name url)
+(defstruct carton-upgrade name old-version new-version)
 
 (defvar carton-project-path nil
   "Path to project.")
@@ -134,6 +135,31 @@ SCOPE may be nil or :development."
     (error "Could not locate `Carton` file"))
   (carton-eval (carton-read carton-file)))
 
+(defun carton-update ()
+  "Update dependencies.
+
+Return a list of updated packages."
+  (with-temp-buffer
+    (package-refresh-contents)
+    (package-initialize)
+    (package-menu--generate nil t) ;; WTF ELPA, really???
+    (let ((upgrades (package-menu--find-upgrades))
+          installed-upgrades)
+      (dolist (upgrade upgrades)
+        (let* ((name (car upgrade))
+               (new-version (cdr upgrade))
+               (old-version (package-desc-vers (cdr (assq name package-alist))))
+               (upgrade (make-carton-upgrade :name name
+                                             :old-version old-version
+                                             :new-version new-version)))
+          (package-install name)
+          (push upgrade installed-upgrades)))
+      ;; Delete obsolete packages
+      (dolist (pkg package-obsolete-alist)
+         (package-delete (symbol-name (car pkg))
+                         (package-version-join (caadr pkg))))
+      (reverse installed-upgrades))))
+
 (defun carton-handle-commandline ()
   "Handle the command line.
 
@@ -160,21 +186,15 @@ $CARTON_COMMAND specifies the command to execute."
        carton-dependencies))))
 
 (defun carton-command-update ()
-  "Update packages that have new versions."
-  (with-temp-buffer
-    (package-refresh-contents)
-    (package-initialize)
-    (package-menu--generate nil t) ;; WTF ELPA, really???
-    (mapc
-     (lambda (package)
-       (package-install (car package)))
-     (package-menu--find-upgrades))
-    ;; Delete obsolete packages
-    (mapc
-     (lambda (package)
-       (package-delete (symbol-name (car package))
-                       (package-version-join (caadr package))))
-     package-obsolete-alist)))
+  "Handle the update command."
+  (let ((upgrades (carton-update)))
+    (when upgrades
+      (princ "Updated packages:\n")
+      (dolist (upgrade upgrades)
+        (princ (format "%s %s -> %s\n"
+                       (carton-upgrade-name upgrade)
+                       (package-version-join (carton-upgrade-old-version upgrade))
+                       (package-version-join (carton-upgrade-new-version upgrade))))))))
 
 (defun carton--print-dependency (dependency)
   (let ((name (carton-dependency-name dependency))

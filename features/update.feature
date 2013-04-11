@@ -32,3 +32,8 @@ Feature: Update
     When I run carton "update"
     Then there should not exist a directory called "elpa/foo-0.0.1"
     But there should exist a directory called "elpa/foo-0.0.2"
+    And I should see command output:
+      """
+      Updated packages:
+      foo 0.0.1 -> 0.0.2
+      """
