@@ -187,6 +187,18 @@ SCOPE may be nil or :development."
   (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
   (mapc 'carton--print-dependency carton-development-dependencies))
 
+(defun carton-info ()
+  "Print info about this project."
+  (cond (carton-package
+         (let ((name (carton-package-name carton-package))
+               (version (carton-package-version carton-package))
+               (description (carton-package-description carton-package)))
+           (princ (format "### %s (%s) ###" name version))
+           (princ "\n\n")
+           (princ description)
+           (princ "\n")))
+        (t (error "Missing `package` or `package-file` directive"))))
+
 (defun carton-version ()
   "Print the version of this project."
   (princ (format "%s\n" (carton-package-version carton-package))))

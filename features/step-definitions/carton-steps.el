@@ -2,12 +2,19 @@
 (setq carton-error nil)
 (setq carton-output nil)
 
+(defun carton--create-project-file (filename content)
+  (with-temp-buffer
+    (insert content)
+    (let ((filepath (expand-file-name filename carton-current-project)))
+      (write-file filepath nil))))
+
 (Given "^this Carton file:$"
   (lambda (content)
-    (with-temp-buffer
-      (insert content)
-      (let ((carton-file (expand-file-name "Carton" carton-current-project)))
-        (write-file carton-file)))))
+    (carton--create-project-file "Carton" content)))
+
+(Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
+  (lambda (filename content)
+    (carton--create-project-file filename content)))
 
 (When "^I run carton \"\\([^\"]+\\)\"$"
   (lambda (command)

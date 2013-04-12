@@ -71,6 +71,10 @@ Example:
 
     $ carton exec make test
 
+To print info about the current project:
+
+    $ carton info
+
 ## DSL
 
 ### source
