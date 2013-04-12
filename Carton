@@ -6,3 +6,5 @@
  (depends-on "s")
  (depends-on "el-mock")
  (depends-on "ert")
+ (depends-on "ecukes")
+ (depends-on "espuds"))
