@@ -12,4 +12,4 @@ before_install:
 env:
   - EMACS=emacs24
 script:
-  make
+  make unit
