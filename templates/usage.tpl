@@ -8,6 +8,7 @@ COMMANDS:
  init                   Create basic Carton file
  version                Show the package version
  list                   List dependencies
+ info                   Show info about this project
 
 OPTIONS:
  -h, --help             Display this help message
