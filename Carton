@@ -4,4 +4,5 @@
 
 (development
  (depends-on "s")
- (depends-on "el-mock"))
+ (depends-on "el-mock")
+ (depends-on "ert")
