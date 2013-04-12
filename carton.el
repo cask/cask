@@ -180,9 +180,11 @@ SCOPE may be nil or :development."
 (defun carton-list ()
   "Print list of runtime and development dependencies."
   (princ "### Dependencies ###\n\n")
-  (princ "Runtime:\n")
+  (princ (format "Runtime [%s]:\n" (length carton-runtime-dependencies)))
   (mapc 'carton--print-dependency carton-runtime-dependencies)
-  (princ "\nDevelopment:\n")
+  (if (> (length carton-runtime-dependencies) 0)
+    (princ "\n"))
+  (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
   (mapc 'carton--print-dependency carton-development-dependencies))
 
 (defun carton-version ()

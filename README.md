@@ -170,6 +170,22 @@ These are some projects using Carton:
 
 Be sure to!
 
-Run the tests with:
+For each make command below, prefix with:
+
+    $ EMACS="/path/to/emacs"
+
+For exmaple:
+
+    $ EMACS="/path/to/emacs" make abc
+
+Run the unit tests with:
+
+    $ make unit
+
+Run the Ecukes tests with:
+
+    $ make ecukes
+
+Run all tests with:
 
     $ make
