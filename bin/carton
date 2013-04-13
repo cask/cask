@@ -37,7 +37,7 @@ else
   else
     if [[ $1 == "init" ]]; then
       cat $TEMPLATE_DIR/init.tpl > Carton
-    elif [ "$1" == "-h" -o "$1" == "--help" ]; then
+    elif [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
       cat $TEMPLATE_DIR/usage.tpl
     else
       cat $TEMPLATE_DIR/usage.tpl

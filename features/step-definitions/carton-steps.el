@@ -1,6 +1,6 @@
 (setq carton-current-project nil)
-(setq carton-error nil)
-(setq carton-output nil)
+(setq carton-error "")
+(setq carton-output "")
 
 (defun carton--create-project-file (filename content)
   (with-temp-buffer
@@ -18,19 +18,20 @@
 
 (When "^I run carton \"\\([^\"]+\\)\"$"
   (lambda (command)
-    (let* ((buffer-output (get-buffer-create "*carton-output*"))
-           (buffer-error  (get-buffer-create "*carton-error*"))
-           (command
-            (format "cd %s && %s %s" carton-current-project carton-bin-command command))
+    (let* ((buffer (get-buffer-create "*carton-output*"))
+           (default-directory (file-name-as-directory carton-current-project))
            (exit-code
-            (shell-command
-             command buffer-output buffer-error)))
-      (cond ((= exit-code 0)
-             (with-current-buffer buffer-output
-               (setq carton-output (buffer-string))))
-            (t
-             (with-current-buffer buffer-error
-               (setq carton-error (buffer-string))))))))
+            (apply
+             'call-process
+             (append
+              (list carton-bin-command nil buffer nil)
+              (s-split " " command)))))
+      (with-current-buffer buffer
+        (let ((content (buffer-string)))
+          (cond ((= exit-code 0)
+                 (setq carton-output content))
+                (t
+                 (setq carton-error content))))))))
 
 (Given "^I create a project called \"\\([^\"]+\\)\"$"
   (lambda (project-name)
@@ -49,3 +50,23 @@
 (Then "^I should see command error:$"
   (lambda (output)
     (should (s-contains? output carton-error))))
+
+(Then "^I should see usage information$"
+       (lambda ()
+         (Then
+           "I should see command error:"
+           "USAGE: carton [command]
+
+COMMANDS:
+ package                Create -pkg.el file
+ install                Install dependencies
+ update                 Update dependencies
+ exec                   Execute command with correct dependencies
+ init                   Create basic Carton file
+ version                Show the package version
+ list                   List dependencies
+ info                   Show info about this project
+ help                   Display this help message
+
+OPTIONS:
+ -h, --help             Display this help message")))
