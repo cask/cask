@@ -52,9 +52,6 @@
 (defvar carton-package-file nil
   "Path to project package (`-pkg.el`) file.")
 
-(defvar carton-development nil
-  "Development dependency or not.")
-
 (defvar carton-development-dependencies nil
   "List of development dependencies.")
 
