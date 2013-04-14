@@ -8,7 +8,7 @@ fi
 # give it as command line argument because that would cause Emacs to visit the
 # file, printing a lot of superfluous messages.
 export CARTON_STARTUP_SCRIPT="$0"
-CARTON_PATH=$($EMACS -Q --batch --eval '(princ (file-truename (getenv "CARTON_STARTUP_SCRIPT")))')
+CARTON_PATH=$("$EMACS" -Q --batch --eval '(princ (file-truename (getenv "CARTON_STARTUP_SCRIPT")))')
 
 if [ -z "$CARTON_DIR" -o ! -d "$CARTON_DIR" ] ; then
   CARTON_DIR="$(dirname $(dirname $CARTON_PATH))"
@@ -17,36 +17,29 @@ TEMPLATE_DIR="$CARTON_DIR/templates"
 
 CARTON_EL="$CARTON_DIR/carton.el"
 
+COMMAND="$1"
 if [[ $# -eq 0 ]]; then
   COMMAND=install
 else
-  if [[ $1 == "package" ]]; then
-    COMMAND=package
-  elif [[ $1 == "version" ]]; then
-    COMMAND=version
-  elif [[ $1 == "install" ]]; then
-    COMMAND=install
-  elif [[ $1 == "update" ]]; then
-    COMMAND=update
-  elif [[ $1 == "list" ]]; then
-    COMMAND=list
-  elif [[ $1 == "info" ]]; then
-    COMMAND=info
-  elif [[ $1 == "exec" ]]; then
-    EMACSLOADPATH=$($EMACS -Q --batch --eval '(message (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) exec "${@:2}"
-  else
-    if [[ $1 == "init" ]]; then
-      cat $TEMPLATE_DIR/init.tpl > Carton
-    elif [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
-      cat $TEMPLATE_DIR/usage.tpl
-    else
-      cat $TEMPLATE_DIR/usage.tpl
-    fi
-
-    exit 1
-  fi
+  COMMAND="$1"
 fi
 
-if [[ -n $COMMAND ]]; then
-  $EMACS --batch --load $CARTON_EL --eval "(progn (carton-setup \"${PWD}\") (carton-${COMMAND}))"
-fi
+case "$COMMAND" in
+    package|version|install|update|list|info)
+    export CARTON_PROJECT_PATH="$PWD"
+    export CARTON_COMMAND="$COMMAND"
+    "$EMACS" --batch --load "$CARTON_EL" --funcall carton-handle-commandline
+    ;;
+  init)
+    cat "$TEMPLATE_DIR/init.tpl" > Carton
+    ;;
+  exec)
+    EMACSLOADPATH=$("$EMACS" -Q --batch --eval '(message (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) exec "${@:2}"
+    ;;
+  -h|--help)
+    cat "$TEMPLATE_DIR/usage.tpl"
+    ;;
+  *)
+    cat "$TEMPLATE_DIR/usage.tpl"
+    exit 1;
+esac
