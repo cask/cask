@@ -66,8 +66,8 @@
 
 Return all directives in the Carton file as list."
   (with-temp-buffer
-    (insert-file-contents filename)
-    (read (format "(%s)" (buffer-substring-no-properties (point-min) (point-max))))))
+    (insert-file-contents-literally filename)
+    (read (format "(%s)" (buffer-string)))))
 
 (defun carton-get-dep-list-for-scope (scope)
   "Get the dependency list symbol for SCOPE."
