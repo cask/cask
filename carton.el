@@ -212,7 +212,9 @@ $CARTON_COMMAND specifies the command to execute."
 
 (defun carton-command-version ()
   "Print the version of this project."
-  (princ (format "%s\n" (carton-package-version carton-package))))
+  (if carton-package
+      (princ (format "%s\n" (carton-package-version carton-package)))
+    (error "Missing `package` or `package-file` directive")))
 
 (defun carton-command-package ()
   "Package this project."
