@@ -31,7 +31,19 @@ case "$COMMAND" in
     "$EMACS" --batch --load "$CARTON_EL" --funcall carton-handle-commandline
     ;;
   init)
-    cat "$TEMPLATE_DIR/init.tpl" > Carton
+    CARTON_FILE="${PWD}/Carton"
+
+    if [[ -f "$CARTON_FILE" ]]; then
+      echo "Carton file already exists."
+      exit 1
+    else
+      if [[ $2 == "--dev" ]]; then
+        cat "$TEMPLATE_DIR/init-dev.tpl" > "$CARTON_FILE"
+      else
+        cat "$TEMPLATE_DIR/init.tpl" > "$CARTON_FILE"
+      fi
+    fi
+
     ;;
   exec)
     EMACSLOADPATH=$("$EMACS" -Q --batch --eval '(princ (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) exec "${@:2}"

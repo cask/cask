@@ -70,3 +70,10 @@ COMMANDS:
 
 OPTIONS:
  -h, --help             Display this help message")))
+
+(Then "^there should exist a file called \"\\([^\"]+\\)\" with this content:$"
+  (lambda (filename content)
+    (let ((filepath (expand-file-name filename carton-current-project)))
+      (with-temp-buffer
+        (insert-file-contents-literally filepath)
+        (Then "I should see:" content)))))

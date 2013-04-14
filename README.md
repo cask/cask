@@ -29,7 +29,9 @@ Don't forget to add Carton's bin to your `PATH`.
 Create a file called `Carton` in your project root and specify
 dependencies:
 
-    $ carton init
+    $ carton init [--dev]
+
+__(Use `--dev` if the project is for package development)__
 
 To install all dependencies, run:
 

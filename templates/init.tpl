@@ -1,10 +1,14 @@
 (source "melpa" "http://melpa.milkbox.net/packages/")
- 
-(package "" "0.0.1" "")
- 
-(depends-on "s" "1.3.0")
-(depends-on "dash" "1.0.3")
- 
-(development
- (depends-on "ecukes")
- (depends-on "espuds"))
+
+(depends-on "carton")
+(depends-on "dash")
+(depends-on "drag-stuff")
+(depends-on "expand-region")
+(depends-on "magit")
+(depends-on "multiple-cursors")
+(depends-on "popwin")
+(depends-on "projectile")
+(depends-on "s")
+(depends-on "smex")
+(depends-on "wrap-region")
+(depends-on "yasnippet")
