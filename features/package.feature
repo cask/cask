@@ -1,0 +1,111 @@
+Feature: Package
+  In order to quickly create a -pkg.el file
+  As a Carton user
+  I want to create it automatically
+
+  Background:
+    Given I create a project called "package"
+    And I go to the project called "package"
+
+  Scenario: No Carton file
+    When I run carton "package"
+    Then I should see command error:
+      """
+      Could not locate `Carton` file
+      """
+
+  Scenario: Empty Carton file
+    Given this Carton file:
+      """
+      """
+    When I run carton "package"
+    Then I should see command error:
+      """
+      Missing `package` or `package-file` directive
+      """
+
+  Scenario: Using package directive no dependencies
+    Given this Carton file:
+      """
+      (package "super-project" "0.0.1" "Super project.")
+      """
+    When I run carton "package"
+    Then there should exist a file called "package-pkg.el" with this content:
+      """
+      (define-package "super-project" "0.0.1"
+        "Super project.")
+      """
+
+  Scenario: Using package directive with dependencies
+    Given this Carton file:
+      """
+      (package "super-project" "0.0.1" "Super project.")
+      
+      (depends-on "foo" "0.1.2")
+      (depends-on "bar" "0.2.1")
+      """
+    When I run carton "package"
+    Then there should exist a file called "package-pkg.el" with this content:
+      """
+      define-package "super-project" "0.0.1"
+        "Super project."
+        '((foo "0.1.2") (bar "0.2.1")))
+      """
+
+  Scenario: Using package-file directive
+    Given this Carton file:
+      """
+      (package-file "super-project.el")
+      """
+    When I create a file called "super-project.el" with content:
+      """
+      ;;; super-project.el --- Super project.
+
+      ;; Copyright (C) 2013 Foo Barsson
+      ;; Copyright (C) 2013 Baz Quxxon
+
+      ;; Author: Foo Barsson <foo.bar@gmail.com>
+      ;; Maintainer: Foo Barsson <foo.bar@gmail.com>
+      ;; Version: 0.0.1
+      ;; Keywords: examples
+      ;; Package-Requires: ((baz "0.1.2") (qux "0.2.1"))
+      ;; URL: http://github.com/foo/super-project
+
+      ;; This file is NOT part of GNU Emacs.
+
+      ;;; License:
+
+      ;; This program is free software; you can redistribute it and/or modify
+      ;; it under the terms of the GNU General Public License as published by
+      ;; the Free Software Foundation; either version 3, or (at your option)
+      ;; any later version.
+
+      ;; This program is distributed in the hope that it will be useful,
+      ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+      ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      ;; GNU General Public License for more details.
+
+      ;; You should have received a copy of the GNU General Public License
+      ;; along with GNU Emacs; see the file COPYING.  If not, write to the
+      ;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+      ;; Boston, MA 02110-1301, USA.
+      ;; Copyright (C) 2010-2013 Your Name
+
+      ;; Author: Your Name <yourname@example.com>
+      ;; Maintainer: Someone Else <someone@example.com>
+      ;; Created: 14 Jul 2010
+      ;; Keywords: foo
+
+      ;;; Code:
+
+      (provide 'super-project)
+
+      ;;; super-project.el ends here
+      """
+    And I run carton "package"
+    Then there should exist a file called "package-pkg.el" with this content:
+      """
+      (define-package "super-project" "0.0.1"
+        "Super project."
+        '((baz "0.1.2") (qux "0.2.1")))
+      """
