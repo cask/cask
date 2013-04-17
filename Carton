@@ -7,4 +7,5 @@
  (depends-on "el-mock")
  (depends-on "ert")
  (depends-on "ecukes")
- (depends-on "espuds"))
+ (depends-on "espuds")
+ (depends-on "elnode"))

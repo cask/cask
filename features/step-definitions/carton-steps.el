@@ -77,3 +77,13 @@ OPTIONS:
       (with-temp-buffer
         (insert-file-contents-literally filepath)
         (Then "I should see:" content)))))
+
+(Then "^there should exist a directory called \"\\([^\"]+\\)\"$"
+  (lambda (dirname)
+    (let ((dirpath (expand-file-name dirname carton-current-project)))
+      (should (file-directory-p dirpath)))))
+
+(Then "^there should not exist a directory called \"\\([^\"]+\\)\"$"
+  (lambda (dirname)
+    (let ((dirpath (expand-file-name dirname carton-current-project)))
+      (should-not (file-directory-p dirpath)))))

@@ -188,7 +188,11 @@ Run the unit tests with:
 
     $ make unit
 
-Run the Ecukes tests with:
+To run the Ecukes tests, first start the fake ELPA server:
+
+    $ make server
+
+Then to run the tests:
 
     $ make ecukes
 
