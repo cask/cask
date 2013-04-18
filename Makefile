@@ -9,6 +9,6 @@ ecukes:
 	carton exec ${ECUKES} features
 
 server:
-	carton exec emacs --load server.el -Q -nw
+	carton exec emacs --load server/app.el -Q -nw
 
 .PHONY:	server ecukes unit all
