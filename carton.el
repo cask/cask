@@ -191,7 +191,7 @@ $CARTON_COMMAND specifies the command to execute."
   (princ (format "Runtime [%s]:\n" (length carton-runtime-dependencies)))
   (mapc 'carton--print-dependency carton-runtime-dependencies)
   (if (> (length carton-runtime-dependencies) 0)
-    (princ "\n"))
+      (princ "\n"))
   (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
   (mapc 'carton--print-dependency carton-development-dependencies))
 
