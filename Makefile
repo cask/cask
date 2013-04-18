@@ -6,7 +6,7 @@ unit:
 	./test/carton-test
 
 ecukes:
-	carton exec ${ECUKES} features
+	carton exec ${ECUKES} --script features
 
 server:
 	carton exec emacs --load server/app.el -Q -nw
