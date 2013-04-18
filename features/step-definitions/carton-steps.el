@@ -54,7 +54,7 @@
 (Then "^I should see usage information$"
        (lambda ()
          (Then
-           "I should see command error:"
+           "I should see command output:"
            "USAGE: carton [command]
 
 COMMANDS:
