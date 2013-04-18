@@ -4,10 +4,15 @@
 
 (defvar routes
   '(("\/packages\/archive-contents" . archive-handler)
-    ("\/packages\/\\(.+\\)-\\(.+\\)\.\\(tar\\|el\\)$" . package-handler)))
+    ("\/new-packages\/archive-contents" . new-archive-handler)
+    ("\/\\(new-\\)?packages\/\\(.+\\)-\\(.+\\)\.\\(tar\\|el\\)$" . package-handler)))
 
 (defun root-handler (httpcon)
   (elnode-hostpath-dispatcher httpcon routes))
+
+(defun new-archive-handler (httpcon)
+  (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
+  (elnode-http-return httpcon "(1 (foo . [(0 0 2) nil \"New foo\" single]))"))
 
 (defun archive-handler (httpcon)
   (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
@@ -18,9 +23,9 @@
    (qux . [(0 0 4) nil \"Qux\" single]))"))
 
 (defun package-handler (httpcon)
-  (let* ((name (elnode-http-mapping httpcon 1))
-         (version (elnode-http-mapping httpcon 2))
-         (format (elnode-http-mapping httpcon 3))
+  (let* ((name (elnode-http-mapping httpcon 2))
+         (version (elnode-http-mapping httpcon 3))
+         (format (elnode-http-mapping httpcon 4))
          (content-type
           (if (equal format "el")
               "text/plain"
