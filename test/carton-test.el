@@ -1,5 +1,5 @@
-(require 'el-mock)
 (require 's)
+(require 'mocker)
 
 (ert-deftest test-carton-setup ()
   "Should setup."
@@ -12,23 +12,21 @@
 
 (ert-deftest test-carton-package-user-dir-when-not-custom ()
   "Should set `package-user-dir' when not custom."
-  (with-mock
-   (stub file-exists-p => t)
-   (stub locate-user-emacs-file => "~/.emacs.d/elpa")
-   (let ((package-user-dir "~/.emacs.d/elpa"))
-     (carton-setup
-      (expand-file-name "super" carton-test-path))
-     (should (s-ends-with? "carton/test/super/elpa" package-user-dir)))))
+  (mocker-let ((file-exists-p (fname) ((:input-matcher #'stringp :output t)))
+               (locate-user-emacs-file (name) ((:input '("elpa")
+                                                :output "~/.emacs.d/elpa"))))
+    (let ((package-user-dir "~/.emacs.d/elpa"))
+      (carton-setup (expand-file-name "super" carton-test-path))
+      (should (s-ends-with? "carton/test/super/elpa" package-user-dir)))))
 
 (ert-deftest test-carton-package-user-dir-when-custom ()
   "Should not set `package-user-dir' when custom."
-  (with-mock
-   (stub file-exists-p => t)
-   (stub locate-user-emacs-file => "~/.emacs.d/elpa")
-   (let ((package-user-dir "custom/path/to/elpa"))
-     (carton-setup
-      (expand-file-name "super" carton-test-path))
-     (should (s-ends-with? "custom/path/to/elpa" package-user-dir)))))
+  (mocker-let ((file-exists-p (fname) ((:input-matcher #'stringp :output t)))
+               (locate-user-emacs-file (name) ((:input '("elpa")
+                                                :output "~/.emacs.d/elpa"))))
+    (let ((package-user-dir "custom/path/to/elpa"))
+      (carton-setup (expand-file-name "super" carton-test-path))
+      (should (s-ends-with? "custom/path/to/elpa" package-user-dir)))))
 
 (ert-deftest test-carton-package ()
   "Should define package."
