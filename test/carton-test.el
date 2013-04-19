@@ -23,7 +23,7 @@
   "Should not set `package-user-dir' when custom."
   (mocker-let ((file-exists-p (fname) ((:input-matcher #'stringp :output t)))
                (locate-user-emacs-file (name) ((:input '("elpa")
-                                                :output "custom/path/to/elpa"))))
+                                                :output "~/.emacs.d/elpa"))))
     (let ((package-user-dir "custom/path/to/elpa"))
       (carton-setup (expand-file-name "super" carton-test-path))
       (should (s-ends-with? "custom/path/to/elpa" package-user-dir)))))
