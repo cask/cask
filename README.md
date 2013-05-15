@@ -155,6 +155,12 @@ Example:
      (depends-on "el-mock")
      (depends-on "ert"))
 
+## Completion
+
+To install ZSH completion add the following to your `~/.zshrc`:
+
+    source /path/to/code/carton/etc/carton_completion.zsh
+
 ## I still don't get it, give me some real examples
 
 These are some projects using Carton:
