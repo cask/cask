@@ -1,6 +1,6 @@
 # Use ?= to respect environment variable (if set):
 EMACS ?= emacs
-CARTON = bin/carton
+CARTON = ${PWD}/bin/carton
 ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
 
 export EMACS
@@ -25,5 +25,8 @@ elpa: Carton
 
 clean:
 	rm -rf elpa
+
+smoke:
+	cd test/smoke/ && ${CARTON} install
 
 .PHONY:	server ecukes unit all
