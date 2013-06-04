@@ -89,15 +89,15 @@ Return all directives in the Carton file as list."
 
 (defun carton-parse-package-info (info)
   "Parse package INFO as returned by `package-buffer-info'."
-  ;; We have to convert the INFO vector to a list first, because pcase does not
-  ;; support pattern matching on vectors.
-  (pcase-let* ((info (append info nil))
-               (`(,name ,requires ,description ,version _) info))
+  (destructuring-bind (name requires description version _)
+      ;; We have to convert the INFO vector to a list first, because
+      ;; `destructuring-bind' does not support pattern matching on vectors.
+      (append info nil)
     (setq carton-package (make-carton-package :name name
                                               :version version
                                               :description description))
     (dolist (req requires)
-      (pcase-let ((`(,name ,version) req))
+      (destructuring-bind (name version) req
         (carton-add-dependency name (package-version-join version))))))
 
 (defun carton-parse-package-file (filename)
@@ -114,18 +114,26 @@ the package headers in FILENAME."
 
 SCOPE may be nil or :development."
   (dolist (form forms)
-    (pcase form
-      (`(source ,name ,url)
-       (add-to-list 'package-archives (cons name url)))
-      (`(package ,name ,version ,description)
-       (setq carton-package (make-carton-package :name name
-                                                 :version version
-                                                 :description description)))
-      (`(package-file ,filename) (carton-parse-package-file filename))
-      (`(depends-on ,name ,version) (carton-add-dependency name version scope))
-      (`(depends-on ,name) (carton-add-dependency name nil scope))
-      (`(development . ,body) (carton-eval body :development))
-      (_ (error "Unknown directive: %S" form)))))
+    (case (car form)
+      (source
+       (destructuring-bind (_ name url) form
+         (add-to-list 'package-archives (cons name url))))
+      (package
+       (destructuring-bind (_ name version description) form
+         (setq carton-package (make-carton-package :name name
+                                                   :version version
+                                                   :description description))))
+      (package-file
+       (destructuring-bind (_ filename) form
+         (carton-parse-package-file filename)))
+      (depends-on
+       (destructuring-bind (_ name &optional version) form
+         (carton-add-dependency name version scope)))
+      (development
+       (destructuring-bind (_ . body) form
+         (carton-eval body :development)))
+      (t
+       (error "Unknown directive: %S" form)))))
 
 (defun carton-setup (project-path)
   "Setup carton for project at PROJECT-PATH."
