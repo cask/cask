@@ -8,8 +8,14 @@ before_install:
     fi
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
   - export PATH="/home/travis/.carton/bin:$PATH"
-  - carton
+  - if [ "$EMACS" = 'emacs24' ]; then
+      carton;
+    fi
 env:
   - EMACS=emacs24
+  - EMACS=emacs
 script:
-  make unit
+  - make smoke
+  - if [ "$EMACS" = 'emacs24' ]; then
+      make unit;
+    fi
