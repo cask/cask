@@ -19,7 +19,11 @@ before_install:
 env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
+  - EMACS=emacs
 script:
-  - make unit
+  - make smoke
+  - if [ "$EMACS" != 'emacs' ]; then
+      make unit;
+    fi
   # Test go script:
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
