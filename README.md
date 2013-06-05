@@ -31,7 +31,7 @@ dependencies:
 
     $ carton init [--dev]
 
-__(Use `--dev` if the project is for package development)__
+_(Use `--dev` if the project is for package development)_
 
 To install all dependencies, run:
 
