@@ -34,8 +34,8 @@
 
 (unless (require 'package nil t)
   ;; It's Emacs 23.  Load ./carton-package.el as package.el.
-  (require 'package (concat (file-name-directory load-file-name)
-                            "carton-package")))
+  (require 'package (expand-file-name "carton-package"
+                                      (file-name-directory load-file-name))))
 
 (eval-when-compile
   (require 'cl))
