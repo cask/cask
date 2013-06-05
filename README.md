@@ -61,17 +61,27 @@ install from ELPA, check out <https://github.com/rdallasgray/pallet>.
 
 ### Package development
 
+#### Package file
+
 To create a `-pkg.el` file, run:
 
     $ carton package
 
-To run some Emacs Lisp code with ELPA load paths all set up for you, use:
+Note that you don't need to generate a `-pkg.el` file if you use the
+`package-file` directive.
 
-    $ carton exec [COMMAND]
+#### Exec
+
+The `exec` command runs a command. The command will run with all
+Carton dependencies automatically in `EMACSLOADPATH` and if the
+project have a directory called `bin`, the command will run with those
+in `PATH`.
 
 Example:
 
-    $ carton exec make test
+    $ carton exec COMMAND
+
+#### Info
 
 To print info about the current project:
 

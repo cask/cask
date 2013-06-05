@@ -46,6 +46,10 @@ case "$COMMAND" in
 
     ;;
   exec)
+    for BIN in $(find $PWD/elpa -type d -name bin | sort); do
+      PATH="${BIN}:${PATH}"
+    done
+
     EMACSLOADPATH=$("$EMACS" -Q --batch --eval '(princ (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) exec "${@:2}"
     ;;
   -h|--help|help)
