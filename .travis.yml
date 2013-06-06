@@ -6,6 +6,10 @@ before_install:
       sudo apt-get install -qq
           emacs24 emacs24-el emacs24-common-non-dfsg;
     fi
+  # There is no need for running this as `make unit` automatically does it.
+  # However, it makes Travis CI log cleaner and failure in `make elpa` is
+  # counted as non-test failure (the gray icon).
+  - make elpa
 env:
   - EMACS=emacs24
 script:
