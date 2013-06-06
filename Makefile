@@ -3,10 +3,13 @@ EMACS ?= emacs
 CARTON = bin/carton
 ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
 
+export EMACS
+export CARTON
+
 all: unit ecukes
 
 unit: elpa
-	CARTON=${CARTON} ./test/carton-test
+	./test/carton-test
 
 ecukes: elpa
 	${CARTON} exec ${ECUKES} --script features
