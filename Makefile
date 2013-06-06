@@ -1,3 +1,5 @@
+# Use ?= to respect environment variable (if set):
+EMACS ?= emacs
 CARTON = bin/carton
 ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
 
@@ -10,7 +12,7 @@ ecukes: elpa
 	${CARTON} exec ${ECUKES} --script features
 
 server: elpa
-	${CARTON} exec emacs --load server/app.el -Q -nw
+	${CARTON} exec ${EMACS} --load server/app.el -Q -nw
 
 elpa:
 	${CARTON} install
