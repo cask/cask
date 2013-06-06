@@ -1,14 +1,29 @@
+# Use ?= to respect environment variable (if set):
+EMACS ?= emacs
+CARTON = bin/carton
 ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
+
+export EMACS
+export CARTON
 
 all: unit ecukes
 
-unit:
+unit: elpa
 	./test/carton-test
 
-ecukes:
-	carton exec ${ECUKES} --script features
+ecukes: elpa
+	${CARTON} exec ${ECUKES} --script features
 
-server:
-	carton exec emacs --load server/app.el -Q -nw
+server: elpa
+	${CARTON} exec ${EMACS} --load server/app.el -Q -nw
+
+elpa: Carton
+	${CARTON} install
+	touch $@
+# NOTE: `touch` is called here since `carton install` does not update
+# timestamp of `elpa` directory.
+
+clean:
+	rm -rf elpa
 
 .PHONY:	server ecukes unit all
