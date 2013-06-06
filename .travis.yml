@@ -6,10 +6,13 @@ before_install:
       sudo apt-get install -qq
           emacs24 emacs24-el emacs24-common-non-dfsg;
     fi
-  - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
-  - export PATH="/home/travis/.carton/bin:$PATH"
-  - carton
+  # There is no need for running this as `make unit` automatically does it.
+  # However, it makes Travis CI log cleaner and failure in `make elpa` is
+  # counted as non-test failure (the gray icon).
+  - make elpa
 env:
   - EMACS=emacs24
 script:
-  make unit
+  - make unit
+  # Test go script:
+  - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
