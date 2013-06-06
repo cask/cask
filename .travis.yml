@@ -1,5 +1,11 @@
 language: emacs-lisp
 before_install:
+  - if [ "$EMACS" = 'emacs-snapshot' ]; then
+      sudo add-apt-repository -y ppa:cassou/emacs &&
+      sudo apt-get update -qq &&
+      sudo apt-get install -qq
+          emacs-snapshot-el emacs-snapshot-gtk emacs-snapshot;
+    fi
   - if [ "$EMACS" = 'emacs24' ]; then
       sudo add-apt-repository -y ppa:cassou/emacs &&
       sudo apt-get update -qq &&
@@ -11,7 +17,11 @@ before_install:
   # counted as non-test failure (the gray icon).
   - make elpa
 env:
+  - EMACS=emacs-snapshot
   - EMACS=emacs24
+matrix:
+  allow_failures:
+    - env: EMACS=emacs-snapshot
 script:
   - make unit
   # Test go script:
