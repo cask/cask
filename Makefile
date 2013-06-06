@@ -6,7 +6,7 @@ ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
 all: unit ecukes
 
 unit: elpa
-	./test/carton-test
+	CARTON=${CARTON} ./test/carton-test
 
 ecukes: elpa
 	${CARTON} exec ${ECUKES} --script features
