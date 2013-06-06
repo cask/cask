@@ -17,8 +17,11 @@ ecukes: elpa
 server: elpa
 	${CARTON} exec ${EMACS} --load server/app.el -Q -nw
 
-elpa:
+elpa: Carton
 	${CARTON} install
+	touch $@
+# NOTE: `touch` is called here since `carton install` does not update
+# timestamp of `elpa` directory.
 
 clean:
 	rm -rf elpa
