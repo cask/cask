@@ -19,9 +19,6 @@ before_install:
 env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
-matrix:
-  allow_failures:
-    - env: EMACS=emacs-snapshot
 script:
   - make unit
   # Test go script:
