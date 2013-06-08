@@ -15,7 +15,9 @@ before_install:
   # There is no need for running this as `make unit` automatically does it.
   # However, it makes Travis CI log cleaner and failure in `make elpa` is
   # counted as non-test failure (the gray icon).
-  - make elpa
+  - if [ "$EMACS" != 'emacs' ]; then
+      make elpa;
+    fi
 env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
