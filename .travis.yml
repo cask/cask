@@ -15,17 +15,13 @@ before_install:
   # There is no need for running this as `make unit` automatically does it.
   # However, it makes Travis CI log cleaner and failure in `make elpa` is
   # counted as non-test failure (the gray icon).
-  - if [ "$EMACS" != 'emacs' ]; then
-      make elpa;
-    fi
+  - make elpa
 env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
   - EMACS=emacs
 script:
   - make smoke
-  - if [ "$EMACS" != 'emacs' ]; then
-      make unit;
-    fi
+  - make unit
   # Test go script:
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
