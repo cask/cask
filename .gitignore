@@ -1,4 +1,4 @@
-/elpa
+elpa
 *.elc
 
 *-pkg.el
