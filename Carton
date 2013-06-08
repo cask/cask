@@ -1,3 +1,4 @@
+(source "marmalade" "http://marmalade-repo.org/packages/")
 (source "melpa" "http://melpa.milkbox.net/packages/")
 
 (package-file "carton.el")
