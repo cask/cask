@@ -35,7 +35,9 @@
 (unless (require 'package nil t)
   ;; It's Emacs 23.  Load ./carton-package.el as package.el.
   (require 'package (expand-file-name "carton-package"
-                                      (file-name-directory load-file-name))))
+                                      (file-name-directory load-file-name)))
+  (setq package--builtins
+        '((eieio . [(1 3) nil ""]))))
 
 (eval-when-compile
   (require 'cl))
