@@ -17,6 +17,9 @@ env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
   - EMACS=emacs23
+matrix:
+  allow_failures:
+    - env: EMACS=emacs23
 script:
   - $EMACS --version
   - make smoke
