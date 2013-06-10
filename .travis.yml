@@ -25,7 +25,12 @@ env:
 script:
   - make smoke
   - if [ "$EMACS" != 'emacs' ]; then
-      make unit;
+      make start-server;
+      make ecukes;
     fi
   # Test go script:
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
+after_failure:
+  - cat tmp/server.log
+after_script:
+  - make stop-sever
