@@ -2,6 +2,7 @@
 EMACS ?= emacs
 CARTON = ${PWD}/bin/carton
 ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
+ECUKES_ARGS = --script features
 SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
 
 export EMACS
@@ -13,7 +14,7 @@ unit: elpa
 	./test/carton-test
 
 ecukes: elpa
-	${CARTON} exec ${ECUKES} --script features
+	${CARTON} exec ${ECUKES} ${ECUKES_ARGS}
 
 start-server: elpa tmp
 	${SERVER} --batch > tmp/server.log 2>&1 &
