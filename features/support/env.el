@@ -39,5 +39,5 @@
 
  (mapc
   (lambda (project-path)
-    (delete-directory project-path t nil))
+    (delete-directory project-path t))
   (directory-files carton-projects-path t "^[^\\.\\.?]")))
