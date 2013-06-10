@@ -12,11 +12,15 @@ before_install:
       sudo apt-get install -qq
           emacs24-nox emacs24-el emacs24-common-non-dfsg;
     fi
-  # There is no need for running this as `make unit` automatically does it.
+  # There is no need for running this as `make ecukes` automatically does it.
   # However, it makes Travis CI log cleaner and failure in `make elpa` is
   # counted as non-test failure (the gray icon).
   - if [ "$EMACS" != 'emacs' ]; then
       make elpa;
+    fi
+  # TODO: Use `make EMACS=emacs24 start-server` after #40 is merged.
+  - if [ "$EMACS" != 'emacs' ]; then
+      make start-server;
     fi
 env:
   - EMACS=emacs-snapshot
@@ -25,7 +29,11 @@ env:
 script:
   - make smoke
   - if [ "$EMACS" != 'emacs' ]; then
-      make unit;
+      make ecukes;
     fi
   # Test go script:
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
+after_failure:
+  - cat tmp/server.log
+after_script:
+  - make stop-sever
