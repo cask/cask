@@ -1,10 +1,12 @@
 (source "melpa" "http://melpa.milkbox.net/packages/")
 
+;; ERT is uploaded in Marmalade
+(source "marmalade" "http://marmalade-repo.org/packages/")
+
 (package-file "carton.el")
 
 (development
  (depends-on "s")
- (depends-on "mocker")
  (depends-on "ert")
  (depends-on "ecukes")
  (depends-on "espuds")
