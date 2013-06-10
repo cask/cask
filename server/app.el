@@ -47,3 +47,11 @@
  (format "Running (fake) ELPA server on port %d... Press `q' to quit." port))
 
 (elnode-start 'root-handler :port port :host "localhost")
+
+(when noninteractive
+  (with-temp-file "tmp/server.pid"
+    (insert (format "%s" (emacs-pid))))
+  ;; Start "event loop".
+  (while t
+    ;; We need `while' due to http://stackoverflow.com/questions/14698081/
+    (sit-for most-positive-fixnum)))
