@@ -2,6 +2,7 @@
 EMACS ?= emacs
 CARTON = ${PWD}/bin/carton
 ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
+SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
 
 export EMACS
 export CARTON
@@ -14,14 +15,23 @@ unit: elpa
 ecukes: elpa
 	${CARTON} exec ${ECUKES} --script features
 
+start-server: elpa tmp
+	${SERVER} --batch > tmp/server.log 2>&1 &
+
+stop-server:
+	kill $$(cat tmp/server.pid)
+
 server: elpa
-	${CARTON} exec ${EMACS} --load server/app.el -Q -nw
+	${SERVER} -nw
 
 elpa: Carton
 	${CARTON} install
 	touch $@
 # NOTE: `touch` is called here since `carton install` does not update
 # timestamp of `elpa` directory.
+
+tmp:
+	mkdir $@
 
 clean:
 	rm -rf elpa
