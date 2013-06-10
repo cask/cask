@@ -135,6 +135,11 @@ SCOPE may be nil or :development."
       (t
        (error "Unknown directive: %S" form)))))
 
+(defun carton-elpa-dir ()
+  "Return full path to `carton-project-path'/.carton/elpa/`emacs-version'."
+  (expand-file-name (format ".carton/elpa/%s" emacs-version)
+                    carton-project-path))
+
 (defun carton-setup (project-path)
   "Setup carton for project at PROJECT-PATH."
   (setq carton-project-path (directory-file-name project-path))
@@ -142,10 +147,16 @@ SCOPE may be nil or :development."
   (setq carton-file (expand-file-name "Carton" carton-project-path))
   (setq carton-package-file (expand-file-name (concat carton-project-name "-pkg.el") carton-project-path))
   (when (equal (eval (car (get 'package-user-dir 'standard-value))) package-user-dir)
-    (setq package-user-dir (expand-file-name "elpa" carton-project-path)))
+    (setq package-user-dir (carton-elpa-dir)))
   (unless (file-exists-p carton-file)
     (error "Could not locate `Carton` file"))
   (carton-eval (carton-read carton-file)))
+
+(defun carton-initialize ()
+  "Initialize packages under \"~/.emacs.d/\".
+Setup `package-user-dir' appropriately and then call `package-initialize'."
+  (carton-setup user-emacs-directory)
+  (package-initialize))
 
 (defun carton-update ()
   "Update dependencies.

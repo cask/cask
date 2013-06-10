@@ -18,7 +18,8 @@ before_install:
   - if [ "$EMACS" != 'emacs' ]; then
       make elpa;
     fi
-  # TODO: Use `make EMACS=emacs24 start-server` after #40 is merged.
+  # TODO: Use `make EMACS=emacs24 start-server` if we want to run ecukes
+  #       tests in Travis CI, as elnode does not support Emacs 23.
   - if [ "$EMACS" != 'emacs' ]; then
       make start-server;
     fi

@@ -87,3 +87,20 @@ OPTIONS:
   (lambda (dirname)
     (let ((dirpath (expand-file-name dirname carton-current-project)))
       (should-not (file-directory-p dirpath)))))
+
+(Then "^there should exist a package directory called \"\\([^\"]+\\)\"$"
+  (lambda (dirname)
+    (let* ((carton-project-path carton-current-project)
+           (dirpath (expand-file-name dirname (carton-elpa-dir))))
+      (should (file-directory-p dirpath)))))
+
+(Then "^there should not exist a package directory called \"\\([^\"]+\\)\"$"
+  (lambda (dirname)
+    (let* ((carton-project-path carton-current-project)
+           (dirpath (expand-file-name dirname (carton-elpa-dir))))
+      (should-not (file-directory-p dirpath)))))
+
+(Then "^package directory should not exist$"
+  (lambda ()
+    (let ((carton-project-path carton-current-project))
+      (should-not (file-directory-p (carton-elpa-dir))))))

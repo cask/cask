@@ -52,12 +52,23 @@ To list all dependencies, run:
 Add this to your `.emacs` file.
 
     (require 'package)
+    (setq package-user-dir
+          (locate-user-emacs-file (format ".carton/elpa/%s" emacs-version)))
     (package-initialize)
 
 That's it!
 
 To automatically keep the `Carton` file up to date with what you
 install from ELPA, check out <https://github.com/rdallasgray/pallet>.
+
+#### Alternative method
+
+Alternatively, if you install Carton under `$HOME/.carton` using the
+automatic installation script, you can add this in your `.emacs` file
+instead.
+
+    (require 'carton "~/.carton/carton.el")
+    (carton-initialize)
 
 ### Package development
 
