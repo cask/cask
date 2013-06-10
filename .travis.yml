@@ -22,7 +22,6 @@ matrix:
     - env: EMACS=emacs23
 script:
   - $EMACS --version
-  - make smoke
   - make ecukes
   # Test go script:
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
