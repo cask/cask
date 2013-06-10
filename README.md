@@ -68,8 +68,7 @@ automatic installation script, you can add this in your `.emacs` file
 instead.
 
     (require 'carton "~/.carton/carton.el")
-    (carton-setup user-emacs-directory)
-    (package-initialize)
+    (carton-initialize)
 
 ### Package development
 

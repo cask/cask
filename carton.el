@@ -152,6 +152,12 @@ SCOPE may be nil or :development."
     (error "Could not locate `Carton` file"))
   (carton-eval (carton-read carton-file)))
 
+(defun carton-initialize ()
+  "Initialize packages under \"~/.emacs.d/\".
+Setup `package-user-dir' appropriately and then call `package-initialize'."
+  (carton-setup user-emacs-directory)
+  (package-initialize))
+
 (defun carton-update ()
   "Update dependencies.
 
