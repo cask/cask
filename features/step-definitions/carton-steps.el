@@ -99,3 +99,8 @@ OPTIONS:
     (let* ((carton-project-path carton-current-project)
            (dirpath (expand-file-name dirname (carton-elpa-dir))))
       (should-not (file-directory-p dirpath)))))
+
+(Then "^package directory should not exist$"
+  (lambda ()
+    (let ((carton-project-path carton-current-project))
+      (should-not (file-directory-p (carton-elpa-dir))))))

@@ -19,7 +19,7 @@ Feature: Install
       """
       """
     When I run carton "install"
-    Then there should not exist a directory called "elpa"
+    Then package directory should not exist
 
   Scenario: Single dependency
     Given this Carton file:
