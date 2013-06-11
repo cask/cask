@@ -11,7 +11,8 @@ PKG_DIR = $(shell ${EMACS} -Q --batch --eval \
 export EMACS
 export CARTON
 
-all: unit ecukes
+all: test
+test: ecukes
 
 unit: elpa
 	./test/carton-test
@@ -44,4 +45,6 @@ clean:
 smoke:
 	cd test/smoke/ && ${CARTON} install
 
-.PHONY: elpa server ecukes unit all
+.PHONY: elpa server ecukes unit test all
+
+include etc/*.mk
