@@ -58,9 +58,6 @@ Add this to your `.emacs` file.
 
 That's it!
 
-To automatically keep the `Carton` file up to date with what you
-install from ELPA, check out <https://github.com/rdallasgray/pallet>.
-
 #### Alternative method
 
 Alternatively, if you install Carton under `$HOME/.carton` using the
@@ -69,6 +66,11 @@ instead.
 
     (require 'carton "~/.carton/carton.el")
     (carton-initialize)
+
+#### Tips
+
+To automatically keep the `Carton` file up to date with what you
+install from ELPA, check out <https://github.com/rdallasgray/pallet>.
 
 ### Package development
 
