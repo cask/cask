@@ -22,7 +22,7 @@ Feature: Update
       (depends-on "foo" "0.0.1")
       """
     When I run carton "install"
-    Then there should exist a directory called "elpa/foo-0.0.1"
+    Then there should exist a package directory called "foo-0.0.1"
     Given this Carton file:
       """
       (source "localhost" "http://127.0.0.1:9191/new-packages/")
@@ -30,8 +30,8 @@ Feature: Update
       (depends-on "foo" "0.0.1")
       """
     When I run carton "update"
-    Then there should not exist a directory called "elpa/foo-0.0.1"
-    But there should exist a directory called "elpa/foo-0.0.2"
+    Then there should not exist a package directory called "foo-0.0.1"
+    But there should exist a package directory called "foo-0.0.2"
     And I should see command output:
       """
       Updated packages:
