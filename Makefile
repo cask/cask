@@ -6,7 +6,7 @@ ECUKES_ARGS = --script features
 SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
 
 PKG_DIR = $(shell ${EMACS} -Q --batch --eval \
-'(princ (format ".carton/elpa/%s" emacs-version))')
+'(princ (format ".carton/%s/elpa" emacs-version))')
 
 export EMACS
 export CARTON

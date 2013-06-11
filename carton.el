@@ -137,7 +137,7 @@ SCOPE may be nil or :development."
 
 (defun carton-elpa-dir ()
   "Return full path to `carton-project-path'/.carton/elpa/`emacs-version'."
-  (expand-file-name (format ".carton/elpa/%s" emacs-version)
+  (expand-file-name (format ".carton/%s/elpa" emacs-version)
                     carton-project-path))
 
 (defun carton-setup (project-path)
