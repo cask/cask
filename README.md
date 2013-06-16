@@ -53,7 +53,7 @@ Add this to your `.emacs` file.
 
     (require 'package)
     (setq package-user-dir
-          (locate-user-emacs-file (format ".carton/elpa/%s" emacs-version)))
+          (locate-user-emacs-file (format ".carton/%s/elpa/" emacs-version)))
     (package-initialize)
 
 That's it!
