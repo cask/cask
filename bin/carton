@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-if [ -z "$EMACS" ] || [ -z "$(which $EMACS)" ] ; then
-  EMACS=emacs
-fi
-
 if [[ -z "$1" ]]; then
   ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
 else
