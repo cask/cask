@@ -61,11 +61,6 @@
   (carton-cli--setup)
   (princ (carton-version)))
 
-(defun carton-cli/name ()
-  ""
-
-  )
-
 (defun carton-cli/info ()
   (carton-cli--setup)
   (let* ((info (carton-info))
