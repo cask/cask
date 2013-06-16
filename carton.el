@@ -220,25 +220,6 @@ $CARTON_COMMAND specifies the command to execute."
                        (package-version-join (carton-upgrade-old-version upgrade))
                        (package-version-join (carton-upgrade-new-version upgrade))))))))
 
-(defun carton--print-dependency (dependency)
-  (let ((name (carton-dependency-name dependency))
-        (version (carton-dependency-version dependency)))
-    (princ
-     (if version
-         (format " - %s (%s)" name version)
-       (format " - %s" name)))
-    (princ "\n")))
-
-(defun carton-command-list ()
-  "Print list of runtime and development dependencies."
-  (princ "### Dependencies ###\n\n")
-  (princ (format "Runtime [%s]:\n" (length carton-runtime-dependencies)))
-  (mapc 'carton--print-dependency carton-runtime-dependencies)
-  (if (> (length carton-runtime-dependencies) 0)
-      (princ "\n"))
-  (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
-  (mapc 'carton--print-dependency carton-development-dependencies))
-
 (defun carton-info ()
   "Return info about this project."
   (or

@@ -6,6 +6,15 @@
 (defun carton-cli--setup ()
   (carton-setup default-directory))
 
+(defun carton-cli--print-dependency (dependency)
+  (let ((name (carton-dependency-name dependency))
+        (version (carton-dependency-version dependency)))
+    (princ
+     (if version
+         (format " - %s (%s)" name version)
+       (format " - %s" name)))
+    (princ "\n")))
+
 (defun carton-cli/package ()
   ""
 
@@ -30,6 +39,16 @@
   ""
 
   )
+
+(defun carton-cli/list ()
+  (carton-cli--setup)
+  (princ "### Dependencies ###\n\n")
+  (princ (format "Runtime [%s]:\n" (length carton-runtime-dependencies)))
+  (mapc 'carton-cli--print-dependency carton-runtime-dependencies)
+  (if (> (length carton-runtime-dependencies) 0)
+      (princ "\n"))
+  (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
+  (mapc 'carton-cli--print-dependency carton-development-dependencies))
 
 (defun carton-cli/version ()
   (carton-cli--setup)

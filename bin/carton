@@ -25,10 +25,10 @@ else
 fi
 
 case "$COMMAND" in
-  version|info)
+  version|info|list)
       ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
       ;;
-    package|install|update|list)
+    package|install|update)
     export CARTON_PROJECT_PATH="$PWD"
     export CARTON_COMMAND="$COMMAND"
     "$EMACS" --batch --load "$CARTON_EL" --funcall carton-handle-commandline
