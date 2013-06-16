@@ -196,7 +196,7 @@ $CARTON_COMMAND specifies the command to execute."
     (carton-setup project-path)
     (funcall (intern (format "carton-command-%s" command)))))
 
-(defun carton-command-install ()
+(defun carton-install ()
   "Install dependencies."
   (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
     (when carton-dependencies
