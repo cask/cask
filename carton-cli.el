@@ -25,9 +25,17 @@
   (carton-install))
 
 (defun carton-cli/update ()
-  ""
-
-  )
+  (carton-cli--setup)
+  (let ((upgrades (carton-update)))
+    (when upgrades
+      (princ "Updated packages:\n")
+      (dolist (upgrade upgrades)
+        (princ
+         (format
+          "%s %s -> %s\n"
+          (carton-upgrade-name upgrade)
+          (package-version-join (carton-upgrade-old-version upgrade))
+          (package-version-join (carton-upgrade-new-version upgrade))))))))
 
 (defun carton-cli/exec ()
   ""
