@@ -83,7 +83,8 @@
     (princ "\n")))
 
 (defun carton-cli/help ()
-  (commander-print-usage))
+  (commander-print-usage)
+  (kill-emacs 0))
 
 (defun carton-cli/dev ()
   (setq carton-cli--dev-mode t))
