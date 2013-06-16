@@ -43,10 +43,7 @@ else
     EMACSLOADPATH=$("$EMACS" -Q --batch --eval '(princ (mapconcat (quote identity) (append (file-expand-wildcards (format ".carton/%s/elpa/*" emacs-version) t) load-path) ":"))' 2>&1) exec "${@:2}"
     ;;
   -h|--help|help)
-    cat "$TEMPLATE_DIR/usage.tpl"
+    ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
     ;;
-  *)
-    cat "$TEMPLATE_DIR/usage.tpl"
-    exit 1;
   esac
 fi
