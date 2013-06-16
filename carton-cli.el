@@ -1,7 +1,7 @@
 (require 'carton (expand-file-name "carton.el" (file-name-directory load-file-name)))
 (require 'commander)
 
-(defvar dev-mode nil)
+(defvar carton-cli--dev-mode nil)
 
 (defun carton-cli--setup ()
   (carton-setup default-directory))
@@ -43,9 +43,7 @@
   )
 
 (defun carton-cli/init ()
-  ""
-
-  )
+  (carton-init default-directory carton-cli--dev-mode))
 
 (defun carton-cli/list ()
   (carton-cli--setup)
@@ -76,7 +74,7 @@
   (commander-print-usage))
 
 (defun carton-cli/dev ()
-  (setq dev-mode t))
+  (setq carton-cli--dev-mode t))
 
 (commander
  (name "carton")

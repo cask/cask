@@ -159,6 +159,14 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
   (carton-setup user-emacs-directory)
   (package-initialize))
 
+(defun carton--template-get (name)
+  "Return content of template with NAME."
+  (let* ((templates-dir (expand-file-name "templates" (file-name-directory load-file-name)))
+         (template-file (expand-file-name name templates-dir)))
+    (with-temp-buffer
+      (insert-file-contents-literally template-file)
+      (buffer-string))))
+
 (defun carton-update ()
   "Update dependencies.
 
@@ -196,6 +204,18 @@ Return a list of updated packages."
            (unless (package-installed-p name)
              (package-install name))))
        carton-dependencies))))
+
+(defun carton-init (path &optional dev-mode)
+  "Create new project at PATH with optional DEV-MODE."
+  (let ((init-content
+         (carton--template-get
+          (if dev-mode "init-dev.tpl" "init.tpl")))
+        (carton-file-path (expand-file-name "Carton" path)))
+    (if (file-exists-p carton-file-path)
+        (error "Carton file already exists.")
+      (with-temp-buffer
+        (insert init-content)
+        (write-file carton-file-path)))))
 
 (defun carton-info ()
   "Return info about this project."
