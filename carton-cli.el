@@ -3,7 +3,7 @@
 
 (defvar dev-mode nil)
 
-(defun carton-cli-setup ()
+(defun carton-cli--setup ()
   (carton-setup default-directory))
 
 (defun carton-cli/package ()
@@ -32,7 +32,7 @@
   )
 
 (defun carton-cli/version ()
-  (carton-cli-setup)
+  (carton-cli--setup)
   (princ (carton-version)))
 
 (defun carton-cli/name ()
@@ -41,7 +41,7 @@
   )
 
 (defun carton-cli/info ()
-  (carton-cli-setup)
+  (carton-cli--setup)
   (let* ((info (carton-info))
          (name (carton-package-name info))
          (version (carton-package-version info))
