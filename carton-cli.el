@@ -21,9 +21,8 @@
     (insert (carton-package))))
 
 (defun carton-cli/install ()
-  ""
-
-  )
+  (carton-cli--setup)
+  (carton-install))
 
 (defun carton-cli/update ()
   ""
