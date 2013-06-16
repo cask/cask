@@ -16,9 +16,9 @@
     (princ "\n")))
 
 (defun carton-cli/package ()
-  ""
-
-  )
+  (carton-cli--setup)
+  (with-temp-file carton-package-file
+    (insert (carton-package))))
 
 (defun carton-cli/install ()
   ""

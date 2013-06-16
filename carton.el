@@ -232,11 +232,10 @@ $CARTON_COMMAND specifies the command to execute."
       (carton-package-version carton-package)
     (error "Missing `package` or `package-file` directive")))
 
-(defun carton-command-package ()
+(defun carton-package ()
   "Package this project."
   (if carton-package
-      (let ((content (carton-define-package-string)))
-        (with-temp-file carton-package-file (insert content)))
+      (carton-define-package-string)
     (error "Missing `package` or `package-file` directive")))
 
 (defun carton-define-package-string ()
