@@ -36,6 +36,10 @@
 (eval-when-compile
   (require 'cl))
 
+(unless (require 'package nil t)
+  (require 'package (expand-file-name "carton-package.el"
+                                      (file-name-directory load-file-name))))
+
 (defstruct carton-package name version description)
 (defstruct carton-dependency name version)
 (defstruct carton-source name url)
