@@ -98,3 +98,13 @@ Feature: Install
     And I run carton "install"
     Then there should exist a package directory called "foo-0.0.1"
     And there should exist a package directory called "bar-0.0.2"
+
+  Scenario: No argument to binary is same as install
+    Given this Carton file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "foo" "0.0.1")
+      """
+    When I run carton ""
+    Then there should exist a package directory called "foo-0.0.1"
