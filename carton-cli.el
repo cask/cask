@@ -1,13 +1,17 @@
 ;;; carton-cli.el --- Cli interface to Carton
 
-(let ((carton-path (file-name-directory load-file-name)))
+(defvar carton-root-path (file-name-directory load-file-name))
+
+(let ((elpa-dir
+       (expand-file-name
+        (format ".carton/%s/elpa" emacs-version) carton-root-path)))
   (mapc
    (lambda (package)
      (add-to-list 'load-path package))
-   (directory-files (format ".carton/%s/elpa" emacs-version) t "^.+-[^-]+$"))
+   (directory-files elpa-dir t "^.+-[^-]+$")))
 
-  (require 'commander)
-  (require 'carton (expand-file-name "carton.el" carton-path)))
+(require 'commander)
+(require 'carton (expand-file-name "carton.el" carton-root-path))
 
 (defvar carton-cli--dev-mode nil)
 
