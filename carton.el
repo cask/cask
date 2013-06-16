@@ -239,17 +239,11 @@ $CARTON_COMMAND specifies the command to execute."
   (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
   (mapc 'carton--print-dependency carton-development-dependencies))
 
-(defun carton-command-info ()
-  "Print info about this project."
-  (cond (carton-package
-         (let ((name (carton-package-name carton-package))
-               (version (carton-package-version carton-package))
-               (description (carton-package-description carton-package)))
-           (princ (format "### %s (%s) ###" name version))
-           (princ "\n\n")
-           (princ description)
-           (princ "\n")))
-        (t (error "Missing `package` or `package-file` directive"))))
+(defun carton-info ()
+  "Return info about this project."
+  (or
+   carton-package
+   (error "Missing `package` or `package-file` directive")))
 
 (defun carton-version ()
   "Return the version of this project."

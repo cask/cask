@@ -42,7 +42,14 @@
 
 (defun carton-cli/info ()
   (carton-cli-setup)
-  (carton-command-info))
+  (let* ((info (carton-info))
+         (name (carton-package-name info))
+         (version (carton-package-version info))
+         (description (carton-package-description info)))
+    (princ (format "### %s (%s) ###" name version))
+    (princ "\n\n")
+    (princ description)
+    (princ "\n")))
 
 (defun carton-cli/help ()
   ""
