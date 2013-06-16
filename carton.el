@@ -184,18 +184,6 @@ Return a list of updated packages."
                          (package-version-join (caadr pkg))))
       (reverse installed-upgrades))))
 
-(defun carton-handle-commandline ()
-  "Handle the command line.
-
-The command line is passed down from the entry script in two variables:
-
-$CARTON_PROJECT_PATH provides the path of the Carton project.
-$CARTON_COMMAND specifies the command to execute."
-  (let ((project-path (getenv "CARTON_PROJECT_PATH"))
-        (command (getenv "CARTON_COMMAND")))
-    (carton-setup project-path)
-    (funcall (intern (format "carton-command-%s" command)))))
-
 (defun carton-install ()
   "Install dependencies."
   (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
@@ -208,17 +196,6 @@ $CARTON_COMMAND specifies the command to execute."
            (unless (package-installed-p name)
              (package-install name))))
        carton-dependencies))))
-
-(defun carton-command-update ()
-  "Handle the update command."
-  (let ((upgrades (carton-update)))
-    (when upgrades
-      (princ "Updated packages:\n")
-      (dolist (upgrade upgrades)
-        (princ (format "%s %s -> %s\n"
-                       (carton-upgrade-name upgrade)
-                       (package-version-join (carton-upgrade-old-version upgrade))
-                       (package-version-join (carton-upgrade-new-version upgrade))))))))
 
 (defun carton-info ()
   "Return info about this project."
