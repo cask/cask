@@ -1,7 +1,3 @@
-(setq carton-current-project nil)
-(setq carton-error "")
-(setq carton-output "")
-
 (defun carton--create-project-file (filename content)
   (with-temp-buffer
     (insert content)
