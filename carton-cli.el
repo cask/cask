@@ -33,7 +33,7 @@
 
 (defun carton-cli/version ()
   (carton-cli-setup)
-  (carton-command-version))
+  (princ (carton-version)))
 
 (defun carton-cli/name ()
   ""
