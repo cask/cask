@@ -16,16 +16,17 @@
   (lambda (filename content)
     (carton--create-project-file filename content)))
 
-(When "^I run carton \"\\([^\"]+\\)\"$"
+(When "^I run carton \"\\([^\"]*\\)\"$"
   (lambda (command)
     (let* ((buffer (get-buffer-create "*carton-output*"))
            (default-directory (file-name-as-directory carton-current-project))
+           (args
+            (unless (equal command "")
+              (s-split " " command)))
            (exit-code
             (apply
              'call-process
-             (append
-              (list carton-bin-command nil buffer nil)
-              (s-split " " command)))))
+             (append (list carton-bin-command nil buffer nil) args))))
       (with-current-buffer buffer
         (let ((content (buffer-string)))
           (cond ((= exit-code 0)

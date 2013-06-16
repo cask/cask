@@ -17,14 +17,10 @@ TEMPLATE_DIR="$CARTON_DIR/templates"
 
 CARTON_EL="$CARTON_DIR/carton.el"
 
-COMMAND="$1"
-if [[ $# -eq 0 ]]; then
-  COMMAND=install
+if [[ -z "$1" ]]; then
+  ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
 else
-  COMMAND="$1"
-fi
-
-case "$COMMAND" in
+  case "$1" in
   version|info|list|package|install|update)
       ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
       ;;
@@ -52,4 +48,5 @@ case "$COMMAND" in
   *)
     cat "$TEMPLATE_DIR/usage.tpl"
     exit 1;
-esac
+  esac
+fi
