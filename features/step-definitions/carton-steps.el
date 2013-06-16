@@ -18,6 +18,8 @@
 
 (When "^I run carton \"\\([^\"]*\\)\"$"
   (lambda (command)
+    (setq command (s-replace "{{emacs-version}}" emacs-version command))
+    (setq command (s-replace "{{EMACS}}" (getenv "EMACS") command))
     (let* ((buffer (get-buffer-create "*carton-output*"))
            (default-directory (file-name-as-directory carton-current-project))
            (args
