@@ -78,9 +78,7 @@
     (princ "\n")))
 
 (defun carton-cli/help ()
-  ""
-
-  )
+  (commander-print-usage))
 
 (defun carton-cli/dev ()
   (setq dev-mode t))

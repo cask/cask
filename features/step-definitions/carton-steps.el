@@ -53,24 +53,10 @@
     (should (s-contains? output carton-error))))
 
 (Then "^I should see usage information$"
-       (lambda ()
-         (Then
-           "I should see command output:"
-           "USAGE: carton [command]
-
-COMMANDS:
- package                Create -pkg.el file
- install                Install dependencies
- update                 Update dependencies
- exec                   Execute command with correct dependencies
- init                   Create basic Carton file
- version                Show the package version
- list                   List dependencies
- info                   Show info about this project
- help                   Display this help message
-
-OPTIONS:
- -h, --help             Display this help message")))
+  (lambda ()
+    (Then
+      "I should see command output:"
+      "USAGE: carton COMMAND [OPTIONS]")))
 
 (Then "^there should exist a file called \"\\([^\"]+\\)\" with this content:$"
   (lambda (filename content)
