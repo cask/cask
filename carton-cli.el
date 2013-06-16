@@ -41,9 +41,8 @@
   )
 
 (defun carton-cli/info ()
-  ""
-
-  )
+  (carton-cli-setup)
+  (carton-command-info))
 
 (defun carton-cli/help ()
   ""
