@@ -25,20 +25,8 @@ else
       ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
       ;;
   init)
-    CARTON_FILE="${PWD}/Carton"
-
-    if [[ -f "$CARTON_FILE" ]]; then
-      echo "Carton file already exists."
-      exit 1
-    else
-      if [[ $2 == "--dev" ]]; then
-        cat "$TEMPLATE_DIR/init-dev.tpl" > "$CARTON_FILE"
-      else
-        cat "$TEMPLATE_DIR/init.tpl" > "$CARTON_FILE"
-      fi
-    fi
-
-    ;;
+      ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
+      ;;
   exec)
     EMACSLOADPATH=$("$EMACS" -Q --batch --eval '(princ (mapconcat (quote identity) (append (file-expand-wildcards (format ".carton/%s/elpa/*" emacs-version) t) load-path) ":"))' 2>&1) exec "${@:2}"
     ;;
