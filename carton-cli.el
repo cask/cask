@@ -1,6 +1,8 @@
 ;;; carton-cli.el --- Cli interface to Carton
 
-(defvar carton-root-path (file-name-directory load-file-name))
+(defvar carton-root-path
+  (file-name-directory load-file-name)
+  "Path to Carton root.")
 
 (let ((elpa-dir
        (expand-file-name
@@ -13,7 +15,8 @@
 (require 'commander)
 (require 'carton (expand-file-name "carton.el" carton-root-path))
 
-(defvar carton-cli--dev-mode nil)
+(defvar carton-cli--dev-mode nil
+  "If Carton should run in dev mode or not.")
 
 (defun carton-cli--setup ()
   (carton-setup default-directory))
