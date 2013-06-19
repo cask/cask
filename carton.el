@@ -8,7 +8,6 @@
 ;; Version: 0.3.1
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/rejeep/carton
-;; Package-Requires: ((commander "0.0.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
