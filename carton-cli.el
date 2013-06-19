@@ -4,15 +4,30 @@
   (file-name-directory load-file-name)
   "Path to Carton root.")
 
-(let ((elpa-dir
-       (expand-file-name
-        (format ".carton/%s/elpa" emacs-version) carton-root-path)))
-  (mapc
-   (lambda (package)
-     (add-to-list 'load-path package))
-   (directory-files elpa-dir t "^.+-[^-]+$")))
+(defconst carton-bootstrap-packages '(commander)
+  "List of bootstrap packages required by this file.")
 
-(require 'commander)
+(require 'package)
+
+(let ((package-user-dir
+       (expand-file-name
+        (format ".carton/%s/bootstrap" emacs-version) carton-root-path)))
+  (package-initialize)
+  (condition-case err
+      (mapc 'require carton-bootstrap-packages)
+    (error
+     (add-to-list
+      'package-archives
+      '("melpa" . "http://melpa.milkbox.net/packages/"))
+     (package-refresh-contents)
+     (mapc 'package-install carton-bootstrap-packages)))
+  (mapc 'require carton-bootstrap-packages)
+
+  ;; TODO: Run command in sub process instead
+  (setq package-alist nil)
+  (setq package-archives nil)
+  (setq package-archive-contents nil))
+
 (require 'carton (expand-file-name "carton.el" carton-root-path))
 
 (defvar carton-cli--dev-mode nil
