@@ -20,7 +20,11 @@
       'package-archives
       '("melpa" . "http://melpa.milkbox.net/packages/"))
      (package-refresh-contents)
-     (mapc 'package-install carton-bootstrap-packages)))
+     (mapc
+      (lambda (package)
+        (unless (package-installed-p package)
+          (package-install package)))
+      carton-bootstrap-packages)))
   (mapc 'require carton-bootstrap-packages)
 
   ;; TODO: Run command in sub process instead
