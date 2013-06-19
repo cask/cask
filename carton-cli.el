@@ -7,7 +7,9 @@
 (defconst carton-bootstrap-packages '(commander)
   "List of bootstrap packages required by this file.")
 
-(require 'package)
+(unless (require 'package nil t)
+  (require 'package (expand-file-name "carton-package.el"
+                                      (file-name-directory load-file-name))))
 
 (let ((package-user-dir
        (expand-file-name
