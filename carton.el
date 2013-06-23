@@ -215,6 +215,23 @@ Return a list of updated packages."
         (insert init-content)
         (write-file carton-file-path)))))
 
+(defun carton-exec (arguments)
+  "Execute command with correct load and exec path."
+  (let* ((load-path
+          (if (file-exists-p (carton-elpa-dir))
+              (directory-files (carton-elpa-dir) t "^.+-[^-]+$")))
+         (buffer (get-buffer-create "*carton*"))
+         (command
+          (or
+           (executable-find (car arguments))
+           (expand-file-name (car arguments) default-directory)))
+         (args (cdr arguments)))
+    (setenv "EMACSLOADPATH" (mapconcat 'identity load-path ":"))
+    (let ((exit-code (apply 'call-process (append (list command nil buffer nil) args))))
+      (with-current-buffer buffer
+        (princ (buffer-string)))
+      (kill-emacs exit-code))))
+
 (defun carton-info ()
   "Return info about this project."
   (or
