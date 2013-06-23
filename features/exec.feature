@@ -15,7 +15,6 @@ Feature: Exec
       """
 
   Scenario: No dependencies
-    When I run carton "exec echo foo"
     Given this Carton file:
       """
       """
