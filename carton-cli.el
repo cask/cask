@@ -73,10 +73,8 @@
           (package-version-join (carton-upgrade-old-version upgrade))
           (package-version-join (carton-upgrade-new-version upgrade))))))))
 
-(defun carton-cli/exec ()
-  ""
-
-  )
+(defun carton-cli/exec (&rest args)
+  (carton-exec args))
 
 (defun carton-cli/init ()
   (carton-init default-directory carton-cli--dev-mode))
@@ -118,7 +116,7 @@
  (command "package" "Create -pkg.el file" 'carton-cli/package)
  (command "install" "Install dependencies" 'carton-cli/install)
  (command "update" "Update dependencies" 'carton-cli/update)
- (command "exec" "Execute command with correct dependencies" 'carton-cli/exec)
+ (command "exec [*]" "Execute command with correct dependencies" 'carton-cli/exec :greedy t)
  (command "init" "Create basic Carton file" 'carton-cli/init)
  (command "version" "Show the package version" 'carton-cli/version)
  (command "list" "List dependencies" 'carton-cli/list)

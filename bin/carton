@@ -1,7 +1,3 @@
 #!/usr/bin/env bash
 
-if [[ "$1" = "exec" ]]; then
-  EMACSLOADPATH=$("$EMACS" -Q --batch --eval '(princ (mapconcat (quote identity) (append (file-expand-wildcards (format ".carton/%s/elpa/*" emacs-version) t) load-path) ":"))' 2>&1) exec "${@:2}"
-else
-  ${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
-fi
+${EMACS:-emacs} --script $(dirname $(dirname $0))/carton-cli.el -- "$@"
