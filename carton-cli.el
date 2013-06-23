@@ -4,6 +4,11 @@
   (file-name-directory load-file-name)
   "Path to Carton root.")
 
+(defvar carton-elpa-dir
+  (expand-file-name
+   (format ".carton/%s/bootstrap" emacs-version) carton-root-path)
+  "Path to Carton ELPA dir.")
+
 (defconst carton-bootstrap-packages '(commander)
   "List of bootstrap packages required by this file.")
 
@@ -11,9 +16,7 @@
   (require 'package (expand-file-name "carton-package.el"
                                       (file-name-directory load-file-name))))
 
-(let ((package-user-dir
-       (expand-file-name
-        (format ".carton/%s/bootstrap" emacs-version) carton-root-path)))
+(let ((package-user-dir carton-elpa-dir))
   (package-initialize)
   (condition-case err
       (mapc 'require carton-bootstrap-packages)
