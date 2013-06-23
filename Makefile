@@ -1,6 +1,6 @@
 # Use ?= to respect environment variable (if set):
 EMACS ?= emacs
-CARTON = ${PWD}/bin/carton
+CARTON ?= ${PWD}/bin/carton
 ECUKES = $(shell find ${PKG_DIR}/ecukes-*/ecukes | tail -1)
 ECUKES_ARGS = --script features
 SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
