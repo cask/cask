@@ -35,14 +35,3 @@
   (lambda (project-path)
     (delete-directory project-path t nil))
   (directory-files carton-projects-path t "^[^\\.\\.?]")))
-
-;; (Fail
-;;  (print "#################################################")
-;;  (print "################### OUTPUT ######################")
-;;  (print carton-output)
- 
-;;  (print "#################################################")
-;;  (print "################### ERROR #######################")
-;;  (print carton-error)
-;;  )
-
