@@ -229,10 +229,14 @@ Return a list of updated packages."
            (expand-file-name (car arguments) default-directory)))
          (args (cdr arguments)))
     (let* ((process-environment (cons (concat "EMACSLOADPATH=" (mapconcat 'identity load-path ":")) process-environment))
-           (exit-code (apply 'call-process (append (list command nil buffer nil) args))))
-      (with-current-buffer buffer
-        (princ (buffer-string)))
-      (kill-emacs exit-code))))
+           (process (apply 'start-process (append (list command buffer command) args))))
+      (set-process-filter
+       process
+       (lambda (process string)
+         (princ string)))
+      (while (accept-process-output process))
+      (kill-emacs
+       (process-exit-status process)))))
 
 (defun carton-info ()
   "Return info about this project."
