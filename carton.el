@@ -218,8 +218,10 @@ Return a list of updated packages."
 (defun carton-exec (arguments)
   "Execute command with correct load and exec path."
   (let* ((load-path
-          (if (file-exists-p (carton-elpa-dir))
-              (directory-files (carton-elpa-dir) t "^.+-[^-]+$")))
+          (append
+           (if (file-exists-p (carton-elpa-dir))
+               (directory-files (carton-elpa-dir) t "^.+-[^-]+$"))
+           load-path))
          (buffer (get-buffer-create "*carton*"))
          (command
           (or
