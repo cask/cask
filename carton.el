@@ -227,9 +227,18 @@ Return a list of updated packages."
           (or
            (executable-find (car arguments))
            (expand-file-name (car arguments) default-directory)))
-         (args (cdr arguments)))
-    (let* ((process-environment (cons (concat "EMACSLOADPATH=" (mapconcat 'identity load-path ":")) process-environment))
-           (process (apply 'start-process (append (list command buffer command) args))))
+         (args (cdr arguments))
+         (load-path-from-env
+          (getenv "EMACSLOADPATH"))
+         (load-path-to-env
+          (mapconcat 'identity load-path ":"))
+         (process-environment (mapcar 'identity process-environment)))
+    (setenv
+     "EMACSLOADPATH"
+     (if load-path-from-env
+         (concat load-path-from-env ":" load-path-to-env)
+       load-path-to-env))
+    (let ((process (apply 'start-process (append (list command buffer command) args))))
       (set-process-filter
        process
        (lambda (process string)
