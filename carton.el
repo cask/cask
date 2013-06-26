@@ -226,8 +226,8 @@ Return a list of updated packages."
            (executable-find (car arguments))
            (expand-file-name (car arguments) default-directory)))
          (args (cdr arguments)))
-    (setenv "EMACSLOADPATH" (mapconcat 'identity load-path ":"))
-    (let ((exit-code (apply 'call-process (append (list command nil buffer nil) args))))
+    (let* ((process-environment (cons (concat "EMACSLOADPATH=" (mapconcat 'identity load-path ":")) process-environment))
+           (exit-code (apply 'call-process (append (list command nil buffer nil) args))))
       (with-current-buffer buffer
         (princ (buffer-string)))
       (kill-emacs exit-code))))
