@@ -215,38 +215,6 @@ Return a list of updated packages."
         (insert init-content)
         (write-file carton-file-path)))))
 
-(defun carton-exec (arguments)
-  "Execute command with correct load and exec path."
-  (let* ((load-path
-          (append
-           (if (file-exists-p (carton-elpa-dir))
-               (directory-files (carton-elpa-dir) t "^.+-[^-]+$"))
-           load-path))
-         (buffer (get-buffer-create "*carton*"))
-         (command
-          (or
-           (executable-find (car arguments))
-           (expand-file-name (car arguments) default-directory)))
-         (args (cdr arguments))
-         (load-path-from-env
-          (getenv "EMACSLOADPATH"))
-         (load-path-to-env
-          (mapconcat 'identity load-path path-separator))
-         (process-environment (copy-sequence process-environment)))
-    (setenv
-     "EMACSLOADPATH"
-     (if load-path-from-env
-         (concat load-path-from-env path-separator load-path-to-env)
-       load-path-to-env))
-    (let ((process (apply 'start-process (append (list command buffer command) args))))
-      (set-process-filter
-       process
-       (lambda (process string)
-         (princ string)))
-      (while (accept-process-output process))
-      (kill-emacs
-       (process-exit-status process)))))
-
 (defun carton-info ()
   "Return info about this project."
   (or
@@ -264,6 +232,15 @@ Return a list of updated packages."
   (if carton-package
       (carton-define-package-string)
     (error "Missing `package` or `package-file` directive")))
+
+(defun carton-load-path ()
+  "Return Emacs load-path (including package dependencies)."
+  (mapconcat
+   'identity
+   (append
+    (file-expand-wildcards (concat (carton-elpa-dir) "/*") t)
+    load-path)
+   path-separator))
 
 (defun carton-define-package-string ()
   "Return `define-package' string."

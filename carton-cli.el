@@ -1,5 +1,8 @@
 ;;; carton-cli.el --- Cli interface to Carton
 
+;; Avoid "Loading vc-git..." messages
+(remove-hook 'find-file-hooks 'vc-find-file-hook)
+
 (defvar carton-root-path
   (file-name-directory load-file-name)
   "Path to Carton root.")
@@ -111,6 +114,9 @@
   (commander-print-usage)
   (kill-emacs 0))
 
+(defun carton-cli/load-path ()
+  (princ (carton-load-path)))
+
 (defun carton-cli/dev ()
   (setq carton-cli--dev-mode t))
 
@@ -119,12 +125,13 @@
  (command "package" "Create -pkg.el file" 'carton-cli/package)
  (command "install" "Install dependencies" 'carton-cli/install)
  (command "update" "Update dependencies" 'carton-cli/update)
- (command "exec [*]" "Execute command with correct dependencies" 'carton-cli/exec :greedy t)
+ (command "exec [*]" "Execute command with correct dependencies" 'ignore)
  (command "init" "Create basic Carton file" 'carton-cli/init)
  (command "version" "Show the package version" 'carton-cli/version)
  (command "list" "List dependencies" 'carton-cli/list)
  (command "info" "Show info about this project" 'carton-cli/info)
  (command "help" "Display this help message" 'carton-cli/help)
+ (command "load-path" "Print Emacs load-path (including package dependencies)" 'carton-cli/load-path)
  (option "-h, --help" "Display this help message" 'carton-cli/help)
  (option "--dev" "Run in dev mode" 'carton-cli/dev)
  (default "install"))

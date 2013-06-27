@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-exec "${EMACS:-emacs}" --script "$(dirname $(dirname $0))/carton-cli.el" -- "$@"
+if [[ "$1" == "exec" ]]; then
+  EMACSLOADPATH=$($0 load-path) exec "${@:2}"
+else
+  exec "${EMACS:-emacs}" --script "$(dirname $(dirname $0))/carton-cli.el" -- "$@"
+fi
