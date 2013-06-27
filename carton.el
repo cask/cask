@@ -232,7 +232,7 @@ Return a list of updated packages."
           (getenv "EMACSLOADPATH"))
          (load-path-to-env
           (mapconcat 'identity load-path path-separator))
-         (process-environment (mapcar 'identity process-environment)))
+         (process-environment (copy-sequence process-environment)))
     (setenv
      "EMACSLOADPATH"
      (if load-path-from-env
