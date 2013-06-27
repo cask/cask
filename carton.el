@@ -231,12 +231,12 @@ Return a list of updated packages."
          (load-path-from-env
           (getenv "EMACSLOADPATH"))
          (load-path-to-env
-          (mapconcat 'identity load-path ":"))
+          (mapconcat 'identity load-path path-separator))
          (process-environment (mapcar 'identity process-environment)))
     (setenv
      "EMACSLOADPATH"
      (if load-path-from-env
-         (concat load-path-from-env ":" load-path-to-env)
+         (concat load-path-from-env path-separator load-path-to-env)
        load-path-to-env))
     (let ((process (apply 'start-process (append (list command buffer command) args))))
       (set-process-filter
