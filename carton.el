@@ -32,13 +32,12 @@
 
 ;;; Code:
 
-(unless (require 'package nil t)
-  ;; It's Emacs 23.  Load ./carton-package.el as package.el.
-  (require 'package (expand-file-name "carton-package"
-                                      (file-name-directory load-file-name))))
-
 (eval-when-compile
   (require 'cl))
+
+(unless (require 'package nil t)
+  (require 'package (expand-file-name "carton-package.el"
+                                      (file-name-directory load-file-name))))
 
 (defstruct carton-package name version description)
 (defstruct carton-dependency name version)
@@ -158,6 +157,14 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
   (carton-setup user-emacs-directory)
   (package-initialize))
 
+(defun carton--template-get (name)
+  "Return content of template with NAME."
+  (let* ((templates-dir (expand-file-name "templates" (file-name-directory load-file-name)))
+         (template-file (expand-file-name name templates-dir)))
+    (with-temp-buffer
+      (insert-file-contents-literally template-file)
+      (buffer-string))))
+
 (defun carton-update ()
   "Update dependencies.
 
@@ -183,19 +190,7 @@ Return a list of updated packages."
                          (package-version-join (caadr pkg))))
       (reverse installed-upgrades))))
 
-(defun carton-handle-commandline ()
-  "Handle the command line.
-
-The command line is passed down from the entry script in two variables:
-
-$CARTON_PROJECT_PATH provides the path of the Carton project.
-$CARTON_COMMAND specifies the command to execute."
-  (let ((project-path (getenv "CARTON_PROJECT_PATH"))
-        (command (getenv "CARTON_COMMAND")))
-    (carton-setup project-path)
-    (funcall (intern (format "carton-command-%s" command)))))
-
-(defun carton-command-install ()
+(defun carton-install ()
   "Install dependencies."
   (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
     (when carton-dependencies
@@ -208,60 +203,44 @@ $CARTON_COMMAND specifies the command to execute."
              (package-install name))))
        carton-dependencies))))
 
-(defun carton-command-update ()
-  "Handle the update command."
-  (let ((upgrades (carton-update)))
-    (when upgrades
-      (princ "Updated packages:\n")
-      (dolist (upgrade upgrades)
-        (princ (format "%s %s -> %s\n"
-                       (carton-upgrade-name upgrade)
-                       (package-version-join (carton-upgrade-old-version upgrade))
-                       (package-version-join (carton-upgrade-new-version upgrade))))))))
+(defun carton-init (path &optional dev-mode)
+  "Create new project at PATH with optional DEV-MODE."
+  (let ((init-content
+         (carton--template-get
+          (if dev-mode "init-dev.tpl" "init.tpl")))
+        (carton-file-path (expand-file-name "Carton" path)))
+    (if (file-exists-p carton-file-path)
+        (error "Carton file already exists.")
+      (with-temp-buffer
+        (insert init-content)
+        (write-file carton-file-path)))))
 
-(defun carton--print-dependency (dependency)
-  (let ((name (carton-dependency-name dependency))
-        (version (carton-dependency-version dependency)))
-    (princ
-     (if version
-         (format " - %s (%s)" name version)
-       (format " - %s" name)))
-    (princ "\n")))
+(defun carton-info ()
+  "Return info about this project."
+  (or
+   carton-package
+   (error "Missing `package` or `package-file` directive")))
 
-(defun carton-command-list ()
-  "Print list of runtime and development dependencies."
-  (princ "### Dependencies ###\n\n")
-  (princ (format "Runtime [%s]:\n" (length carton-runtime-dependencies)))
-  (mapc 'carton--print-dependency carton-runtime-dependencies)
-  (if (> (length carton-runtime-dependencies) 0)
-      (princ "\n"))
-  (princ (format "Development [%s]:\n" (length carton-development-dependencies)))
-  (mapc 'carton--print-dependency carton-development-dependencies))
-
-(defun carton-command-info ()
-  "Print info about this project."
-  (cond (carton-package
-         (let ((name (carton-package-name carton-package))
-               (version (carton-package-version carton-package))
-               (description (carton-package-description carton-package)))
-           (princ (format "### %s (%s) ###" name version))
-           (princ "\n\n")
-           (princ description)
-           (princ "\n")))
-        (t (error "Missing `package` or `package-file` directive"))))
-
-(defun carton-command-version ()
-  "Print the version of this project."
+(defun carton-version ()
+  "Return the version of this project."
   (if carton-package
-      (princ (format "%s\n" (carton-package-version carton-package)))
+      (carton-package-version carton-package)
     (error "Missing `package` or `package-file` directive")))
 
-(defun carton-command-package ()
+(defun carton-package ()
   "Package this project."
   (if carton-package
-      (let ((content (carton-define-package-string)))
-        (with-temp-file carton-package-file (insert content)))
+      (carton-define-package-string)
     (error "Missing `package` or `package-file` directive")))
+
+(defun carton-load-path ()
+  "Return Emacs load-path (including package dependencies)."
+  (mapconcat
+   'identity
+   (append
+    (file-expand-wildcards (concat (carton-elpa-dir) "/*") t)
+    load-path)
+   path-separator))
 
 (defun carton-define-package-string ()
   "Return `define-package' string."
