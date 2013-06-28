@@ -20,7 +20,8 @@
    (foo . [(0 0 1) nil \"Foo\" single])
    (bar . [(0 0 2) nil \"Bar\" single])
    (baz . [(0 0 3) ((qux (0 0 4))) \"Baz\" tar])
-   (qux . [(0 0 4) nil \"Qux\" single]))"))
+   (qux . [(0 0 4) nil \"Qux\" single])
+   (hey . [(0 0 5) nil \"Hey\" tar]))"))
 
 (defun package-handler (httpcon)
   (let* ((name (elnode-http-mapping httpcon 2))

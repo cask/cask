@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ "$1" == "exec" ]]; then
-  EMACSLOADPATH="$($0 load-path)" exec "${@:2}"
+  PATH="$($0 path)" EMACSLOADPATH="$($0 load-path)" exec "${@:2}"
 else
   exec "${EMACS:-emacs}" --script "$(dirname $(dirname $0))/carton-cli.el" -- "$@"
 fi
