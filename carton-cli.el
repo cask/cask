@@ -79,9 +79,6 @@
           (package-version-join (carton-upgrade-old-version upgrade))
           (package-version-join (carton-upgrade-new-version upgrade))))))))
 
-(defun carton-cli/exec (&rest args)
-  (carton-exec args))
-
 (defun carton-cli/init ()
   (carton-init default-directory carton-cli--dev-mode))
 
