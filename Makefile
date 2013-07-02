@@ -41,7 +41,4 @@ tmp:
 clean:
 	rm -rf ${PKG_DIR}
 
-smoke:
-	cd test/smoke/ && ${CARTON} install
-
 .PHONY: elpa server ecukes unit all
