@@ -4,6 +4,10 @@
   (directory-file-name (file-name-directory load-file-name))))
 
 (defvar
+ carton-vendor-path
+ (expand-file-name "vendor" carton-features-path))
+
+(defvar
  carton-root-path
  (expand-file-name ".." (directory-file-name carton-features-path)))
 
@@ -24,7 +28,9 @@
 (require 's)
 (require 'carton)
 (require 'espuds)
-(require 'ert)
+
+(unless (require 'ert nil t)
+  (require 'ert (expand-file-name "ert.el" carton-vendor-path)))
 
 (Before
  (setq carton-error nil)
