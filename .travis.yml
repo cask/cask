@@ -1,38 +1,29 @@
 language: emacs-lisp
 before_install:
+  - sudo add-apt-repository -y ppa:cassou/emacs
+  - sudo apt-get update -qq
+
+  # Always install Emacs-24 for the fake ELPA server.
+  - sudo apt-get install -qq
+      emacs24-nox emacs24-el emacs24-common-non-dfsg;
+
   - if [ "$EMACS" = 'emacs-snapshot' ]; then
-      sudo add-apt-repository -y ppa:cassou/emacs &&
-      sudo apt-get update -qq &&
       sudo apt-get install -qq
           emacs-snapshot-el emacs-snapshot-nox;
     fi
-  - if [ "$EMACS" = 'emacs24' ]; then
-      sudo add-apt-repository -y ppa:cassou/emacs &&
-      sudo apt-get update -qq &&
-      sudo apt-get install -qq
-          emacs24-nox emacs24-el emacs24-common-non-dfsg;
-    fi
-  # There is no need for running this as `make ecukes` automatically does it.
-  # However, it makes Travis CI log cleaner and failure in `make elpa` is
-  # counted as non-test failure (the gray icon).
-  - if [ "$EMACS" != 'emacs' ]; then
-      make elpa;
-    fi
-  # TODO: Use `make EMACS=emacs24 start-server` if we want to run ecukes
-  #       tests in Travis CI, as elnode does not support Emacs 23.
-  - if [ "$EMACS" != 'emacs' ]; then
-      make start-server;
-    fi
+
+  # There is no need for running this as `make ecukes` automatically
+  # does it.  However, it makes Travis CI log cleaner and failure in
+  # `make elpa` is counted as non-test failure (the gray icon).
+  - make elpa;
+
+  - EMACS=emacs24 make start-server;
 env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
-  - EMACS=emacs
+  - EMACS=emacs23
 script:
-  - make smoke
-  - if [ "$EMACS" != 'emacs' ]; then
-      make ecukes;
-    fi
-  # Test go script:
+  - make ecukes;
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
 after_failure:
   - cat tmp/server.log
