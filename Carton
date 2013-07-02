@@ -4,7 +4,6 @@
 
 (development
  (depends-on "s")
- (depends-on "mocker")
  (depends-on "ert")
  (depends-on "ecukes")
  (depends-on "espuds")
