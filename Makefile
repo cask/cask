@@ -1,6 +1,6 @@
 # Use ?= to respect environment variable (if set):
 EMACS ?= emacs
-TAGS ?= ''
+TAGS ?= '--tags ~@only-in-emacs-23'
 CARTON ?= ${PWD}/bin/carton
 ECUKES = $(shell find ${PKG_DIR}/ecukes-*/ecukes | tail -1)
 ECUKES_ARGS = --script features ${TAGS}
