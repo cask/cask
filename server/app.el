@@ -26,14 +26,20 @@
   (let* ((name (elnode-http-mapping httpcon 2))
          (version (elnode-http-mapping httpcon 3))
          (format (elnode-http-mapping httpcon 4))
+         (filename
+          (expand-file-name
+           (concat name "-" version "." format) "server"))
          (content-type
           (if (equal format "el")
               "application/octet-stream"
             "application/x-tar"))
-         (filename
-          (expand-file-name
-           (concat name "-" version "." format) "server")))
-    (elnode-http-start httpcon 200 `("Content-type" . ,content-type))
+         (content-length
+          (with-temp-buffer
+            (insert-file-contents-literally filename)
+            (length (buffer-string)))))
+    (elnode-http-start httpcon 200
+                       `("Content-type" . ,content-type)
+                       `("Content-length" . ,content-length))
     (elnode-send-file httpcon filename)))
 
 (defun stop-and-quit ()
