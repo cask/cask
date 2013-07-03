@@ -96,10 +96,12 @@ To print info about the current project:
 
 Add an ELPA mirror.
 
+    (source ALIAS)
     (source NAME URL)
 
 Example:
 
+    (source 'melpa)
     (source "melpa" "http://melpa.milkbox.net/packages/")
 
 ### package
@@ -150,7 +152,7 @@ Example:
 
 ### Local Emacs installation
 
-    (source "melpa" "http://melpa.milkbox.net/packages/")
+    (source 'melpa)
 
     (depends-on "magit")
     (depends-on "drag-stuff")
@@ -158,7 +160,7 @@ Example:
 
 ### Package development
 
-    (source "melpa" "http://melpa.milkbox.net/packages/")
+    (source 'melpa)
 
     (package "ecukes" "0.2.1" "Cucumber for Emacs.")
 
