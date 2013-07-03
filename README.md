@@ -104,6 +104,14 @@ Example:
     (source 'melpa)
     (source "melpa" "http://melpa.milkbox.net/packages/")
 
+Available sources:
+
+ * `gnu` <http://elpa.gnu.org/packages/>
+ * `melpa` <http://melpa.milkbox.net/packages/>
+ * `marmalade` <http://marmalade-repo.org/packages/>
+ * `SC` <http://joseito.republika.pl/sunrise-commander/>
+ * `org` <http://orgmode.org/elpa/>
+
 ### package
 
 Define this package (used only for package development).
