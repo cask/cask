@@ -33,14 +33,16 @@
           (if (equal format "el")
               "application/octet-stream"
             "application/x-tar"))
-         (content-length
+         (content
           (with-temp-buffer
             (insert-file-contents-literally filename)
-            (length (buffer-string)))))
-    (elnode-http-start httpcon 200
-                       `("Content-type" . ,content-type)
-                       `("Content-length" . ,content-length))
-    (elnode-send-file httpcon filename)))
+            (buffer-string)))
+         (content-length (length content)))
+    (elnode-http-start
+     httpcon 200
+     `("Content-type" . ,content-type)
+     `("Content-length" . ,content-length))
+    (elnode-http-return httpcon content)))
 
 (defun stop-and-quit ()
   (interactive)
