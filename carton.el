@@ -244,6 +244,15 @@ Return a list of updated packages."
     load-path)
    path-separator))
 
+(defun carton-path ()
+  "Return Emacs exec-path (including package dependencies)."
+  (mapconcat
+   'identity
+   (append
+    (file-expand-wildcards (concat (carton-elpa-dir) "/*/bin") t)
+    exec-path)
+   path-separator))
+
 (defun carton-define-package-string ()
   "Return `define-package' string."
   (format

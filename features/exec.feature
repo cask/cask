@@ -37,3 +37,17 @@ Feature: Exec
       """
       Hello from QUX, which is a BAZ dependency
       """
+
+  Scenario: Binary in local package
+    Given this Carton file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "hey" "0.0.5")
+      """
+    When I run carton "install"
+    When I run carton "exec hey"
+    Then I should see command output:
+      """
+      Hello from HEY
+      """
