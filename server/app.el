@@ -28,7 +28,7 @@
          (format (elnode-http-mapping httpcon 4))
          (content-type
           (if (equal format "el")
-              "text/plain"
+              "application/octet-stream"
             "application/x-tar"))
          (filename
           (expand-file-name
