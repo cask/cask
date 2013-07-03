@@ -5,7 +5,7 @@ before_install:
 
   # Always install Emacs-24 for the fake ELPA server.
   - sudo apt-get install -qq
-      emacs24-nox emacs24-el emacs24-common-non-dfsg;
+      emacs24-nox emacs24-el emacs24-common-non-dfsg
 
   - if [ "$EMACS" = 'emacs-snapshot' ]; then
       sudo apt-get install -qq
@@ -15,15 +15,15 @@ before_install:
   # There is no need for running this as `make ecukes` automatically
   # does it.  However, it makes Travis CI log cleaner and failure in
   # `make elpa` is counted as non-test failure (the gray icon).
-  - make elpa;
+  - make elpa
 
-  - EMACS=emacs24 make start-server;
+  - EMACS=emacs24 make start-server
 env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
   - EMACS=emacs23 TAGS="--tags ~@not-in-emacs-23"
 script:
-  - make ecukes;
+  - make ecukes
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
 after_failure:
   - cat tmp/server.log
