@@ -20,8 +20,8 @@ before_install:
   - EMACS=emacs24 make start-server;
 env:
   - EMACS=emacs-snapshot
-  - EMACS=emacs24
-  - EMACS=emacs23
+  - EMACS=emacs24 TAGS="--tags ~@only-in-emacs-23"
+  - EMACS=emacs23 TAGS="--tags ~@not-in-emacs-23"
 script:
   - make ecukes;
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
