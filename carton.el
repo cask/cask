@@ -169,6 +169,8 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
   "Update dependencies.
 
 Return a list of updated packages."
+  (when (< emacs-major-version 24)
+    (error "The `update` command is not supported until Emacs 24."))
   (with-temp-buffer
     (package-refresh-contents)
     (package-initialize)

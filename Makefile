@@ -1,8 +1,9 @@
 # Use ?= to respect environment variable (if set):
 EMACS ?= emacs
+TAGS ?= '--tags ~@only-in-emacs-23'
 CARTON ?= ${PWD}/bin/carton
 ECUKES = $(shell find ${PKG_DIR}/ecukes-*/ecukes | tail -1)
-ECUKES_ARGS = --script features
+ECUKES_ARGS = --script features ${TAGS}
 SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
 
 PKG_DIR = $(shell ${EMACS} -Q --batch --eval \
@@ -11,10 +12,7 @@ PKG_DIR = $(shell ${EMACS} -Q --batch --eval \
 export EMACS
 export CARTON
 
-all: unit ecukes
-
-unit: elpa
-	./test/carton-test
+all: ecukes
 
 ecukes: elpa
 	${CARTON} exec ${ECUKES} ${ECUKES_ARGS}
@@ -41,7 +39,4 @@ tmp:
 clean:
 	rm -rf ${PKG_DIR}
 
-smoke:
-	cd test/smoke/ && ${CARTON} install
-
-.PHONY: elpa server ecukes unit all
+.PHONY: elpa server ecukes all
