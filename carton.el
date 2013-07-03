@@ -66,6 +66,13 @@
 (defvar carton-package nil
   "Project package information.")
 
+(defvar carton-source-mapping
+  '((gnu       . "http://elpa.gnu.org/packages/")
+    (melpa     . "http://melpa.milkbox.net/packages/")
+    (marmalade . "http://marmalade-repo.org/packages/")
+    (localhost . "http://127.0.0.1:9191/packages/"))
+  "Mapping of source name and url.")
+
 (defun carton-read (filename)
   "Read a carton file from FILENAME.
 
@@ -116,8 +123,12 @@ SCOPE may be nil or :development."
   (dolist (form forms)
     (case (car form)
       (source
-       (destructuring-bind (_ name url) form
-         (add-to-list 'package-archives (cons name url))))
+       (destructuring-bind (_ name-or-alias &optional url) form
+         (unless url
+           (let ((mapping (assq (car (cdr name-or-alias)) carton-source-mapping)))
+             (setq name-or-alias (symbol-name (car mapping)))
+             (setq url (cdr mapping))))
+         (add-to-list 'package-archives (cons name-or-alias url))))
       (package
        (destructuring-bind (_ name version description) form
          (setq carton-package (make-carton-package :name name
