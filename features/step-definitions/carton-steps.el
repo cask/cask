@@ -1,8 +1,8 @@
-(defun carton--create-project-file (filename content)
 (defun carton-test/elpa-dir ()
   (expand-file-name
    (format ".carton/%s/elpa" emacs-version) carton-current-project))
 
+(defun carton-test/create-project-file (filename content)
   (with-temp-buffer
     (insert content)
     (let ((filepath (expand-file-name filename carton-current-project)))
@@ -10,11 +10,11 @@
 
 (Given "^this Carton file:$"
   (lambda (content)
-    (carton--create-project-file "Carton" content)))
+    (carton-test/create-project-file "Carton" content)))
 
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)
-    (carton--create-project-file filename content)))
+    (carton-test/create-project-file filename content)))
 
 (When "^I run carton \"\\([^\"]*\\)\"$"
   (lambda (command)
