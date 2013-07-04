@@ -26,7 +26,6 @@
 (add-to-list 'load-path carton-root-path)
 
 (require 's)
-(require 'carton)
 (require 'espuds)
 
 (unless (require 'ert nil t)
