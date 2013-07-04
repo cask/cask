@@ -1,4 +1,8 @@
 (defun carton--create-project-file (filename content)
+(defun carton-test/elpa-dir ()
+  (expand-file-name
+   (format ".carton/%s/elpa" emacs-version) carton-current-project))
+
   (with-temp-buffer
     (insert content)
     (let ((filepath (expand-file-name filename carton-current-project)))
@@ -76,16 +80,16 @@
 (Then "^there should exist a package directory called \"\\([^\"]+\\)\"$"
   (lambda (dirname)
     (let* ((carton-project-path carton-current-project)
-           (dirpath (expand-file-name dirname (carton-elpa-dir))))
+           (dirpath (expand-file-name dirname (carton-test/elpa-dir))))
       (should (file-directory-p dirpath)))))
 
 (Then "^there should not exist a package directory called \"\\([^\"]+\\)\"$"
   (lambda (dirname)
     (let* ((carton-project-path carton-current-project)
-           (dirpath (expand-file-name dirname (carton-elpa-dir))))
+           (dirpath (expand-file-name dirname (carton-test/elpa-dir))))
       (should-not (file-directory-p dirpath)))))
 
 (Then "^package directory should not exist$"
   (lambda ()
     (let ((carton-project-path carton-current-project))
-      (should-not (file-directory-p (carton-elpa-dir))))))
+      (should-not (file-directory-p (carton-test/elpa-dir))))))
