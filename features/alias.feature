@@ -10,7 +10,7 @@ Feature: Source Alias
   Scenario: Localhost
     Given this Carton file:
       """
-      (source 'localhost)
+      (source 'carton-test)
 
       (depends-on "foo" "0.0.1")
       """
