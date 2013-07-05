@@ -1,4 +1,4 @@
-(source "melpa" "http://melpa.milkbox.net/packages/")
+(source 'melpa)
 
 (depends-on "carton")
 (depends-on "dash")
