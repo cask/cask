@@ -1,4 +1,4 @@
-(source "melpa" "http://melpa.milkbox.net/packages/")
+(source 'melpa)
 
 (package "" "0.0.1" "")
 
