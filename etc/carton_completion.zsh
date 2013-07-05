@@ -7,15 +7,17 @@ function _carton_commands() {
     case $state in
         subcommand)
             subcommands=(
-                "package:Create -pkg.el file"
-                "install:Install dependencies"
-                "update:Update dependencies"
-                "exec:Execute command with correct dependencies"
-                "init:Create basic Carton file"
-                "version:Show package version"
-                "list:List dependencies"
+                "path:Print Emacs exec-path (including package bin path)"
+                "load-path:Print Emacs load-path (including package dependencies)"
+                "help:Display this help message"
                 "info:Show info about this project"
-                "help:Display help message"
+                "list:List dependencies"
+                "version:Show the package version"
+                "init:Create basic Carton file"
+                "exec:Execute command with correct dependencies"
+                "update:Update dependencies"
+                "install:Install dependencies"
+                "package:Create -pkg.el file"
             )
             _describe -t subcommands 'carton subcommands' subcommands && ret=0
     esac
@@ -23,7 +25,7 @@ function _carton_commands() {
     case "$words[1]" in
         init)
             _arguments \
-                '(--dev)--dev[Use if project is for package development]' && ret=0 ;;
+                '(--dev)--dev[Run in dev mode]' && ret=0 ;;
         exec)
             _generic
             ;;
