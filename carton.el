@@ -36,9 +36,17 @@
 (eval-when-compile
   (require 'cl))
 
+(defconst carton-directory
+  ;; Fall back to buffer file name to handle M-x eval-buffer
+  (file-name-directory (if load-in-progress load-file-name (buffer-file-name)))
+  "The directory to which Carton is installed.")
+
+(defun carton-resource-path (name)
+  "Get the path of a Carton resource with NAME."
+  (expand-file-name name carton-directory))
+
 (unless (require 'package nil t)
-  (require 'package (expand-file-name "carton-package.el"
-                                      (file-name-directory load-file-name))))
+  (require 'package (carton-resource-path "carton-package.el")))
 
 (defstruct carton-package name version description)
 (defstruct carton-dependency name version)
@@ -173,7 +181,7 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
 
 (defun carton--template-get (name)
   "Return content of template with NAME."
-  (let* ((templates-dir (expand-file-name "templates" (file-name-directory load-file-name)))
+  (let* ((templates-dir (carton-resource-path "templates"))
          (template-file (expand-file-name name templates-dir)))
     (with-temp-buffer
       (insert-file-contents-literally template-file)
