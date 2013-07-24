@@ -157,19 +157,9 @@ Example:
 
 ## Completion
 
-### From your ~/.zshrc
-
 To install ZSH completion add the following to your `~/.zshrc`:
 
     source /path/to/code/carton/etc/carton_completion.zsh
-
-### With oh-my-zsh
-
-    ln -s /path/to/code/carton/etc /path/to/oh-my-zsh/custom/plugins/carton_completion
-
-And add this to your `~/.zshrc`:
-
-    plugins+=carton_completion
 
 ## I still don't get it, give me some real examples
 
