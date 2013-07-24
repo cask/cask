@@ -127,7 +127,7 @@ SCOPE may be nil or :development."
       (source
        (destructuring-bind (_ name-or-alias &optional url) form
          (unless url
-           (let ((mapping (assq (car (cdr name-or-alias)) carton-source-mapping)))
+           (let ((mapping (assq name-or-alias carton-source-mapping)))
              (setq name-or-alias (symbol-name (car mapping)))
              (setq url (cdr mapping))))
          (add-to-list 'package-archives (cons name-or-alias url))))

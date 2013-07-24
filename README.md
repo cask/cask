@@ -88,7 +88,7 @@ Add an ELPA mirror.
 
 Example:
 
-    (source 'melpa)
+    (source melpa)
     (source "melpa" "http://melpa.milkbox.net/packages/")
 
 Available sources:
@@ -147,7 +147,7 @@ Example:
 
 ### Local Emacs installation
 
-    (source 'melpa)
+    (source melpa)
 
     (depends-on "magit")
     (depends-on "drag-stuff")
@@ -155,7 +155,7 @@ Example:
 
 ### Package development
 
-    (source 'melpa)
+    (source melpa)
 
     (package "ecukes" "0.2.1" "Cucumber for Emacs.")
 

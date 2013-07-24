@@ -7,10 +7,10 @@ Feature: Source Alias
     Given I create a project called "alias"
     And I go to the project called "alias"
 
-  Scenario: Localhost
+  Scenario: Carton test
     Given this Carton file:
       """
-      (source 'carton-test)
+      (source carton-test)
 
       (depends-on "foo" "0.0.1")
       """
