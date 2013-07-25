@@ -128,6 +128,8 @@ SCOPE may be nil or :development."
        (destructuring-bind (_ name-or-alias &optional url) form
          (unless url
            (let ((mapping (assq name-or-alias carton-source-mapping)))
+             (unless mapping
+               (error "Unknown package archive: %s" name-or-alias))
              (setq name-or-alias (symbol-name (car mapping)))
              (setq url (cdr mapping))))
          (add-to-list 'package-archives (cons name-or-alias url))))
