@@ -306,7 +306,8 @@ Return a list of all performed upgrades, as a list of
     (dolist (upgrade upgrades)
       (epl-install (epl-upgrade-available upgrade))
       (unless preserve-obsolete
-        (epl-delete (epl-upgrade-installed upgrade))))))
+        (epl-delete (epl-upgrade-installed upgrade))))
+    upgrades))
 
 (provide 'epl)
 
