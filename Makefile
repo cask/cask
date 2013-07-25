@@ -1,17 +1,18 @@
 # Use ?= to respect environment variable (if set):
 EMACS ?= emacs
-CARTON = ${PWD}/bin/carton
-ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
-ECUKES_ARGS = --script features
+TAGS ?= '--tags ~@only-in-emacs-23'
+CARTON ?= ${PWD}/bin/carton
+ECUKES = $(shell find ${PKG_DIR}/ecukes-*/ecukes | tail -1)
+ECUKES_ARGS = --script features ${TAGS}
 SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
+
+PKG_DIR = $(shell ${EMACS} -Q --batch --eval \
+'(princ (format ".carton/%s/elpa" emacs-version))')
 
 export EMACS
 export CARTON
 
-all: unit ecukes
-
-unit: elpa
-	./test/carton-test
+all: ecukes
 
 ecukes: elpa
 	${CARTON} exec ${ECUKES} ${ECUKES_ARGS}
@@ -25,19 +26,17 @@ stop-server:
 server: elpa
 	${SERVER} -nw
 
-elpa: Carton
+elpa: ${PKG_DIR}
+${PKG_DIR}: Carton
 	${CARTON} install
 	touch $@
 # NOTE: `touch` is called here since `carton install` does not update
-# timestamp of `elpa` directory.
+# timestamp of ${PKG_DIR} directory.
 
 tmp:
 	mkdir $@
 
 clean:
-	rm -rf elpa
+	rm -rf ${PKG_DIR}
 
-smoke:
-	cd test/smoke/ && ${CARTON} install
-
-.PHONY:	server ecukes unit all
+.PHONY: elpa server ecukes all

@@ -1,11 +1,9 @@
-(source "melpa" "http://melpa.milkbox.net/packages/")
+(source 'melpa)
 
 (package-file "carton.el")
 
 (development
  (depends-on "s")
- (depends-on "mocker")
- (depends-on "ert")
  (depends-on "ecukes")
  (depends-on "espuds")
  (depends-on "elnode"))

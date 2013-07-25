@@ -52,9 +52,22 @@ To list all dependencies, run:
 Add this to your `.emacs` file.
 
     (require 'package)
+    (setq package-user-dir
+          (locate-user-emacs-file (format ".carton/%s/elpa/" emacs-version)))
     (package-initialize)
 
 That's it!
+
+#### Alternative method
+
+Alternatively, if you install Carton under `$HOME/.carton` using the
+automatic installation script, you can add this in your `.emacs` file
+instead.
+
+    (require 'carton "~/.carton/carton.el")
+    (carton-initialize)
+
+#### Tips
 
 To automatically keep the `Carton` file up to date with what you
 install from ELPA, check out <https://github.com/rdallasgray/pallet>.
@@ -83,11 +96,21 @@ To print info about the current project:
 
 Add an ELPA mirror.
 
+    (source ALIAS)
     (source NAME URL)
 
 Example:
 
+    (source 'melpa)
     (source "melpa" "http://melpa.milkbox.net/packages/")
+
+Available sources:
+
+ * `gnu` <http://elpa.gnu.org/packages/>
+ * `melpa` <http://melpa.milkbox.net/packages/>
+ * `marmalade` <http://marmalade-repo.org/packages/>
+ * `SC` <http://joseito.republika.pl/sunrise-commander/>
+ * `org` <http://orgmode.org/elpa/>
 
 ### package
 
@@ -137,7 +160,7 @@ Example:
 
 ### Local Emacs installation
 
-    (source "melpa" "http://melpa.milkbox.net/packages/")
+    (source 'melpa)
 
     (depends-on "magit")
     (depends-on "drag-stuff")
@@ -145,7 +168,7 @@ Example:
 
 ### Package development
 
-    (source "melpa" "http://melpa.milkbox.net/packages/")
+    (source 'melpa)
 
     (package "ecukes" "0.2.1" "Cucumber for Emacs.")
 

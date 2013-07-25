@@ -1,57 +1,7 @@
 #!/usr/bin/env bash
 
-if [ -z "$EMACS" ] || [ -z "$(which $EMACS)" ] ; then
-  EMACS=emacs
-fi
-
-# Use an environment variable to pass the name to the Emacs process.  We cannot
-# give it as command line argument because that would cause Emacs to visit the
-# file, printing a lot of superfluous messages.
-export CARTON_STARTUP_SCRIPT="$0"
-CARTON_PATH=$("$EMACS" -Q --batch --eval '(princ (file-truename (getenv "CARTON_STARTUP_SCRIPT")))')
-
-if [ -z "$CARTON_DIR" -o ! -d "$CARTON_DIR" ] ; then
-  CARTON_DIR="$(dirname $(dirname $CARTON_PATH))"
-fi
-TEMPLATE_DIR="$CARTON_DIR/templates"
-
-CARTON_EL="$CARTON_DIR/carton.el"
-
-COMMAND="$1"
-if [[ $# -eq 0 ]]; then
-  COMMAND=install
+if [[ "$1" == "exec" ]]; then
+  EMACSLOADPATH="$($0 load-path)" PATH="$($0 path)" exec "${@:2}"
 else
-  COMMAND="$1"
+  exec "${EMACS:-emacs}" --script "$(dirname $(dirname $0))/carton-cli.el" -- "$@"
 fi
-
-case "$COMMAND" in
-    package|version|install|update|list|info)
-    export CARTON_PROJECT_PATH="$PWD"
-    export CARTON_COMMAND="$COMMAND"
-    "$EMACS" --batch --load "$CARTON_EL" --funcall carton-handle-commandline
-    ;;
-  init)
-    CARTON_FILE="${PWD}/Carton"
-
-    if [[ -f "$CARTON_FILE" ]]; then
-      echo "Carton file already exists."
-      exit 1
-    else
-      if [[ $2 == "--dev" ]]; then
-        cat "$TEMPLATE_DIR/init-dev.tpl" > "$CARTON_FILE"
-      else
-        cat "$TEMPLATE_DIR/init.tpl" > "$CARTON_FILE"
-      fi
-    fi
-
-    ;;
-  exec)
-    EMACSLOADPATH=$("$EMACS" -Q --batch --eval '(princ (mapconcat (quote identity) (append (file-expand-wildcards "elpa/*" t) load-path) ":"))' 2>&1) exec "${@:2}"
-    ;;
-  -h|--help|help)
-    cat "$TEMPLATE_DIR/usage.tpl"
-    ;;
-  *)
-    cat "$TEMPLATE_DIR/usage.tpl"
-    exit 1;
-esac

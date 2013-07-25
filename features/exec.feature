@@ -15,7 +15,6 @@ Feature: Exec
       """
 
   Scenario: No dependencies
-    When I run carton "exec echo foo"
     Given this Carton file:
       """
       """
@@ -33,8 +32,22 @@ Feature: Exec
       (depends-on "baz" "0.0.3")
       """
     When I run carton "install"
-    When I run carton "exec emacs --script elpa/baz-0.0.3/baz.el -Q"
+    When I run carton "exec {{EMACS}} --script .carton/{{EMACS-VERSION}}/elpa/baz-0.0.3/baz.el -Q --funcall hello"
     Then I should see command output:
       """
       Hello from QUX, which is a BAZ dependency
+      """
+
+  Scenario: Binary in local package
+    Given this Carton file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "hey" "0.0.5")
+      """
+    When I run carton "install"
+    When I run carton "exec hey"
+    Then I should see command output:
+      """
+      Hello from HEY
       """
