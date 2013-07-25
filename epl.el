@@ -35,7 +35,7 @@
 
 ;; `epl-package-name' gets the package name from a package object.
 
-;; `epl-package-symmary' gets the package summary from a package object.
+;; `epl-package-summary' gets the package summary from a package object.
 
 ;; `epl-package-version' gets the package version from a package object.
 
