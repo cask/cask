@@ -203,14 +203,9 @@ package archives and reset the package directory."
 
 (defalias 'epl-refresh 'package-refresh-contents)
 
-(defun epl-add-archive (name url &optional refresh)
-  "Add a package archive with NAME and URL.
-
-If REFRESH is given and non-nil, refresh all archive contents
-afterwards."
-  (add-to-list 'package-archives (cons name url))
-  (when refresh
-    (epl-refresh)))
+(defun epl-add-archive (name url)
+  "Add a package archive with NAME and URL."
+  (add-to-list 'package-archives (cons name url)))
 
 
 ;;;; Package database access
