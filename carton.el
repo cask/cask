@@ -36,22 +36,25 @@
 (eval-when-compile
   (require 'cl))
 
-(defconst carton-directory
-  ;; Fall back to buffer file name to handle M-x eval-buffer
-  (file-name-directory (if load-in-progress load-file-name (buffer-file-name)))
-  "The directory to which Carton is installed.")
+(eval-and-compile
+  (defconst carton-directory
+    ;; Fall back to buffer file name to handle M-x eval-buffer
+    (file-name-directory (or (and (boundp 'byte-compile-current-file)
+                                  byte-compile-current-file)
+                             (if load-in-progress
+                                 load-file-name
+                               (buffer-file-name))))
+    "The directory to which Carton is installed.")
 
-(defun carton-resource-path (name)
-  "Get the path of a Carton resource with NAME."
-  (expand-file-name name carton-directory))
+  (defun carton-resource-path (name)
+    "Get the path of a Carton resource with NAME."
+    (expand-file-name name carton-directory)))
 
-(unless (require 'package nil t)
-  (require 'package (carton-resource-path "carton-package.el")))
+(require 'epl (carton-resource-path "epl"))
 
 (defstruct carton-package name version description)
 (defstruct carton-dependency name version)
 (defstruct carton-source name url)
-(defstruct carton-upgrade name old-version new-version)
 
 (defvar carton-project-path nil
   "Path to project.")
@@ -104,18 +107,15 @@ Return all directives in the Carton file as list."
          (dep-list (carton-get-dep-list-for-scope scope)))
     (add-to-list dep-list dependency t)))
 
-(defun carton-parse-package-info (info)
-  "Parse package INFO as returned by `package-buffer-info'."
-  (destructuring-bind (name requires description version _)
-      ;; We have to convert the INFO vector to a list first, because
-      ;; `destructuring-bind' does not support pattern matching on vectors.
-      (append info nil)
-    (setq carton-package (make-carton-package :name name
-                                              :version version
-                                              :description description))
-    (dolist (req requires)
-      (destructuring-bind (name version) req
-        (carton-add-dependency name (package-version-join version))))))
+(defun carton-parse-epl-package (package)
+  "Parse an EPL PACKAGE."
+  (setq carton-package
+        (make-carton-package :name (epl-package-name package)
+                             :version (epl-package-version-string package)
+                             :description (epl-package-summary package)))
+  (dolist (req (epl-package-requirements package))
+    (carton-add-dependency (epl-requirement-name req)
+                             (epl-requirement-version-string req))))
 
 (defun carton-parse-package-file (filename)
   "Parse a package file from FILENAME.
@@ -124,7 +124,7 @@ Extract name, version, description and runtime dependencies from
 the package headers in FILENAME."
   (with-temp-buffer
     (insert-file-contents (expand-file-name filename carton-project-path))
-    (carton-parse-package-info (package-buffer-info))))
+    (carton-parse-epl-package (epl-package-from-buffer (current-buffer)))))
 
 (defun carton-eval (forms &optional scope)
   "Evaluate carton FORMS in SCOPE.
@@ -138,7 +138,7 @@ SCOPE may be nil or :development."
            (let ((mapping (assq (car (cdr name-or-alias)) carton-source-mapping)))
              (setq name-or-alias (symbol-name (car mapping)))
              (setq url (cdr mapping))))
-         (add-to-list 'package-archives (cons name-or-alias url))))
+         (epl-add-archive name-or-alias url)))
       (package
        (destructuring-bind (_ name version description) form
          (setq carton-package (make-carton-package :name name
@@ -167,8 +167,8 @@ SCOPE may be nil or :development."
   (setq carton-project-name (file-name-nondirectory carton-project-path))
   (setq carton-file (expand-file-name "Carton" carton-project-path))
   (setq carton-package-file (expand-file-name (concat carton-project-name "-pkg.el") carton-project-path))
-  (when (equal (eval (car (get 'package-user-dir 'standard-value))) package-user-dir)
-    (setq package-user-dir (carton-elpa-dir)))
+  (when (equal (epl-package-dir) (epl-default-package-dir))
+    (epl-change-package-dir (carton-elpa-dir)))
   (unless (file-exists-p carton-file)
     (error "Could not locate `Carton` file"))
   (carton-eval (carton-read carton-file)))
@@ -177,7 +177,7 @@ SCOPE may be nil or :development."
   "Initialize packages under \"~/.emacs.d/\".
 Setup `package-user-dir' appropriately and then call `package-initialize'."
   (carton-setup user-emacs-directory)
-  (package-initialize))
+  (epl-initialize))
 
 (defun carton--template-get (name)
   "Return content of template with NAME."
@@ -193,39 +193,18 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
 Return a list of updated packages."
   (when (< emacs-major-version 24)
     (error "The `update` command is not supported until Emacs 24."))
-  (with-temp-buffer
-    (package-refresh-contents)
-    (package-initialize)
-    (package-menu--generate nil t) ;; WTF ELPA, really???
-    (let ((upgrades (package-menu--find-upgrades))
-          installed-upgrades)
-      (dolist (upgrade upgrades)
-        (let* ((name (car upgrade))
-               (new-version (cdr upgrade))
-               (old-version (package-desc-vers (cdr (assq name package-alist))))
-               (upgrade (make-carton-upgrade :name name
-                                             :old-version old-version
-                                             :new-version new-version)))
-          (package-install name)
-          (push upgrade installed-upgrades)))
-      ;; Delete obsolete packages
-      (dolist (pkg package-obsolete-alist)
-         (package-delete (symbol-name (car pkg))
-                         (package-version-join (caadr pkg))))
-      (reverse installed-upgrades))))
+  (epl-refresh)
+  (epl-initialize)
+  (epl-upgrade))
 
 (defun carton-install ()
   "Install dependencies."
   (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
     (when carton-dependencies
-      (package-refresh-contents)
-      (package-initialize)
-      (mapc
-       (lambda (package)
-         (let ((name (carton-dependency-name package)))
-           (unless (package-installed-p name)
-             (package-install name))))
-       carton-dependencies))))
+      (epl-refresh)
+      (epl-initialize)
+      (dolist (dependency carton-dependencies)
+        (epl-install (carton-dependency-name dependency))))))
 
 (defun carton-init (path &optional dev-mode)
   "Create new project at PATH with optional DEV-MODE."
