@@ -47,22 +47,9 @@ To list all dependencies, run:
 
     $ carton list
 
-### Local Emacs installation
+### Emacs configuration
 
 Add this to your `.emacs` file.
-
-    (require 'package)
-    (setq package-user-dir
-          (locate-user-emacs-file (format ".carton/%s/elpa/" emacs-version)))
-    (package-initialize)
-
-That's it!
-
-#### Alternative method
-
-Alternatively, if you install Carton under `$HOME/.carton` using the
-automatic installation script, you can add this in your `.emacs` file
-instead.
 
     (require 'carton "~/.carton/carton.el")
     (carton-initialize)
