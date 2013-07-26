@@ -72,7 +72,7 @@ Slots:
 `requirements' The requirements."
   name
   summary
-  version-string
+  version
   requirements)
 
 (defun epl-requirement--from-req (req)
