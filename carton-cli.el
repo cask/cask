@@ -69,9 +69,9 @@
         (princ
          (format
           "%s %s -> %s\n"
-          (epl-package-name (epl-upgrade-old upgrade))
-          (epl-package-version-string (epl-upgrade-old upgrade))
-          (epl-package-version-string (epl-upgrade-new upgrade))))))))
+          (epl-package-name (epl-upgrade-installed upgrade))
+          (epl-package-version-string (epl-upgrade-installed upgrade))
+          (epl-package-version-string (epl-upgrade-available upgrade))))))))
 
 (defun carton-cli/init ()
   (carton-init default-directory carton-cli--dev-mode))
