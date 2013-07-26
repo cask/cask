@@ -137,7 +137,7 @@ SCOPE may be nil or :development."
                                                    :description description))))
       (package-file
        (destructuring-bind (_ filename) form
-         (carton-arse-epl-package
+         (carton-parse-epl-package
           (epl-package-from-file
            (expand-file-name filename carton-project-path)))))
       (depends-on
