@@ -37,7 +37,7 @@
 (when (fboundp 'package-desc-create)
   ;; The package-desc structure is present, hence indicate that this API cannot
   ;; be loaded
-  (signal 'epl-error "Modern package.el API detected"))
+  (epl-error "Modern package.el API detected"))
 
 
 ;;;; Dependencies

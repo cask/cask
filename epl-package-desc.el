@@ -33,7 +33,7 @@
 (unless (fboundp 'package-desc-create)
   ;; The package-desc structure is missing, hence indicate that this API cannot
   ;; be loaded
-  (signal 'epl-error "Legacy package.el API detected"))
+  (epl-error "Legacy package.el API detected"))
 
 
 ;;;; Requirements

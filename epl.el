@@ -85,7 +85,18 @@
 (eval-and-compile
   ;; We must make the error symbol available during compilation to support the
   ;; conditional loading of the right EPL implementation.
-  (put 'epl-error 'error-conditions '(error)))
+  (put 'epl-error 'error-conditions '(error))
+  (put 'epl-error 'error-message "EPL Error"))
+
+(defun epl-error (string &rest args)
+  "Signal an EPL error.
+
+Signal an error with `epl-error' type.
+
+STRING is a `format' string, and ARGS are the formatted objects.
+
+This function does not return."
+  (signal 'epl-error (list (apply #'format string args))))
 
 
 ;;;; Load implementation
