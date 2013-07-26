@@ -1,4 +1,4 @@
-(source 'melpa)
+(source melpa)
 
 (depends-on "carton")
 (depends-on "dash")
