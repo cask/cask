@@ -117,15 +117,6 @@ Return all directives in the Carton file as list."
     (carton-add-dependency (epl-requirement-name req)
                              (epl-requirement-version-string req))))
 
-(defun carton-parse-package-file (filename)
-  "Parse a package file from FILENAME.
-
-Extract name, version, description and runtime dependencies from
-the package headers in FILENAME."
-  (with-temp-buffer
-    (insert-file-contents (expand-file-name filename carton-project-path))
-    (carton-parse-epl-package (epl-package-from-buffer (current-buffer)))))
-
 (defun carton-eval (forms &optional scope)
   "Evaluate carton FORMS in SCOPE.
 
@@ -146,7 +137,9 @@ SCOPE may be nil or :development."
                                                    :description description))))
       (package-file
        (destructuring-bind (_ filename) form
-         (carton-parse-package-file filename)))
+         (carton-arse-epl-package
+          (epl-package-from-file
+           (expand-file-name filename carton-project-path)))))
       (depends-on
        (destructuring-bind (_ name &optional version) form
          (carton-add-dependency name version scope)))

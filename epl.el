@@ -150,6 +150,14 @@ PACKAGE is either a package name as symbol, or a package object."
                    (epl-package-version package))))
     (package-installed-p name version)))
 
+(defun epl-package-from-file (file-name)
+  "Parse the package headers the file at FILE-NAME.
+
+Return an `epl-package' object with the header metadata."
+  (with-temp-buffer
+    (insert-file-contents file-name)
+    (epl-package-from-buffer (current-buffer))))
+
 
 ;;;; Package directory
 (defun epl-package-dir ()
