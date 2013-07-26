@@ -1,4 +1,4 @@
-;;; epl-package-desc.el --- Emacs Package Library: package-desc backend -*- lexical-binding: t; -*-
+;;; epl-legacy.el --- Emacs Package Library: Legacy package.el backend -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013 Sebastian Wiesner
 
@@ -189,6 +189,6 @@ PACKAGE is a package object to delete."
   (package-delete (epl-package-name package)
                   (epl-package-version-string package)))
 
-(provide 'epl-package-desc)
+(provide 'epl-legacy)
 
-;;; epl-package-desc.el ends here
+;;; epl-legacy.el ends here
