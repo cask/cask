@@ -8,6 +8,12 @@
     (let ((filepath (expand-file-name filename carton-current-project)))
       (write-file filepath nil))))
 
+(defun carton-test/template (command)
+  (let* ((command (s-replace "{{EMACS-VERSION}}" emacs-version command))
+         (command (s-replace "{{EMACS}}" (getenv "EMACS") command))
+         (command (s-replace "{{PROJECT-PATH}}" carton-current-project command)))
+    command))
+
 (Given "^this Carton file:$"
   (lambda (content)
     (carton-test/create-project-file "Carton" content)))
@@ -18,8 +24,7 @@
 
 (When "^I run carton \"\\([^\"]*\\)\"$"
   (lambda (command)
-    (setq command (s-replace "{{EMACS-VERSION}}" emacs-version command))
-    (setq command (s-replace "{{EMACS}}" (getenv "EMACS") command))
+    (setq command (carton-test/template command))
     (let* ((buffer (get-buffer-create "*carton-output*"))
            (default-directory (file-name-as-directory carton-current-project))
            (args
@@ -48,11 +53,11 @@
 
 (Then "^I should see command output:$"
   (lambda (output)
-    (should (s-contains? output carton-output))))
+    (should (s-contains? (carton-test/template output) carton-output))))
 
 (Then "^I should see command error:$"
   (lambda (output)
-    (should (s-contains? output carton-error))))
+    (should (s-contains? (carton-test/template output) carton-error))))
 
 (Then "^I should see usage information$"
   (lambda ()
