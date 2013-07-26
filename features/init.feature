@@ -21,7 +21,7 @@ Feature: Init
     When I run carton "init --dev"
     Then there should exist a file called "Carton" with this content:
       """
-      (source "melpa" "http://melpa.milkbox.net/packages/")
+      (source melpa)
 
       (package "" "0.0.1" "")
 
@@ -37,7 +37,7 @@ Feature: Init
     When I run carton "init"
     Then there should exist a file called "Carton" with this content:
       """
-      (source "melpa" "http://melpa.milkbox.net/packages/")
+      (source melpa)
 
       (depends-on "carton")
       (depends-on "dash")
