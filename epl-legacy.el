@@ -180,7 +180,9 @@ PACKAGE is a package object.
 If FORCE is given and non-nil, install PACKAGE even if it is
 already installed."
   (when (or force (not (epl-package-installed-p package)))
-    (package-install (epl-package-name package))))
+    (package-install (if (epl-package-p package)
+                         (epl-package-name package)
+                       package))))
 
 (defun epl-package-delete (package)
   "Delete a PACKAGE.
