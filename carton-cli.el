@@ -120,6 +120,10 @@
 (defun carton-cli/dev ()
   (setq carton-cli--dev-mode t))
 
+(defun carton-cli/debug ()
+  (setq debug-on-error t)
+  (setq debug-on-entry t))
+
 (commander
  (name "carton")
  (command "package" "Create -pkg.el file" 'carton-cli/package)
@@ -135,4 +139,5 @@
  (command "path" "Print Emacs exec-path (including package bin path)" 'carton-cli/path)
  (option "-h, --help" "Display this help message" 'carton-cli/help)
  (option "--dev" "Run in dev mode" 'carton-cli/dev)
+ (option "--debug" "Turn on debug output" 'carton-cli/debug)
  (default "install"))
