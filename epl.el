@@ -103,11 +103,12 @@ This function does not return."
 
 (eval-and-compile
   (defconst epl-directory
-    (file-name-directory (or (and (boundp 'byte-compile-current-file)
-                                  byte-compile-current-file)
-                             (if load-in-progress
-                                 load-file-name
-                               (buffer-file-name))))
+    (file-name-directory
+     (cond
+      (load-in-progress load-file-name)
+      ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+       byte-compile-current-file)
+      (:else (buffer-file-name))))
     "Directory EPL is installed to.")
 
   (condition-case nil

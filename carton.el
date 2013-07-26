@@ -39,11 +39,12 @@
 (eval-and-compile
   (defconst carton-directory
     ;; Fall back to buffer file name to handle M-x eval-buffer
-    (file-name-directory (or (and (boundp 'byte-compile-current-file)
-                                  byte-compile-current-file)
-                             (if load-in-progress
-                                 load-file-name
-                               (buffer-file-name))))
+    (file-name-directory
+     (cond
+      (load-in-progress load-file-name)
+      ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+       byte-compile-current-file)
+      (:else (buffer-file-name))))
     "The directory to which Carton is installed.")
 
   (defun carton-resource-path (name)

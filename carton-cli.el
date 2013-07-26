@@ -6,11 +6,12 @@
 
 (eval-and-compile
   (defconst carton-cli-directory
-    (file-name-directory (or (and (boundp 'byte-compile-current-file)
-                                  byte-compile-current-file)
-                             (if load-in-progress
-                                 load-file-name
-                               (buffer-file-name))))
+    (file-name-directory
+     (cond
+      (load-in-progress load-file-name)
+      ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+       byte-compile-current-file)
+      (:else (buffer-file-name))))
     "Path to Carton root."))
 
 (require 'carton (expand-file-name "carton" carton-cli-directory))
