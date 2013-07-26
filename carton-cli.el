@@ -32,7 +32,7 @@
         (error
          (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
          (epl-refresh)
-         (mapc 'epl-install carton-bootstrap-packages)
+         (mapc 'epl-package-install carton-bootstrap-packages)
          (mapc 'require carton-bootstrap-packages))))
   (epl-reset))
 
