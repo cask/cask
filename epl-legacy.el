@@ -172,7 +172,7 @@ Slots:
 
 ;;;; Package operations
 
-(defun epl-install (package &optional force)
+(defun epl-package-install (package &optional force)
   "Install a PACKAGE.
 
 PACKAGE is a package object.
@@ -182,7 +182,7 @@ already installed."
   (when (or force (not (epl-package-installed-p package)))
     (package-install (epl-package-name package))))
 
-(defun epl-delete (package)
+(defun epl-package-delete (package)
   "Delete a PACKAGE.
 
 PACKAGE is a package object to delete."

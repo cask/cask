@@ -172,7 +172,7 @@ packages."
 
 ;;;; Package operations
 
-(defun epl-install (package &optional force)
+(defun epl-package-install (package &optional force)
   "Install a PACKAGE.
 
 PACKAGE is a package object.
@@ -182,7 +182,7 @@ already installed."
   (when (or force (not (epl-package-installed-p package)))
     (package-install package)))
 
-(defalias 'epl-delete 'package-delete
+(defalias 'epl-package-delete 'package-delete
   "Delete a PACKAGE.
 
 PACKAGE is a package object to delete.")

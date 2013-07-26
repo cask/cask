@@ -204,7 +204,7 @@ Return a list of updated packages."
       (epl-refresh)
       (epl-initialize)
       (dolist (dependency carton-dependencies)
-        (epl-install (carton-dependency-name dependency))))))
+        (epl-package-install (carton-dependency-name dependency))))))
 
 (defun carton-init (path &optional dev-mode)
   "Create new project at PATH with optional DEV-MODE."

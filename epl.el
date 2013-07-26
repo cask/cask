@@ -69,9 +69,9 @@
 
 ;; `epl-find-upgrades' finds all upgradable packages.
 
-;; `epl-install' installs a package.
+;; `epl-package-install' installs a package.
 
-;; `epl-delete' deletes a package.
+;; `epl-package-delete' deletes a package.
 
 ;; `epl-upgrade' upgrades packages.
 
@@ -210,9 +210,9 @@ Return a list of all performed upgrades, as a list of
 `epl-upgrade' objects."
   (let ((upgrades (epl-find-upgrades packages)))
     (dolist (upgrade upgrades)
-      (epl-install (epl-upgrade-available upgrade))
+      (epl-package-install (epl-upgrade-available upgrade))
       (unless preserve-obsolete
-        (epl-delete (epl-upgrade-installed upgrade))))
+        (epl-package-delete (epl-upgrade-installed upgrade))))
     upgrades))
 
 (provide 'epl)
