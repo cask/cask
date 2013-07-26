@@ -171,6 +171,30 @@ PACKAGE is either a package name as symbol, or a package object."
   (add-to-list 'package-archives (cons name url)))
 
 
+;;;; Package database access
+(defun epl-find-upgrades (&optional packages)
+  "Find all upgradable PACKAGES.
+
+PACKAGES is a list of package objects to upgrade, defaulting to
+all installed packages.
+
+Return a list of `epl-upgrade' objects describing all upgradable
+packages."
+  (let ((packages (or packages (epl-installed-packages)))
+        upgrades)
+    (dolist (pkg packages)
+      (let* ((version (epl-package-version pkg))
+             (name (epl-package-name pkg))
+             (available-pkg (epl-find-available-package name))
+             (available-version (when available-pkg
+                                  (epl-package-version available-pkg))))
+        (when (and available-version (version-list-< version available-version))
+          (push (epl-upgrade-create :installed pkg
+                                    :available available-pkg)
+                upgrades))))
+    (nreverse upgrades)))
+
+
 ;;;; Package operations
 
 (defun epl-upgrade (&optional packages preserve-obsolete)

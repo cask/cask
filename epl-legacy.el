@@ -24,28 +24,30 @@
 
 ;;; Commentary:
 
-;; EPL implementation based on package-desc.
+;; EPL implementation based on the legacy, non-defstruct package.el.
 
 ;;; Code:
 
 ;;;; Compatibility check
 
-(unless (fboundp 'package-desc-create)
-  ;; The package-desc structure is missing, hence indicate that this API cannot
+(unless (require 'package nil :no-error)
+  ;; Load the legacy package.el from Emacs 23
+  (require 'package (expand-file-name "package-legacy" epl-directory)))
+
+(when (fboundp 'package-desc-create)
+  ;; The package-desc structure is present, hence indicate that this API cannot
   ;; be loaded
-  (signal 'epl-error "Legacy package.el API detected"))
+  (signal 'epl-error "Modern package.el API detected"))
 
 
-;;;; Requirements
-
-;; We can safely used `cl-lib' here, because it predated the defstruct-based
-;; package.el
-(require 'cl-lib)                       ; For cl-defstruct
+;;;; Dependencies
+(eval-when-compile
+  (require 'cl))                        ; For `defstruct' and `destructuring-bind'
 
 
 ;;;; Package objects
 
-(cl-defstruct (epl-requirement
+(defstruct (epl-requirement
                (:constructor epl-requirement-create))
   "Structure describing a requirement.
 Slots:
@@ -56,31 +58,29 @@ Slots:
   name
   version)
 
-;; `package-desc' provides all necessary information, so let's treat it as
-;; opaque `epl-package' struct and simply alias all necessary definitions.
+(defstruct (epl-package
+            (:constructor epl-package-create))
+  "Structure representing a package.
+Slots:
 
-(defalias 'epl-package-p 'package-desc-p
-  "Determine whether OBJ is a package object.")
+`name' The package name.
 
-(defalias 'epl-package-name 'package-desc-name
-  "Get the name from a package object, as symbol.")
+`summary' The package summary.
 
-(defalias 'epl-package-summary 'package-desc-summary
-  "Get the summary from a package object, as string.")
+`version' The package version.
 
-(defalias 'epl-package-version 'package-desc-version
-  "Get the version from a package object, as version list.")
+`requirements' The requirements."
+  name
+  summary
+  version-string
+  requirements)
 
 (defun epl-requirement--from-req (req)
   "Create a `epl-requirement' from a `package-desc' REQ."
-  (epl-requirement-create :name (car req)
-                          :version (cadr req)))
-
-(defun epl-package-requirements (package)
-  "Get the requirements from a PACKAGE.
-
-Return a list of requirements, as `epl-requirement' objects."
-  (mapcar #'epl-requirement--from-req (package-desc-reqs package)))
+  (let ((version (cadr req)))
+    (epl-requirement-create :name (car req)
+                            :version (if (listp version) version
+                                       (version-to-list version)))))
 
 (defun epl-package-from-buffer (&optional buffer)
   "Create a `epl-package' object from a BUFFER.
@@ -88,7 +88,14 @@ Return a list of requirements, as `epl-requirement' objects."
 Parse the package metadata of BUFFER and return a corresponding
 `epl-package' object."
   (with-current-buffer buffer
-    (package-buffer-info)))
+    (destructuring-bind (name requires desc version _)
+        (append (package-buffer-info) nil) ; `destructing-bind' doesn't like
+                                           ; vectors
+      (epl-package-create
+       :name name
+       :summary desc
+       :version (version-to-list version)
+       :requirements (mapcar #'epl-requirement--from-req requires)))))
 
 
 ;;;; Package system management
@@ -99,6 +106,7 @@ Parse the package metadata of BUFFER and return a corresponding
 Clear the list of installed and available packages, the list of
 package archives and reset the package directory."
   (setq package-alist nil
+        package-obsolete-alist nil
         package-archives nil
         package-archive-contents nil)
   (epl-change-package-dir (epl-default-package-dir)))
@@ -106,11 +114,23 @@ package archives and reset the package directory."
 
 ;;;; Package database access
 
+(defun epl-package--from-package-alist-entry (entry)
+  "Create a `epl-package' from an item in `package-alist'."
+  (let ((name (car entry))
+        (info (cdr entry)))
+    (destructuring-bind (version reqs docstring) (append info nil)
+      (epl-package-create
+       :name name
+       :summary docstring
+       :version (if (listp version) version
+                  (version-to-list version))
+       :requirements (mapcar #'epl-requirement--from-req reqs)))))
+
 (defun epl-installed-packages ()
   "Get all installed packages.
 
 Return a list of package objects."
-  (mapcar #'cadr package-alist))
+  (mapcar #'epl-package--from-package-alist-entry package-alist))
 
 (defun epl-find-installed-package (name)
   "Find an installed package by NAME.
@@ -119,7 +139,9 @@ NAME is a package name, as symbol.
 
 Return the installed package as package object, or nil if no
 package with NAME is installed."
-  (cadr (assq name package-alist)))
+  (let ((entry (assq name package-alist)))
+    (when entry
+      (epl-package--from-package-alist-entry entry))))
 
 (defun epl-available-packages ()
   "Get all packages available for installed.
@@ -136,8 +158,8 @@ Return the package as package object, or nil, if no package with
 NAME is available."
   (cadr (assq name package-archive-contents)))
 
-(cl-defstruct (epl-upgrade
-               (:constructor epl-upgrade-create))
+(defstruct (epl-upgrade
+            (:constructor epl-upgrade-create))
   "Structure describing an upgradable package.
 Slots:
 
@@ -146,28 +168,6 @@ Slots:
 `available' The package available for installation."
   installed
   available)
-
-(defun epl-find-upgrades (&optional packages)
-  "Find all upgradable PACKAGES.
-
-PACKAGES is a list of package objects to upgrade, defaulting to
-all installed packages.
-
-Return a list of `epl-upgrade' objects describing all upgradable
-packages."
-  (let ((packages (or packages (epl-installed-packages)))
-        upgrades)
-    (dolist (pkg packages)
-      (let* ((version (epl-package-version pkg))
-             (name (epl-package-name pkg))
-             (available-pkg (epl-find-available-package name))
-             (available-version (when available-pkg
-                                  (epl-package-version available-pkg))))
-        (when (and available-version (version-list-< version available-version))
-          (push (epl-upgrade-create :installed pkg
-                                    :available available-pkg)
-                upgrades))))
-    (nreverse upgrades)))
 
 
 ;;;; Package operations
@@ -180,12 +180,14 @@ PACKAGE is a package object.
 If FORCE is given and non-nil, install PACKAGE even if it is
 already installed."
   (when (or force (not (epl-package-installed-p package)))
-    (package-install package)))
+    (package-install (epl-package-name package))))
 
-(defalias 'epl-delete 'package-delete
+(defun epl-delete (package)
   "Delete a PACKAGE.
 
-PACKAGE is a package object to delete.")
+PACKAGE is a package object to delete."
+  (package-delete (epl-package-name package)
+                  (epl-package-version-string package)))
 
 (provide 'epl-package-desc)
 
