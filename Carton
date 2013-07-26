@@ -1,4 +1,4 @@
-(source 'melpa)
+(source melpa)
 
 (package-file "carton.el")
 
