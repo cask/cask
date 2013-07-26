@@ -81,18 +81,6 @@
 
 ;;; Code:
 
-
-;;;; Load package.el
-
-(require 'package)
-
-(setq package-archives nil)             ; Clear the default list of archives to
-                                        ; let the user have exact control over
-                                        ; all archives
-
-
-;;;; Compatibility check
-
 ;; Declare our error symbol
 (eval-and-compile
   ;; We must make the error symbol available during compilation to support the
@@ -121,6 +109,13 @@
 
 ;; The following function definitions are independent from the concrete
 ;; implementation, and hence defined in the top-level library.
+
+
+;;;; Package.el cruft
+
+(setq package-archives nil)             ; Clear the default list of archives to
+                                        ; let the user have exact control over
+                                        ; all archives
 
 
 ;;;; Package objects
