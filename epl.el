@@ -85,7 +85,7 @@
 (eval-and-compile
   ;; We must make the error symbol available during compilation to support the
   ;; conditional loading of the right EPL implementation.
-  (put 'epl-error 'error-conditions '(error))
+  (put 'epl-error 'error-conditions '(error epl-error))
   (put 'epl-error 'error-message "EPL Error"))
 
 (defun epl-error (string &rest args)
