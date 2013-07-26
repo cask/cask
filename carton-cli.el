@@ -117,6 +117,9 @@
 (defun carton-cli/path ()
   (princ (carton-path)))
 
+(defun carton-cli/package-directory ()
+  (princ (carton-elpa-dir)))
+
 (defun carton-cli/dev ()
   (setq carton-cli--dev-mode t))
 
@@ -133,6 +136,7 @@
  (command "help" "Display this help message" 'carton-cli/help)
  (command "load-path" "Print Emacs load-path (including package dependencies)" 'carton-cli/load-path)
  (command "path" "Print Emacs exec-path (including package bin path)" 'carton-cli/path)
+ (command "package-directory" "Print package installation directory" 'carton-cli/package-directory)
  (option "-h, --help" "Display this help message" 'carton-cli/help)
  (option "--dev" "Run in dev mode" 'carton-cli/dev)
  (default "install"))
