@@ -6,8 +6,7 @@ ECUKES = $(shell find ${PKG_DIR}/ecukes-*/ecukes | tail -1)
 ECUKES_ARGS = --script features ${TAGS}
 SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
 
-PKG_DIR = $(shell ${EMACS} -Q --batch --eval \
-'(princ (format ".carton/%s/elpa" emacs-version))')
+PKG_DIR := $(shell ${CARTON} package-directory)
 
 export EMACS
 export CARTON
