@@ -114,7 +114,7 @@ package archives and reset the package directory."
 
 ;;;; Package database access
 
-(defun epl-package--from-package-alist-entry (entry)
+(defun epl-package--from-package-list-entry (entry)
   "Create a `epl-package' from an item in `package-alist'."
   (let ((name (car entry))
         (info (cdr entry)))
@@ -126,11 +126,20 @@ package archives and reset the package directory."
                   (version-to-list version))
        :requirements (mapcar #'epl-requirement--from-req reqs)))))
 
+(defun epl-package--find-in-list (name list)
+  "Find a package by NAME in a package LIST.
+
+Return the corresponding `epl-package', or nil if the package was
+not found."
+  (let ((entry (assq name list)))
+    (when entry
+      (epl-package--from-package-list-entry entry))))
+
 (defun epl-installed-packages ()
   "Get all installed packages.
 
 Return a list of package objects."
-  (mapcar #'epl-package--from-package-alist-entry package-alist))
+  (mapcar #'epl-package--from-package-list-entry package-alist))
 
 (defun epl-find-installed-package (name)
   "Find an installed package by NAME.
@@ -139,15 +148,13 @@ NAME is a package name, as symbol.
 
 Return the installed package as package object, or nil if no
 package with NAME is installed."
-  (let ((entry (assq name package-alist)))
-    (when entry
-      (epl-package--from-package-alist-entry entry))))
+  (epl-package--find-in-list name package-alist))
 
 (defun epl-available-packages ()
   "Get all packages available for installed.
 
 Return a list of package objects."
-  (mapcar #'cadr package-archive-contents))
+  (mapcar #'epl-package--from-package-list-entry package-archive-contents))
 
 (defun epl-find-available-package (name)
   "Find an available package by NAME.
@@ -156,7 +163,7 @@ NAME is a package name, as symbol.
 
 Return the package as package object, or nil, if no package with
 NAME is available."
-  (cadr (assq name package-archive-contents)))
+  (epl-package--find-in-list name package-archive-contents))
 
 (defstruct (epl-upgrade
             (:constructor epl-upgrade-create))
