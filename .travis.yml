@@ -21,7 +21,7 @@ before_install:
 env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
-  - EMACS=emacs23 TAGS="--tags ~@not-in-emacs-23"
+  - EMACS=emacs23
 script:
   - make ecukes
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
