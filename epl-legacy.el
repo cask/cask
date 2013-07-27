@@ -195,7 +195,7 @@ already installed."
   "Delete a PACKAGE.
 
 PACKAGE is a package object to delete."
-  (package-delete (epl-package-name package)
+  (package-delete (symbol-name (epl-package-name package))
                   (epl-package-version-string package)))
 
 (provide 'epl-legacy)
