@@ -118,7 +118,7 @@ package archives and reset the package directory."
   "Create a `epl-package' from an item in `package-alist'."
   (let ((name (car entry))
         (info (cdr entry)))
-    (destructuring-bind (version reqs docstring) (append info nil)
+    (destructuring-bind (version reqs docstring &rest _) (append info nil)
       (epl-package-create
        :name name
        :summary docstring
