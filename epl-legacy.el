@@ -195,8 +195,10 @@ already installed."
   "Delete a PACKAGE.
 
 PACKAGE is a package object to delete."
-  (package-delete (symbol-name (epl-package-name package))
-                  (epl-package-version-string package)))
+  ;; Never trash packages deleted by Carton
+  (let ((delete-by-moving-to-trash nil))
+    (package-delete (symbol-name (epl-package-name package))
+                    (epl-package-version-string package))))
 
 (provide 'epl-legacy)
 

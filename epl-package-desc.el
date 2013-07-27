@@ -186,10 +186,19 @@ already installed."
   (when (or force (not (epl-package-installed-p package)))
     (package-install package)))
 
-(defalias 'epl-package-delete 'package-delete
+(defun epl-package-delete (package)
   "Delete a PACKAGE.
 
-PACKAGE is a package object to delete.")
+PACKAGE is a package object referring to the package which shall
+be deleted.
+
+The package directory is deleted, and the package is removed from
+the list of available packages.  However, if files from PACKAGE
+were loaded they are not unloaded by deleting the package."
+  ;; package-delete allows for packages being trashed instead of fully deleted.
+  ;; Let's prevent his silly behavior
+  (let ((delete-by-moving-to-trash nil))
+    (package-delete package)))
 
 (provide 'epl-package-desc)
 
