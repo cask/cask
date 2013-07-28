@@ -26,7 +26,7 @@
 (add-to-list 'load-path cask-root-path)
 
 (unless (require 'ert nil t)
-  (require 'ert (expand-file-name "ert" cask-vendor-path)))
+  (require 'ert (f-expand "ert" cask-vendor-path)))
 
 (Before
  (setq cask-error nil)
