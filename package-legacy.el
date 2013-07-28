@@ -1034,7 +1034,7 @@ The file can either be a tar file or an Emacs Lisp file."
 		      (file-name-as-directory
 		       (expand-file-name package-user-dir)))
 	(progn
-	  (delete-directory dir t t)
+	  (delete-directory dir t)
 	  (message "Package `%s-%s' deleted." name version))
       ;; Don't delete "system" packages
       (error "Package `%s-%s' is a system package, not deleting"

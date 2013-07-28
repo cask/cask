@@ -26,6 +26,7 @@
 (add-to-list 'load-path carton-root-path)
 
 (require 's)
+(require 'ansi)
 (require 'espuds)
 
 (unless (require 'ert nil t)
@@ -40,3 +41,11 @@
   (lambda (project-path)
     (delete-directory project-path t))
   (directory-files carton-projects-path t "^[^\\.\\.?]")))
+
+(Fail
+ (when carton-output
+   (princ "==================== CARTON OUTPUT ====================\n")
+   (princ carton-output))
+ (when carton-error
+   (princ "==================== CARTON ERROR ====================\n")
+   (princ (ansi-red "%s" carton-error))))

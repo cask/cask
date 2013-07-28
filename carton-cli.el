@@ -3,44 +3,39 @@
 ;; Avoid "Loading vc-git..." messages
 (remove-hook 'find-file-hooks 'vc-find-file-hook)
 
-(defvar carton-root-path
-  (file-name-directory load-file-name)
-  "Path to Carton root.")
 
-(defvar carton-bootstrap-dir
-  (expand-file-name
-   (format ".carton/%s/bootstrap" emacs-version) carton-root-path)
+(eval-and-compile
+  (defconst carton-cli-directory
+    (file-name-directory
+     (cond
+      (load-in-progress load-file-name)
+      ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+       byte-compile-current-file)
+      (:else (buffer-file-name))))
+    "Path to Carton root."))
+
+(require 'carton (expand-file-name "carton" carton-cli-directory))
+
+;; Bootstrap the dependencies of the CLI wrapper
+(defconst carton-bootstrap-dir
+  (carton-resource-path (format ".carton/%s/bootstrap" emacs-version))
   "Path to Carton ELPA dir.")
 
 (defconst carton-bootstrap-packages '(commander)
   "List of bootstrap packages required by this file.")
 
-(unless (require 'package nil t)
-  (require 'package (expand-file-name "carton-package.el"
-                                      (file-name-directory load-file-name))))
-
-(let ((package-user-dir carton-bootstrap-dir))
-  (package-initialize)
-  (condition-case err
-      (mapc 'require carton-bootstrap-packages)
-    (error
-     (add-to-list
-      'package-archives
-      '("melpa" . "http://melpa.milkbox.net/packages/"))
-     (package-refresh-contents)
-     (mapc
-      (lambda (package)
-        (unless (package-installed-p package)
-          (package-install package)))
-      carton-bootstrap-packages)))
-  (mapc 'require carton-bootstrap-packages)
-
-  ;; TODO: Run command in sub process instead
-  (setq package-alist nil)
-  (setq package-archives nil)
-  (setq package-archive-contents nil))
-
-(require 'carton (expand-file-name "carton.el" carton-root-path))
+(unwind-protect
+    (progn
+      (epl-change-package-dir carton-bootstrap-dir)
+      (epl-initialize)
+      (condition-case nil
+          (mapc 'require carton-bootstrap-packages)
+        (error
+         (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
+         (epl-refresh)
+         (mapc 'epl-package-install carton-bootstrap-packages)
+         (mapc 'require carton-bootstrap-packages))))
+  (epl-reset))
 
 (defvar carton-cli--dev-mode nil
   "If Carton should run in dev mode or not.")
@@ -75,9 +70,9 @@
         (princ
          (format
           "%s %s -> %s\n"
-          (carton-upgrade-name upgrade)
-          (package-version-join (carton-upgrade-old-version upgrade))
-          (package-version-join (carton-upgrade-new-version upgrade))))))))
+          (epl-package-name (epl-upgrade-installed upgrade))
+          (epl-package-version-string (epl-upgrade-installed upgrade))
+          (epl-package-version-string (epl-upgrade-available upgrade))))))))
 
 (defun carton-cli/init ()
   (carton-init default-directory carton-cli--dev-mode))
