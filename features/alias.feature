@@ -1,56 +1,56 @@
 Feature: Source Alias
   In order to type less
-  As a Carton user
+  As a Cask user
   I want source alias
 
   Background:
     Given I create a project called "alias"
     And I go to the project called "alias"
 
-  Scenario: Carton test
-    Given this Carton file:
+  Scenario: Cask test
+    Given this Cask file:
       """
-      (source carton-test)
+      (source cask-test)
 
       (depends-on "foo" "0.0.1")
       """
-    When I run carton "install"
+    When I run cask "install"
     Then there should exist a package directory called "foo-0.0.1"
 
   Scenario: Invalid alias (quote)
-    Given this Carton file:
+    Given this Cask file:
       """
-      (source 'carton-test)
+      (source 'cask-test)
 
       (depends-on "foo" "0.0.1")
       """
-    When I run carton "install"
+    When I run cask "install"
     Then I should see command error:
       """
-      Unknown package archive: (quote carton-test)
+      Unknown package archive: (quote cask-test)
       """
 
   Scenario: Invalid alias (string)
-    Given this Carton file:
+    Given this Cask file:
       """
-      (source "carton-test")
+      (source "cask-test")
 
       (depends-on "foo" "0.0.1")
       """
-    When I run carton "install"
+    When I run cask "install"
     Then I should see command error:
       """
-      Unknown package archive: carton-test
+      Unknown package archive: cask-test
       """
 
   Scenario: Non existing alias
-    Given this Carton file:
+    Given this Cask file:
       """
       (source invalid)
 
       (depends-on "foo" "0.0.1")
       """
-    When I run carton "install"
+    When I run cask "install"
     Then I should see command error:
       """
       Unknown package archive: invalid

@@ -1,5 +1,5 @@
 tmp
-.carton
+.cask
 *.elc
 
 *-pkg.el

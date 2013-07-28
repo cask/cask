@@ -1,50 +1,50 @@
 Feature: Install
   In order to satisfy dependencies
-  As a Carton user
+  As a Cask user
   I want to install them
 
   Background:
     Given I create a project called "install"
     And I go to the project called "install"
 
-  Scenario: No Carton file
-    When I run carton "install"
+  Scenario: No Cask file
+    When I run cask "install"
     Then I should see command error:
       """
-      Could not locate `Carton` file
+      Could not locate `Cask` file
       """
 
   Scenario: No dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       """
-    When I run carton "install"
+    When I run cask "install"
     Then package directory should not exist
 
   Scenario: Single dependency
-    Given this Carton file:
+    Given this Cask file:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
       (depends-on "foo" "0.0.1")
       """
-    When I run carton "install"
+    When I run cask "install"
     Then there should exist a package directory called "foo-0.0.1"
 
   Scenario: Multiple dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
       (depends-on "foo" "0.0.1")
       (depends-on "bar" "0.0.2")
       """
-    When I run carton "install"
+    When I run cask "install"
     Then there should exist a package directory called "foo-0.0.1"
     And there should exist a package directory called "bar-0.0.2"
 
   Scenario: Using package-file directive
-    Given this Carton file:
+    Given this Cask file:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
       
@@ -95,16 +95,16 @@ Feature: Install
 
       ;;; super-project.el ends here
       """
-    And I run carton "install"
+    And I run cask "install"
     Then there should exist a package directory called "foo-0.0.1"
     And there should exist a package directory called "bar-0.0.2"
 
   Scenario: No argument to binary is same as install
-    Given this Carton file:
+    Given this Cask file:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
       (depends-on "foo" "0.0.1")
       """
-    When I run carton ""
+    When I run cask ""
     Then there should exist a package directory called "foo-0.0.1"

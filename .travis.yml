@@ -27,7 +27,7 @@ matrix:
     - env: EMACS=emacs23
 script:
   - make ecukes
-  - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
+  - curl -fsSkL https://raw.github.com/rejeep/cask/master/go | sh
 after_failure:
   - cat tmp/server.log
 after_script:

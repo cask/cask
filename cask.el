@@ -1,4 +1,4 @@
-;;; carton.el --- Emacs dependency management made easy
+;;; cask.el --- Emacs dependency management made easy
 
 ;; Copyright (C) 2012, 2013 Johan Andersson
 ;; Copyright (C) 2013 Sebastian Wiesner
@@ -8,7 +8,7 @@
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
 ;; Version: 0.3.1
 ;; Keywords: speed, convenience
-;; URL: http://github.com/rejeep/carton
+;; URL: http://github.com/rejeep/cask.el
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -37,7 +37,7 @@
   (require 'cl))
 
 (eval-and-compile
-  (defconst carton-directory
+  (defconst cask-directory
     ;; Fall back to buffer file name to handle M-x eval-buffer
     (file-name-directory
      (cond
@@ -45,81 +45,81 @@
       ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
        byte-compile-current-file)
       (:else (buffer-file-name))))
-    "The directory to which Carton is installed.")
+    "The directory to which Cask is installed.")
 
-  (defun carton-resource-path (name)
-    "Get the path of a Carton resource with NAME."
-    (expand-file-name name carton-directory)))
+  (defun cask-resource-path (name)
+    "Get the path of a Cask resource with NAME."
+    (expand-file-name name cask-directory)))
 
-(require 'epl (carton-resource-path "epl"))
+(require 'epl (cask-resource-path "epl"))
 
-(defstruct carton-package name version description)
-(defstruct carton-dependency name version)
-(defstruct carton-source name url)
+(defstruct cask-package name version description)
+(defstruct cask-dependency name version)
+(defstruct cask-source name url)
 
-(defvar carton-project-path nil
+(defvar cask-project-path nil
   "Path to project.")
 
-(defvar carton-project-name nil
+(defvar cask-project-name nil
   "Name of project.")
 
-(defvar carton-file nil
-  "Path to `Carton` file.")
+(defvar cask-file nil
+  "Path to `Cask` file.")
 
-(defvar carton-package-file nil
+(defvar cask-package-file nil
   "Path to project package (`-pkg.el`) file.")
 
-(defvar carton-development-dependencies nil
+(defvar cask-development-dependencies nil
   "List of development dependencies.")
 
-(defvar carton-runtime-dependencies nil
+(defvar cask-runtime-dependencies nil
   "List of runtime dependencies.")
 
-(defvar carton-package nil
+(defvar cask-package nil
   "Project package information.")
 
-(defvar carton-source-mapping
+(defvar cask-source-mapping
   '((gnu         . "http://elpa.gnu.org/packages/")
     (melpa       . "http://melpa.milkbox.net/packages/")
     (marmalade   . "http://marmalade-repo.org/packages/")
     (SC          . "http://joseito.republika.pl/sunrise-commander/")
     (org         . "http://orgmode.org/elpa/")
-    (carton-test . "http://127.0.0.1:9191/packages/"))
+    (cask-test   . "http://127.0.0.1:9191/packages/"))
   "Mapping of source name and url.")
 
-(defun carton-read (filename)
-  "Read a carton file from FILENAME.
+(defun cask-read (filename)
+  "Read a cask file from FILENAME.
 
-Return all directives in the Carton file as list."
+Return all directives in the Cask file as list."
   (with-temp-buffer
     (insert-file-contents-literally filename)
     (read (format "(%s)" (buffer-string)))))
 
-(defun carton-get-dep-list-for-scope (scope)
+(defun cask-get-dep-list-for-scope (scope)
   "Get the dependency list symbol for SCOPE."
   (if (eq scope :development)
-      'carton-development-dependencies
-    'carton-runtime-dependencies))
+      'cask-development-dependencies
+    'cask-runtime-dependencies))
 
-(defun carton-add-dependency (name &optional version scope)
+(defun cask-add-dependency (name &optional version scope)
   "Add the dependency NAME with VERSION in SCOPE."
   (let* ((name (if (stringp name) (intern name) name))
-         (dependency (make-carton-dependency :name name :version version))
-         (dep-list (carton-get-dep-list-for-scope scope)))
+         (dependency (make-cask-dependency :name name :version version))
+         (dep-list (cask-get-dep-list-for-scope scope)))
     (add-to-list dep-list dependency t)))
 
-(defun carton-parse-epl-package (package)
+(defun cask-parse-epl-package (package)
   "Parse an EPL PACKAGE."
-  (setq carton-package
-        (make-carton-package :name (epl-package-name package)
+  (setq cask-package
+        (make-cask-package :name (epl-package-name package)
                              :version (epl-package-version-string package)
                              :description (epl-package-summary package)))
   (dolist (req (epl-package-requirements package))
-    (carton-add-dependency (epl-requirement-name req)
+    (cask-add-dependency (epl-requirement-name req)
                              (epl-requirement-version-string req))))
 
-(defun carton-eval (forms &optional scope)
-  "Evaluate carton FORMS in SCOPE.
+(defun cask-eval (forms &optional scope)
+  "Evaluate cask FORMS in SCOPE.
 
 SCOPE may be nil or :development."
   (dolist (form forms)
@@ -127,7 +127,7 @@ SCOPE may be nil or :development."
       (source
        (destructuring-bind (_ name-or-alias &optional url) form
          (unless url
-           (let ((mapping (assq name-or-alias carton-source-mapping)))
+           (let ((mapping (assq name-or-alias cask-source-mapping)))
              (unless mapping
                (error "Unknown package archive: %s" name-or-alias))
              (setq name-or-alias (symbol-name (car mapping)))
@@ -135,55 +135,55 @@ SCOPE may be nil or :development."
          (epl-add-archive name-or-alias url)))
       (package
        (destructuring-bind (_ name version description) form
-         (setq carton-package (make-carton-package :name name
+         (setq cask-package (make-cask-package :name name
                                                    :version version
                                                    :description description))))
       (package-file
        (destructuring-bind (_ filename) form
-         (carton-parse-epl-package
+         (cask-parse-epl-package
           (epl-package-from-file
-           (expand-file-name filename carton-project-path)))))
+           (expand-file-name filename cask-project-path)))))
       (depends-on
        (destructuring-bind (_ name &optional version) form
-         (carton-add-dependency name version scope)))
+         (cask-add-dependency name version scope)))
       (development
        (destructuring-bind (_ . body) form
-         (carton-eval body :development)))
+         (cask-eval body :development)))
       (t
        (error "Unknown directive: %S" form)))))
 
-(defun carton-elpa-dir ()
-  "Return full path to `carton-project-path'/.carton/elpa/`emacs-version'."
-  (expand-file-name (format ".carton/%s/elpa" emacs-version)
-                    carton-project-path))
+(defun cask-elpa-dir ()
+  "Return full path to `cask-project-path'/.cask/elpa/`emacs-version'."
+  (expand-file-name (format ".cask/%s/elpa" emacs-version)
+                    cask-project-path))
 
-(defun carton-setup (project-path)
-  "Setup carton for project at PROJECT-PATH."
-  (setq carton-project-path (directory-file-name project-path))
-  (setq carton-project-name (file-name-nondirectory carton-project-path))
-  (setq carton-file (expand-file-name "Carton" carton-project-path))
-  (setq carton-package-file (expand-file-name (concat carton-project-name "-pkg.el") carton-project-path))
+(defun cask-setup (project-path)
+  "Setup cask for project at PROJECT-PATH."
+  (setq cask-project-path (directory-file-name project-path))
+  (setq cask-project-name (file-name-nondirectory cask-project-path))
+  (setq cask-file (expand-file-name "Cask" cask-project-path))
+  (setq cask-package-file (expand-file-name (concat cask-project-name "-pkg.el") cask-project-path))
   (when (equal (epl-package-dir) (epl-default-package-dir))
-    (epl-change-package-dir (carton-elpa-dir)))
-  (unless (file-exists-p carton-file)
-    (error "Could not locate `Carton` file"))
-  (carton-eval (carton-read carton-file)))
+    (epl-change-package-dir (cask-elpa-dir)))
+  (unless (file-exists-p cask-file)
+    (error "Could not locate `Cask` file"))
+  (cask-eval (cask-read cask-file)))
 
-(defun carton-initialize ()
+(defun cask-initialize ()
   "Initialize packages under \"~/.emacs.d/\".
 Setup `package-user-dir' appropriately and then call `package-initialize'."
-  (carton-setup user-emacs-directory)
+  (cask-setup user-emacs-directory)
   (epl-initialize))
 
-(defun carton--template-get (name)
+(defun cask--template-get (name)
   "Return content of template with NAME."
-  (let* ((templates-dir (carton-resource-path "templates"))
+  (let* ((templates-dir (cask-resource-path "templates"))
          (template-file (expand-file-name name templates-dir)))
     (with-temp-buffer
       (insert-file-contents-literally template-file)
       (buffer-string))))
 
-(defun carton-update ()
+(defun cask-update ()
   "Update dependencies.
 
 Return a list of updated packages."
@@ -191,83 +191,83 @@ Return a list of updated packages."
   (epl-initialize)
   (epl-upgrade))
 
-(defun carton-install ()
+(defun cask-install ()
   "Install dependencies."
-  (let ((carton-dependencies (append carton-development-dependencies carton-runtime-dependencies)))
-    (when carton-dependencies
+  (let ((cask-dependencies (append cask-development-dependencies cask-runtime-dependencies)))
+    (when cask-dependencies
       (epl-refresh)
       (epl-initialize)
-      (dolist (dependency carton-dependencies)
-        (epl-package-install (carton-dependency-name dependency))))))
+      (dolist (dependency cask-dependencies)
+        (epl-package-install (cask-dependency-name dependency))))))
 
-(defun carton-init (path &optional dev-mode)
+(defun cask-init (path &optional dev-mode)
   "Create new project at PATH with optional DEV-MODE."
   (let ((init-content
-         (carton--template-get
+         (cask--template-get
           (if dev-mode "init-dev.tpl" "init.tpl")))
-        (carton-file-path (expand-file-name "Carton" path)))
-    (if (file-exists-p carton-file-path)
-        (error "Carton file already exists.")
+        (cask-file-path (expand-file-name "Cask" path)))
+    (if (file-exists-p cask-file-path)
+        (error "Cask file already exists.")
       (with-temp-buffer
         (insert init-content)
-        (write-file carton-file-path)))))
+        (write-file cask-file-path)))))
 
-(defun carton-info ()
+(defun cask-info ()
   "Return info about this project."
   (or
-   carton-package
+   cask-package
    (error "Missing `package` or `package-file` directive")))
 
-(defun carton-version ()
+(defun cask-version ()
   "Return the version of this project."
-  (if carton-package
-      (carton-package-version carton-package)
+  (if cask-package
+      (cask-package-version cask-package)
     (error "Missing `package` or `package-file` directive")))
 
-(defun carton-package ()
+(defun cask-package ()
   "Package this project."
-  (if carton-package
-      (carton-define-package-string)
+  (if cask-package
+      (cask-define-package-string)
     (error "Missing `package` or `package-file` directive")))
 
-(defun carton-load-path ()
+(defun cask-load-path ()
   "Return Emacs load-path (including package dependencies)."
   (mapconcat
    'identity
    (append
-    (file-expand-wildcards (concat (carton-elpa-dir) "/*") t)
+    (file-expand-wildcards (concat (cask-elpa-dir) "/*") t)
     load-path)
    path-separator))
 
-(defun carton-path ()
+(defun cask-path ()
   "Return Emacs exec-path (including package dependencies)."
   (mapconcat
    'identity
    (append
-    (file-expand-wildcards (concat (carton-elpa-dir) "/*/bin") t)
+    (file-expand-wildcards (concat (cask-elpa-dir) "/*/bin") t)
     exec-path)
    path-separator))
 
-(defun carton-define-package-string ()
+(defun cask-define-package-string ()
   "Return `define-package' string."
   (format
    "(define-package \"%s\" \"%s\"\n  \"%s\"%s)\n"
-   (carton-package-name carton-package)
-   (carton-package-version carton-package)
-   (carton-package-description carton-package)
-   (let ((dependency-string (carton-dependency-string)))
+   (cask-package-name cask-package)
+   (cask-package-version cask-package)
+   (cask-package-description cask-package)
+   (let ((dependency-string (cask-dependency-string)))
      (if (equal dependency-string "")
          "" (format "\n  '(%s)" dependency-string)))))
 
-(defun carton-dependency-string ()
+(defun cask-dependency-string ()
   "Return dependencies as string."
   (mapconcat
    (lambda (package)
-     (let ((name (carton-dependency-name package))
-           (version (carton-dependency-version package)))
+     (let ((name (cask-dependency-name package))
+           (version (cask-dependency-version package)))
        (format "(%s \"%s\")" name (or version ""))))
-   carton-runtime-dependencies " "))
+   cask-runtime-dependencies " "))
 
-(provide 'carton)
+(provide 'cask)
 
-;;; carton.el ends here
+;;; cask.el ends here

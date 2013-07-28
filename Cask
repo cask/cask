@@ -1,6 +1,6 @@
 (source melpa)
 
-(package-file "carton.el")
+(package-file "cask.el")
 
 (development
  (depends-on "f")

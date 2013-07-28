@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [[ "$1" == "exec" ]]; then
+  EMACSLOADPATH="$($0 load-path)" PATH="$($0 path)" exec "${@:2}"
+else
+  exec "${EMACS:-emacs}" --script "$(dirname $(dirname $0))/cask-cli.el" -- "$@"
+fi

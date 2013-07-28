@@ -1,24 +1,24 @@
 Feature: List
   In order to quickly get an overview of all dependencies
-  As a Carton user
+  As a Cask user
   I want to list them
 
   Background:
     Given I create a project called "list"
     And I go to the project called "list"
 
-  Scenario: No Carton file
-    When I run carton "list"
+  Scenario: No Cask file
+    When I run cask "list"
     Then I should see command error:
       """
-      Could not locate `Carton` file
+      Could not locate `Cask` file
       """
 
   Scenario: No dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       """
-    When I run carton "list"
+    When I run cask "list"
     Then I should see command output:
       """
       ### Dependencies ###
@@ -28,11 +28,11 @@ Feature: List
       """
 
   Scenario: Single runtime dependency
-    Given this Carton file:
+    Given this Cask file:
       """
       (depends-on "foo" "0.1.2")
       """
-    When I run carton "list"
+    When I run cask "list"
     Then I should see command output:
       """
       ### Dependencies ###
@@ -44,12 +44,12 @@ Feature: List
       """
 
   Scenario: Single development dependency
-    Given this Carton file:
+    Given this Cask file:
       """
       (development
        (depends-on "baz"))
       """
-    When I run carton "list"
+    When I run cask "list"
     Then I should see command output:
       """
       ### Dependencies ###
@@ -60,12 +60,12 @@ Feature: List
       """
 
   Scenario: Multiple runtime dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       (depends-on "foo" "0.1.2")
       (depends-on "bar" "0.2.1")
       """
-    When I run carton "list"
+    When I run cask "list"
     Then I should see command output:
       """
       ### Dependencies ###
@@ -78,13 +78,13 @@ Feature: List
       """
 
   Scenario: Multiple development dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       (development
        (depends-on "baz")
        (depends-on "qux"))
       """
-    When I run carton "list"
+    When I run cask "list"
     Then I should see command output:
       """
       ### Dependencies ###
@@ -96,7 +96,7 @@ Feature: List
       """
 
   Scenario: Multiple runtime and development dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       (depends-on "foo" "0.1.2")
       (depends-on "bar" "0.2.1")
@@ -105,7 +105,7 @@ Feature: List
        (depends-on "baz")
        (depends-on "qux"))
       """
-    When I run carton "list"
+    When I run cask "list"
     Then I should see command output:
       """
       ### Dependencies ###

@@ -1,35 +1,35 @@
 Feature: List
   In order to quickly get an overview of the current project
-  As a Carton user
+  As a Cask user
   I want all the details
 
   Background:
     Given I create a project called "info"
     And I go to the project called "info"
 
-  Scenario: No Carton file
-    When I run carton "info"
+  Scenario: No Cask file
+    When I run cask "info"
     Then I should see command error:
       """
-      Could not locate `Carton` file
+      Could not locate `Cask` file
       """
 
-  Scenario: Empty Carton file
-    Given this Carton file:
+  Scenario: Empty Cask file
+    Given this Cask file:
       """
       """
-    When I run carton "info"
+    When I run cask "info"
     Then I should see command error:
       """
       Missing `package` or `package-file` directive
       """
 
   Scenario: Using package directive
-    Given this Carton file:
+    Given this Cask file:
       """
       (package "super-project" "0.0.1" "Super project.")
       """
-    When I run carton "info"
+    When I run cask "info"
     Then I should see command output:
       """
       ### super-project (0.0.1) ###
@@ -38,7 +38,7 @@ Feature: List
       """
 
   Scenario: Using package-file directive
-    Given this Carton file:
+    Given this Cask file:
       """
       (package-file "super-project.el")
       """
@@ -87,7 +87,7 @@ Feature: List
 
       ;;; super-project.el ends here
       """
-    And I run carton "info"
+    And I run cask "info"
     Then I should see command output:
       """
       ### super-project (0.0.1) ###
