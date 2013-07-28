@@ -1,9 +1,10 @@
-(source 'melpa)
+(source melpa)
 
 (package-file "carton.el")
 
 (development
  (depends-on "s")
+ (depends-on "ansi")
  (depends-on "ecukes")
  (depends-on "espuds")
  (depends-on "elnode"))
