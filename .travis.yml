@@ -22,6 +22,9 @@ env:
   - EMACS=emacs-snapshot
   - EMACS=emacs24
   - EMACS=emacs23
+matrix:
+  allow_failures:
+    - env: EMACS=emacs23
 script:
   - make ecukes
   - curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
