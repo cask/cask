@@ -16,8 +16,14 @@
 (defvar cask-projects-path
   (f-expand "projects" cask-features-path))
 
+(defvar cask-bin-path
+  (f-expand "bin" cask-root-path))
+
 (defvar cask-bin-command
-  (f-expand (f-join "bin" "cask") cask-root-path))
+  (f-expand "cask" cask-bin-path))
+
+(defvar carton-bin-command
+  (f-expand "carton" cask-bin-path))
 
 (defvar cask-error nil)
 (defvar cask-output nil)

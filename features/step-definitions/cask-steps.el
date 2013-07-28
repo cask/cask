@@ -22,18 +22,22 @@
   (lambda (filename content)
     (cask-test/create-project-file filename content)))
 
-(When "^I run cask \"\\([^\"]*\\)\"$"
-  (lambda (command)
+(When "^I run \\(cask\\|carton\\) \"\\([^\"]*\\)\"$"
+  (lambda (binary command)
     (setq command (cask-test/template command))
     (let* ((buffer (get-buffer-create "*cask-output*"))
            (default-directory (file-name-as-directory cask-current-project))
            (args
             (unless (equal command "")
               (s-split " " command)))
+           (bin-command
+            (if (equal binary "cask")
+                cask-bin-command
+              carton-bin-command))
            (exit-code
             (apply
              'call-process
-             (append (list cask-bin-command nil buffer nil) args))))
+             (append (list bin-command nil buffer nil) args))))
       (with-current-buffer buffer
         (let ((content (buffer-string)))
           (cond ((= exit-code 0)
