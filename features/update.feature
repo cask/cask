@@ -14,29 +14,6 @@ Feature: Update
       Could not locate `Carton` file
       """
 
-  @only-in-emacs-23
-  Scenario: Update not supported
-    Given this Carton file:
-      """
-      (source "localhost" "http://127.0.0.1:9191/packages/")
-
-      (depends-on "foo" "0.0.1")
-      """
-    When I run carton "install"
-    Then there should exist a package directory called "foo-0.0.1"
-    Given this Carton file:
-      """
-      (source "localhost" "http://127.0.0.1:9191/new-packages/")
-
-      (depends-on "foo" "0.0.1")
-      """
-    When I run carton "update"
-    And I should see command error:
-      """
-      The `update` command is not supported until Emacs 24.
-      """
-
-  @not-in-emacs-23
   Scenario: With dependency
     Given this Carton file:
       """

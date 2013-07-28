@@ -4,6 +4,7 @@
 
 (development
  (depends-on "s")
+ (depends-on "ansi")
  (depends-on "ecukes")
  (depends-on "espuds")
  (depends-on "elnode"))
