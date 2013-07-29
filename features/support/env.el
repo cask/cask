@@ -35,8 +35,8 @@
   (require 'ert (f-expand "ert" cask-vendor-path)))
 
 (Before
- (setq cask-error nil)
- (setq cask-output nil)
+ (setq cask-error "")
+ (setq cask-output "")
  (setq cask-current-project nil)
 
  (--map
