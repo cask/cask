@@ -25,7 +25,12 @@
 (When "^I run \\(cask\\|carton\\) \"\\([^\"]*\\)\"$"
   (lambda (binary command)
     (setq command (cask-test/template command))
-    (let* ((buffer (get-buffer-create "*cask-output*"))
+    (let* ((buffer-name "*cask-output*")
+           (buffer
+            (progn
+              (when (get-buffer buffer-name)
+                (kill-buffer "*cask-output*"))
+              (get-buffer-create "*cask-output*")))
            (default-directory (file-name-as-directory cask-current-project))
            (args
             (unless (equal command "")
