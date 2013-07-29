@@ -44,3 +44,32 @@ Feature: Carton Deprecation
       """
       [DEPRECATION WARNING] Remove 'elpa' directory and run 'cask' command again
       """
+
+  Scenario: Favor .cask over elpa directory
+    Given this Cask file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "foo" "0.0.1")
+      """
+    When I run cask "install"
+    And I move ".cask/{{EMACS-VERSION}}/elpa" to "elpa"
+    Given this Cask file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "foo" "0.0.1")
+      (depends-on "bar" "0.0.2")
+      """
+    When I run cask "install"
+    And I run cask "list"
+    Then I should see command output:
+      """
+      ### Dependencies ###
+
+      Runtime [2]:
+       - foo (0.0.1)
+       - bar (0.0.2)
+
+      Development [0]:
+      """

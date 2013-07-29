@@ -155,12 +155,15 @@ SCOPE may be nil or :development."
 (defun cask-elpa-dir ()
   "Return full path to `cask-project-path'/.cask/elpa/`emacs-version'."
   (let ((carton-elpa-dir
-         (expand-file-name "elpa" cask-project-path)))
-    (if (file-exists-p carton-elpa-dir)
+         (expand-file-name "elpa" cask-project-path))
+        (cask-elpa-dir
+         (expand-file-name (format ".cask/%s/elpa" emacs-version) cask-project-path)))
+    (if (and (file-exists-p carton-elpa-dir)
+             (not (file-exists-p cask-elpa-dir)))
         (progn
           (message "[DEPRECATION WARNING] Remove 'elpa' directory and run 'cask' command again")
           carton-elpa-dir)
-      (expand-file-name (format ".cask/%s/elpa" emacs-version) cask-project-path))))
+      cask-elpa-dir)))
 
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
