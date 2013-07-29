@@ -22,6 +22,8 @@ needs to be done to migrate:
 
 3. Rename the file `Carton` to `Cask`
 
+_(And ohh, don't forget to update your `.travis.yml` and `.gitignore` files)_
+
 ## Installation
 
 To automatically install Cask, run this command:
