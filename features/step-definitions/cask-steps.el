@@ -107,3 +107,8 @@
   (lambda ()
     (let ((cask-project-path cask-current-project))
       (should-not (file-directory-p (cask-test/elpa-dir))))))
+
+(When "^I move \"\\([^\"]+\\)\" to \"\\([^\"]+\\)\"$"
+  (lambda (from to)
+    (let ((default-directory cask-current-project))
+      (f-move (cask-test/template from) (cask-test/template to)))))

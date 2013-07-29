@@ -25,3 +25,22 @@ Feature: Carton Deprecation
       [DEPRECATION WARNING] Rename the file 'Carton' to 'Cask'
       """
     And there should exist a package directory called "foo-0.0.1"
+
+  Scenario: Carton elpa path
+    Given this Cask file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "foo" "0.0.1")
+      """
+    When I run cask "install"
+    And I move ".cask/{{EMACS-VERSION}}/elpa" to "elpa"
+    And I run cask "load-path"
+    Then I should see command output:
+      """
+      {{PROJECT-PATH}}/elpa
+      """
+    And I should see command output:
+      """
+      [DEPRECATION WARNING] Remove 'elpa' directory and run 'cask' command again
+      """
