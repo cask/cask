@@ -44,9 +44,9 @@
   (f-directories cask-projects-path)))
 
 (Fail
- (when cask-output
+ (unless (s-blank? cask-output)
    (princ "==================== CASK OUTPUT ====================\n")
    (princ cask-output))
- (when cask-error
+ (unless (s-blank? cask-error)
    (princ "==================== CASK ERROR ====================\n")
    (princ (ansi-red "%s" cask-error))))
