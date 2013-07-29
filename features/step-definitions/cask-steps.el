@@ -14,9 +14,9 @@
          (command (s-replace "{{PROJECT-PATH}}" cask-current-project command)))
     command))
 
-(Given "^this Cask file:$"
-  (lambda (content)
-    (cask-test/create-project-file "Cask" content)))
+(Given "^this \\(Cask\\|Carton\\) file:$"
+  (lambda (filename content)
+    (cask-test/create-project-file filename content)))
 
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)
