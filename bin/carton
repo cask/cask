@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-echo "[DEPRECATION WARNING] The binary carton is deprecated in favour of cask"
+echo "[DEPRECATION WARNING] The binary 'carton' is deprecated in favour of 'cask'"
 
 "$(dirname $0)/cask" "$@"
