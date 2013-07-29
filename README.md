@@ -9,6 +9,19 @@ package development.
 
 [<img src="http://img.youtube.com/vi/gzFxNO_X5yA/0.jpg">](https://www.youtube.com/watch?v=gzFxNO_X5yA)
 
+## Migration from Carton
+
+This project was previously named Carton, but because of a name clash
+with another project, this project was renamed to Cask. A few things
+needs to be done to migrate:
+
+1. Use the `cask` command instead of the `carton` command
+2. If your Emacs configuration dependes on `carton`, depend on `cask` instead:
+
+   `(depends-on "carton")` => `(depends-on "cask")`
+
+3. Rename the file `Carton` to `Cask`
+
 ## Installation
 
 To automatically install Cask, run this command:
