@@ -1,35 +1,35 @@
 Feature: Package
   In order to quickly create a -pkg.el file
-  As a Carton user
+  As a Cask user
   I want to create it automatically
 
   Background:
     Given I create a project called "package"
     And I go to the project called "package"
 
-  Scenario: No Carton file
-    When I run carton "package"
+  Scenario: No Cask file
+    When I run cask "package"
     Then I should see command error:
       """
-      Could not locate `Carton` file
+      Could not locate `Cask` file
       """
 
-  Scenario: Empty Carton file
-    Given this Carton file:
+  Scenario: Empty Cask file
+    Given this Cask file:
       """
       """
-    When I run carton "package"
+    When I run cask "package"
     Then I should see command error:
       """
       Missing `package` or `package-file` directive
       """
 
   Scenario: Using package directive no dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       (package "super-project" "0.0.1" "Super project.")
       """
-    When I run carton "package"
+    When I run cask "package"
     Then there should exist a file called "package-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1"
@@ -37,14 +37,14 @@ Feature: Package
       """
 
   Scenario: Using package directive with dependencies
-    Given this Carton file:
+    Given this Cask file:
       """
       (package "super-project" "0.0.1" "Super project.")
       
       (depends-on "foo" "0.1.2")
       (depends-on "bar" "0.2.1")
       """
-    When I run carton "package"
+    When I run cask "package"
     Then there should exist a file called "package-pkg.el" with this content:
       """
       define-package "super-project" "0.0.1"
@@ -53,7 +53,7 @@ Feature: Package
       """
 
   Scenario: Using package-file directive
-    Given this Carton file:
+    Given this Cask file:
       """
       (package-file "super-project.el")
       """
@@ -102,7 +102,7 @@ Feature: Package
 
       ;;; super-project.el ends here
       """
-    And I run carton "package"
+    And I run cask "package"
     Then there should exist a file called "package-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1"

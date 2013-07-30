@@ -1,4 +1,4 @@
-function _carton_commands() {
+function _cask_commands() {
     local ret=1 state
     _arguments \
         ':subcommand:->subcommand' \
@@ -13,13 +13,13 @@ function _carton_commands() {
                 "info:Show info about this project"
                 "list:List dependencies"
                 "version:Show the package version"
-                "init:Create basic Carton file"
+                "init:Create basic Cask file"
                 "exec:Execute command with correct dependencies"
                 "update:Update dependencies"
                 "install:Install dependencies"
                 "package:Create -pkg.el file"
             )
-            _describe -t subcommands 'carton subcommands' subcommands && ret=0
+            _describe -t subcommands 'cask subcommands' subcommands && ret=0
     esac
 
     case "$words[1]" in
@@ -34,4 +34,4 @@ function _carton_commands() {
     return ret
 }
 
-compdef _carton_commands carton
+compdef _cask_commands cask

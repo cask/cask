@@ -1,5 +1,5 @@
 Feature: Package directory
-  As a Carton user
+  As a Cask user
   I want to be able to print the package directory
 
   Background:
@@ -7,11 +7,11 @@ Feature: Package directory
     And I go to the project called "package-directory"
 
   Scenario: Package directory
-    Given this Carton file:
+    Given this Cask file:
       """
       """
-    When I run carton "package-directory"
+    When I run cask "package-directory"
     Then I should see command output:
       """
-      {{PROJECT-PATH}}/.carton/{{EMACS-VERSION}}/elpa
+      {{PROJECT-PATH}}/.cask/{{EMACS-VERSION}}/elpa
       """

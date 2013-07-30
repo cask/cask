@@ -1,42 +1,42 @@
 Feature: Version
   In order to quickly get the project version
-  As a Carton user
+  As a Cask user
   I want to print it
 
   Background:
     Given I create a project called "version"
     And I go to the project called "version"
 
-  Scenario: No Carton file
-    When I run carton "version"
+  Scenario: No Cask file
+    When I run cask "version"
     Then I should see command error:
       """
-      Could not locate `Carton` file
+      Could not locate `Cask` file
       """
 
-  Scenario: Empty Carton file
-    Given this Carton file:
+  Scenario: Empty Cask file
+    Given this Cask file:
       """
       """
-    When I run carton "version"
+    When I run cask "version"
     Then I should see command error:
       """
       Missing `package` or `package-file` directive
       """
 
   Scenario: Using package directive
-    Given this Carton file:
+    Given this Cask file:
       """
       (package "super-project" "0.0.1" "Super project.")
       """
-    When I run carton "version"
+    When I run cask "version"
     Then I should see command output:
       """
       0.0.1
       """
 
   Scenario: Using package-file directive
-    Given this Carton file:
+    Given this Cask file:
       """
       (package-file "super-project.el")
       """
@@ -85,7 +85,7 @@ Feature: Version
 
       ;;; super-project.el ends here
       """
-    And I run carton "version"
+    And I run cask "version"
     Then I should see command output:
       """
       0.0.1
