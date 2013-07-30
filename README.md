@@ -21,6 +21,7 @@ needs to be done to migrate:
    `(depends-on "carton")` => `(depends-on "cask")`
 
 3. Rename the file `Carton` to `Cask`
+4. Rename the installation directory (default `~/.carton`) to `~/.cask` (don't forget to update the path in you shell config)
 
 _(And ohh, don't forget to update your `.travis.yml` and `.gitignore` files)_
 
