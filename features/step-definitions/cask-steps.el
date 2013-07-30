@@ -29,8 +29,8 @@
            (buffer
             (progn
               (when (get-buffer buffer-name)
-                (kill-buffer "*cask-output*"))
-              (get-buffer-create "*cask-output*")))
+                (kill-buffer buffer-name))
+              (get-buffer-create buffer-name)))
            (default-directory (file-name-as-directory cask-current-project))
            (args
             (unless (equal command "")
