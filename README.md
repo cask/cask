@@ -1,6 +1,6 @@
-# Cask [![Build Status](https://api.travis-ci.org/rejeep/cask.png?branch=master)](http://travis-ci.org/rejeep/cask)
+# Cask [![Build Status](https://api.travis-ci.org/rejeep/cask.el.png?branch=master)](http://travis-ci.org/rejeep/cask.el)
 
-![Cask](https://raw.github.com/rejeep/cask/master/cask.png)
+![Cask](https://raw.github.com/rejeep/cask.el/master/cask.png)
 
 Cask for Emacs is what Bundler is to Ruby. It aims to make ELPA
 dependency management in Emacs painless (as painless as it can
@@ -29,11 +29,11 @@ _(And ohh, don't forget to update your `.travis.yml` and `.gitignore` files)_
 
 To automatically install Cask, run this command:
 
-    curl -fsSkL https://raw.github.com/rejeep/cask/master/go | sh
+    curl -fsSkL https://raw.github.com/rejeep/cask.el/master/go | sh
 
 You can also clone the repository.
 
-    $ git clone https://github.com/rejeep/cask.git
+    $ git clone https://github.com/rejeep/cask.el.git
 
 Don't forget to add Cask's bin to your `PATH`.
 
