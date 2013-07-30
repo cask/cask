@@ -140,3 +140,5 @@
  (option "--dev" "Run in dev mode" cask-cli/dev)
  (option "--debug" "Turn on debug output" cask-cli/debug)
  (default "install"))
+
+;;; cask-cli.el ends here
