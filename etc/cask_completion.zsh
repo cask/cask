@@ -18,6 +18,7 @@ function _cask_commands() {
                 "update:Update dependencies"
                 "install:Install dependencies"
                 "package:Create -pkg.el file"
+                "package-directory:Print package installation directory"
             )
             _describe -t subcommands 'cask subcommands' subcommands && ret=0
     esac
