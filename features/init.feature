@@ -1,25 +1,25 @@
 Feature: Init
   In order to quickly get going
-  As a Carton user
-  I want to create a Carton file automatically
+  As a Cask user
+  I want to create a Cask file automatically
 
   Background:
     Given I create a project called "init"
     And I go to the project called "init"
 
-  Scenario: With Carton file
-    Given this Carton file:
+  Scenario: With Cask file
+    Given this Cask file:
       """
       """
-    When I run carton "init"
+    When I run cask "init"
     Then I should see command error:
       """
-      Carton file already exists.
+      Cask file already exists.
       """
 
-  Scenario: No Carton file - development
-    When I run carton "init --dev"
-    Then there should exist a file called "Carton" with this content:
+  Scenario: No Cask file - development
+    When I run cask "init --dev"
+    Then there should exist a file called "Cask" with this content:
       """
       (source melpa)
 
@@ -33,13 +33,13 @@ Feature: Init
        (depends-on "espuds"))
       """
 
-  Scenario: No Carton file
-    When I run carton "init"
-    Then there should exist a file called "Carton" with this content:
+  Scenario: No Cask file
+    When I run cask "init"
+    Then there should exist a file called "Cask" with this content:
       """
       (source melpa)
 
-      (depends-on "carton")
+      (depends-on "cask")
       (depends-on "dash")
       (depends-on "drag-stuff")
       (depends-on "expand-region")

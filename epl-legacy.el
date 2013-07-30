@@ -5,7 +5,7 @@
 ;; Author: Sebastian Wiesner <lunaryorn@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
 ;; Keywords: convenience
-;; URL: http://github.com/rejeep/carton
+;; URL: http://github.com/rejeep/cask.el
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -195,7 +195,7 @@ already installed."
   "Delete a PACKAGE.
 
 PACKAGE is a package object to delete."
-  ;; Never trash packages deleted by Carton
+  ;; Never trash packages deleted by Cask
   (let ((delete-by-moving-to-trash nil))
     (package-delete (symbol-name (epl-package-name package))
                     (epl-package-version-string package))))

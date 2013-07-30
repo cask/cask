@@ -5,7 +5,7 @@
 ;; Author: Sebastian Wiesner <lunaryorn@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
 ;; Keywords: convenience
-;; URL: http://github.com/rejeep/carton
+;; URL: http://github.com/rejeep/cask.el
 
 ;; This file is NOT part of GNU Emacs.
 

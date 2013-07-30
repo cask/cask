@@ -1,14 +1,14 @@
 Feature: Help
   In order to quickly get help
-  As a Carton user
+  As a Cask user
   I want to get usage infomartion
 
   Background:
     Given I create a project called "help"
     And I go to the project called "help"
 
-  Scenario Outline: No Carton file
-    When I run carton "<command>"
+  Scenario Outline: No Cask file
+    When I run cask "<command>"
     Then I should see usage information
 
     Examples:
@@ -17,11 +17,11 @@ Feature: Help
       | -h      |
       | --help  |
 
-  Scenario Outline: With Carton file
-    Given this Carton file:
+  Scenario Outline: With Cask file
+    Given this Cask file:
       """
       """
-    When I run carton "<command>"
+    When I run cask "<command>"
     Then I should see usage information
 
     Examples:

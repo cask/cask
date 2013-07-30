@@ -1,20 +1,20 @@
 # Use ?= to respect environment variable (if set):
 EMACS ?= emacs
 TAGS ?=
-CARTON ?= ${PWD}/bin/carton
+CASK ?= ${PWD}/bin/cask
 ECUKES = $(shell find ${PKG_DIR}/ecukes-*/ecukes | tail -1)
 ECUKES_ARGS = --script features ${TAGS}
-SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
+SERVER = ${CASK} exec ${EMACS} --load server/app.el -Q
 
-PKG_DIR := $(shell ${CARTON} package-directory)
+PKG_DIR := $(shell ${CASK} package-directory)
 
 export EMACS
-export CARTON
+export CASK
 
 all: ecukes
 
 ecukes: elpa
-	${CARTON} exec ${ECUKES} ${ECUKES_ARGS}
+	${CASK} exec ${ECUKES} ${ECUKES_ARGS}
 
 start-server: elpa tmp
 	${SERVER} --batch > tmp/server.log 2>&1 &
@@ -26,10 +26,10 @@ server: elpa
 	${SERVER} -nw
 
 elpa: ${PKG_DIR}
-${PKG_DIR}: Carton
-	${CARTON} install
+${PKG_DIR}: Cask
+	${CASK} install
 	touch $@
-# NOTE: `touch` is called here since `carton install` does not update
+# NOTE: `touch` is called here since `cask install` does not update
 # timestamp of ${PKG_DIR} directory.
 
 tmp:
