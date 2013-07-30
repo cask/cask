@@ -1,12 +1,8 @@
 (defun cask-test/elpa-dir ()
-  (expand-file-name
-   (format ".cask/%s/elpa" emacs-version) cask-current-project))
+  (f-expand (format ".cask/%s/elpa" emacs-version) cask-current-project))
 
 (defun cask-test/create-project-file (filename content)
-  (with-temp-buffer
-    (insert content)
-    (let ((filepath (expand-file-name filename cask-current-project)))
-      (write-file filepath nil))))
+  (f-write (f-expand filename cask-current-project) content))
 
 (defun cask-test/template (command)
   (let* ((command (s-replace "{{EMACS-VERSION}}" emacs-version command))
@@ -29,8 +25,8 @@
            (buffer
             (progn
               (when (get-buffer buffer-name)
-                (kill-buffer "*cask-output*"))
-              (get-buffer-create "*cask-output*")))
+                (kill-buffer buffer-name))
+              (get-buffer-create buffer-name)))
            (default-directory (file-name-as-directory cask-current-project))
            (args
             (unless (equal command "")
@@ -52,13 +48,11 @@
 
 (Given "^I create a project called \"\\([^\"]+\\)\"$"
   (lambda (project-name)
-    (let ((project-path (expand-file-name project-name cask-projects-path)))
-      (make-directory project-path))))
+    (f-mkdir (f-expand project-name cask-projects-path))))
 
 (When "^I go to the project called \"\\([^\"]+\\)\"$"
   (lambda (project-name)
-    (let ((project-path (expand-file-name project-name cask-projects-path)))
-      (setq cask-current-project project-path))))
+    (setq cask-current-project (f-expand project-name cask-projects-path))))
 
 (Then "^I should see command output:$"
   (lambda (output)
@@ -76,37 +70,30 @@
 
 (Then "^there should exist a file called \"\\([^\"]+\\)\" with this content:$"
   (lambda (filename content)
-    (let ((filepath (expand-file-name filename cask-current-project)))
+    (let ((filepath (f-expand filename cask-current-project)))
       (with-temp-buffer
         (insert-file-contents-literally filepath)
         (Then "I should see:" content)))))
 
 (Then "^there should exist a directory called \"\\([^\"]+\\)\"$"
   (lambda (dirname)
-    (let ((dirpath (expand-file-name dirname cask-current-project)))
-      (should (file-directory-p dirpath)))))
+    (should (f-dir? (f-expand dirname cask-current-project)))))
 
 (Then "^there should not exist a directory called \"\\([^\"]+\\)\"$"
   (lambda (dirname)
-    (let ((dirpath (expand-file-name dirname cask-current-project)))
-      (should-not (file-directory-p dirpath)))))
+    (should-not (f-dir? (f-expand dirname cask-current-project)))))
 
 (Then "^there should exist a package directory called \"\\([^\"]+\\)\"$"
   (lambda (dirname)
-    (let* ((cask-project-path cask-current-project)
-           (dirpath (expand-file-name dirname (cask-test/elpa-dir))))
-      (should (file-directory-p dirpath)))))
+    (should (f-dir? (f-expand dirname (cask-test/elpa-dir))))))
 
 (Then "^there should not exist a package directory called \"\\([^\"]+\\)\"$"
   (lambda (dirname)
-    (let* ((cask-project-path cask-current-project)
-           (dirpath (expand-file-name dirname (cask-test/elpa-dir))))
-      (should-not (file-directory-p dirpath)))))
+    (should-not (f-dir? (f-expand dirname (cask-test/elpa-dir))))))
 
 (Then "^package directory should not exist$"
   (lambda ()
-    (let ((cask-project-path cask-current-project))
-      (should-not (file-directory-p (cask-test/elpa-dir))))))
+    (should-not (f-dir? (cask-test/elpa-dir)))))
 
 (When "^I move \"\\([^\"]+\\)\" to \"\\([^\"]+\\)\"$"
   (lambda (from to)
