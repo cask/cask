@@ -217,23 +217,22 @@ Return a list of updated packages."
         (insert init-content)
         (write-file cask-file-path)))))
 
+(defmacro with-cask-package (&rest body)
+  `(if cask-package
+       (progn ,@body)
+     (error "Missing `package` or `package-file` directive")))
+
 (defun cask-info ()
   "Return info about this project."
-  (or
-   cask-package
-   (error "Missing `package` or `package-file` directive")))
+  (with-cask-package cask-package))
 
 (defun cask-version ()
   "Return the version of this project."
-  (if cask-package
-      (cask-package-version cask-package)
-    (error "Missing `package` or `package-file` directive")))
+  (with-cask-package (cask-package-version cask-package)))
 
 (defun cask-package ()
   "Package this project."
-  (if cask-package
-      (cask-define-package-string)
-    (error "Missing `package` or `package-file` directive")))
+  (with-cask-package (cask-define-package-string)))
 
 (defun cask-load-path ()
   "Return Emacs `load-path' (including package dependencies)."
