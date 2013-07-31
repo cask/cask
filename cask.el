@@ -236,7 +236,7 @@ Return a list of updated packages."
     (error "Missing `package` or `package-file` directive")))
 
 (defun cask-load-path ()
-  "Return Emacs load-path (including package dependencies)."
+  "Return Emacs `load-path' (including package dependencies)."
   (mapconcat
    'identity
    (append
@@ -245,7 +245,7 @@ Return a list of updated packages."
    path-separator))
 
 (defun cask-path ()
-  "Return Emacs exec-path (including package dependencies)."
+  "Return Emacs `exec-path' (including package dependencies)."
   (mapconcat
    'identity
    (append
