@@ -32,7 +32,7 @@
 
 (unless (require 'package nil :no-error)
   ;; Try to require package.el to check its API version
-  (epl-error "package.el missing"))
+  (epl-error "Library package.el missing"))
 
 (unless (fboundp 'package-desc-create)
   ;; The package-desc structure is missing, hence indicate that this API cannot
