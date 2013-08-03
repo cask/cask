@@ -64,7 +64,7 @@
 ;; `epl-installed-packages' and `epl-available-packages' get all packages
 ;; installed and available for installed respectively.
 
-;; `epl-find-installed-package' and `epl-find-available-package' find installed
+;; `epl-find-installed-package' and `epl-find-available-packages' find installed
 ;; and available packages by name.
 
 ;; `epl-find-upgrades' finds all upgradable packages.
@@ -200,7 +200,8 @@ packages."
     (dolist (pkg packages)
       (let* ((version (epl-package-version pkg))
              (name (epl-package-name pkg))
-             (available-pkg (epl-find-available-package name))
+             ;; Find the latest available package for NAME
+             (available-pkg (car (epl-find-available-packages name)))
              (available-version (when available-pkg
                                   (epl-package-version available-pkg))))
         (when (and available-version (version-list-< version available-version))

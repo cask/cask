@@ -131,14 +131,23 @@ package with NAME is installed."
 Return a list of package objects."
   (mapcar #'cadr package-archive-contents))
 
-(defun epl-find-available-package (name)
-  "Find an available package by NAME.
+(defun epl-package-->=(pkg1 pkg2)
+  "Determine whether PKG1 is before PKG2 by version."
+  (not (version-list-< (epl-package-version pkg1)
+                       (epl-package-version pkg2))))
+
+(defun epl-find-available-packages (name)
+  "Find  available packages for NAME.
 
 NAME is a package name, as symbol.
 
-Return the package as package object, or nil, if no package with
-NAME is available."
-  (cadr (assq name package-archive-contents)))
+Return a list of packages for NAME, sorted by version number in
+descending order."
+  ;; Sort modifies the list, hence we need to copy first to avoid messing around
+  ;; in the archive contents
+  (let ((pkgs (cdr (assq name package-archive-contents))))
+    (when pkgs
+      (sort (copy-sequence pkgs) #'epl-package-->=))))
 
 (cl-defstruct (epl-upgrade
                (:constructor epl-upgrade-create))

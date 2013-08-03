@@ -156,14 +156,20 @@ package with NAME is installed."
 Return a list of package objects."
   (mapcar #'epl-package--from-package-list-entry package-archive-contents))
 
-(defun epl-find-available-package (name)
-  "Find an available package by NAME.
+(defun epl-find-available-packages (name)
+  "Find available packages for NAME.
 
 NAME is a package name, as symbol.
 
-Return the package as package object, or nil, if no package with
-NAME is available."
-  (epl-package--find-in-list name package-archive-contents))
+Return a list of packages for NAME, sorted by version number in
+descending order.
+
+Note that legacy package.el does not track multiple versions of a
+package.  Hence in this implementation the returned list always
+contains just one element."
+  (let ((entry (epl-package--find-in-list name package-archive-contents)))
+    (when entry
+      (list entry))))
 
 (defstruct (epl-upgrade
             (:constructor epl-upgrade-create))
