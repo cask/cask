@@ -7,8 +7,6 @@ dependency management in Emacs painless (as painless as it can
 be). This includes both your local Emacs installation and Emacs
 package development.
 
-# [<img src="http://img.youtube.com/vi/gzFxNO_X5yA/0.jpg">](https://www.youtube.com/watch?v=gzFxNO_X5yA)
-
 ## Migration from Carton
 
 This project was previously named Carton, but because of a name clash
