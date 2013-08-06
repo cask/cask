@@ -1,5 +1,5 @@
 tmp
-elpa
+.cask
 *.elc
 
 *-pkg.el

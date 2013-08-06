@@ -1,81 +1,97 @@
-# Carton [![Build Status](https://api.travis-ci.org/rejeep/carton.png?branch=master)](http://travis-ci.org/rejeep/carton)
+# Cask [![Build Status](https://api.travis-ci.org/rejeep/cask.el.png?branch=master)](http://travis-ci.org/rejeep/cask.el)
 
-![Carton](https://raw.github.com/rejeep/carton/master/carton.png)
+![Cask](cask.png)
 
-Carton for Emacs is what Bundler is to Ruby. It aims to make ELPA
+Cask for Emacs is what Bundler is to Ruby. It aims to make ELPA
 dependency management in Emacs painless (as painless as it can
 be). This includes both your local Emacs installation and Emacs
 package development.
 
 [<img src="http://img.youtube.com/vi/gzFxNO_X5yA/0.jpg">](https://www.youtube.com/watch?v=gzFxNO_X5yA)
 
+## Migration from Carton
+
+This project was previously named Carton, but because of a name clash
+with another project, this project was renamed to Cask. A few things
+needs to be done to migrate:
+
+1. Use the `cask` command instead of the `carton` command
+2. If your Emacs configuration dependes on `carton`, depend on `cask` instead:
+
+   `(depends-on "carton")` => `(depends-on "cask")`
+
+3. Rename the file `Carton` to `Cask`
+4. Rename the installation directory (default `~/.carton`) to `~/.cask` (don't forget to update the path in you shell config)
+
+_(And ohh, don't forget to update your `.travis.yml` and `.gitignore` files)_
+
 ## Installation
 
-To automatically install Carton, run this command:
+To automatically install Cask, run this command:
 
-    curl -fsSkL https://raw.github.com/rejeep/carton/master/go | sh
+    curl -fsSkL https://raw.github.com/rejeep/cask.el/master/go | sh
 
 You can also clone the repository.
 
-    $ git clone https://github.com/rejeep/carton.git
+    $ git clone https://github.com/rejeep/cask.el.git
 
-Don't forget to add Carton's bin to your `PATH`.
+Don't forget to add Cask's bin to your `PATH`.
 
-    $ export PATH="/path/to/code/carton/bin:$PATH"
+    $ export PATH="/path/to/code/cask/bin:$PATH"
 
 
 ## Usage
 
-Create a file called `Carton` in your project root and specify
+Create a file called `Cask` in your project root and specify
 dependencies:
 
-    $ carton init [--dev]
+    $ cask init [--dev]
 
 _(Use `--dev` if the project is for package development)_
 
 To install all dependencies, run:
 
-    $ carton [install]
+    $ cask [install]
 
-This will create a directory called `elpa`, containing all dependencies.
+This will create a directory called `.cask`, containing all dependencies.
 
 To update package version, run:
 
-    $ carton update
+    $ cask update
 
 To list all dependencies, run:
 
-    $ carton list
+    $ cask list
 
-### Local Emacs installation
+### Emacs configuration
 
 Add this to your `.emacs` file.
 
-    (require 'package)
-    (package-initialize)
+    (require 'cask "~/.cask/cask.el")
+    (cask-initialize)
 
-That's it!
+#### Tips
 
-To automatically keep the `Carton` file up to date with what you
+To automatically keep the `Cask` file up to date with what you
 install from ELPA, check out <https://github.com/rdallasgray/pallet>.
 
 ### Package development
 
 To create a `-pkg.el` file, run:
 
-    $ carton package
+    $ cask package
 
 To run some Emacs Lisp code with ELPA load paths all set up for you, use:
 
-    $ carton exec [COMMAND]
+    $ cask exec [COMMAND]
 
 Example:
 
-    $ carton exec make test
+    $ cask exec make test
 
 To print info about the current project:
 
-    $ carton info
+    $ cask info
 
 ## DSL
 
@@ -83,11 +99,21 @@ To print info about the current project:
 
 Add an ELPA mirror.
 
+    (source ALIAS)
     (source NAME URL)
 
 Example:
 
+    (source melpa)
     (source "melpa" "http://melpa.milkbox.net/packages/")
+
+Available sources:
+
+ * `gnu` <http://elpa.gnu.org/packages/>
+ * `melpa` <http://melpa.milkbox.net/packages/>
+ * `marmalade` <http://marmalade-repo.org/packages/>
+ * `SC` <http://joseito.republika.pl/sunrise-commander/>
+ * `org` <http://orgmode.org/elpa/>
 
 ### package
 
@@ -113,7 +139,7 @@ Example:
 
 Define this package and its runtime dependencies from the package headers of a
 file (used only for package development).  The name of the file is relative to
-the directory containing the `Carton` file.
+the directory containing the `Cask` file.
 
     (package-file FILENAME)
 
@@ -137,7 +163,7 @@ Example:
 
 ### Local Emacs installation
 
-    (source "melpa" "http://melpa.milkbox.net/packages/")
+    (source melpa)
 
     (depends-on "magit")
     (depends-on "drag-stuff")
@@ -145,7 +171,7 @@ Example:
 
 ### Package development
 
-    (source "melpa" "http://melpa.milkbox.net/packages/")
+    (source melpa)
 
     (package "ecukes" "0.2.1" "Cucumber for Emacs.")
 
@@ -159,11 +185,11 @@ Example:
 
 To install ZSH completion add the following to your `~/.zshrc`:
 
-    source /path/to/code/carton/etc/carton_completion.zsh
+    source /path/to/code/cask/etc/cask_completion.zsh
 
 ## I still don't get it, give me some real examples
 
-These are some projects using Carton:
+These are some projects using Cask:
 
 * [rejeep/emacs](https://github.com/rejeep/emacs)
 * [drag-stuff](https://github.com/rejeep/drag-stuff)

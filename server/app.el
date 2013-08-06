@@ -20,21 +20,30 @@
    (foo . [(0 0 1) nil \"Foo\" single])
    (bar . [(0 0 2) nil \"Bar\" single])
    (baz . [(0 0 3) ((qux (0 0 4))) \"Baz\" tar])
-   (qux . [(0 0 4) nil \"Qux\" single]))"))
+   (qux . [(0 0 4) nil \"Qux\" single])
+   (hey . [(0 0 5) nil \"Hey\" tar]))"))
 
 (defun package-handler (httpcon)
   (let* ((name (elnode-http-mapping httpcon 2))
          (version (elnode-http-mapping httpcon 3))
          (format (elnode-http-mapping httpcon 4))
-         (content-type
-          (if (equal format "el")
-              "text/plain"
-            "application/x-tar"))
          (filename
           (expand-file-name
-           (concat name "-" version "." format) "server")))
-    (elnode-http-start httpcon 200 `("Content-type" . ,content-type))
-    (elnode-send-file httpcon filename)))
+           (concat name "-" version "." format) "server"))
+         (content-type
+          (if (equal format "el")
+              "application/octet-stream"
+            "application/x-tar"))
+         (content
+          (with-temp-buffer
+            (insert-file-contents-literally filename)
+            (buffer-string)))
+         (content-length (length content)))
+    (elnode-http-start
+     httpcon 200
+     `("Content-type" . ,content-type)
+     `("Content-length" . ,content-length))
+    (elnode-http-return httpcon content)))
 
 (defun stop-and-quit ()
   (interactive)

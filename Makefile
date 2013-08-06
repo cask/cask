@@ -1,20 +1,20 @@
 # Use ?= to respect environment variable (if set):
 EMACS ?= emacs
-CARTON = ${PWD}/bin/carton
-ECUKES = $(shell find elpa/ecukes-*/ecukes | tail -1)
-ECUKES_ARGS = --script features
-SERVER = ${CARTON} exec ${EMACS} --load server/app.el -Q
+TAGS ?=
+CASK ?= ${PWD}/bin/cask
+ECUKES = ecukes
+ECUKES_ARGS = --script features ${TAGS}
+SERVER = ${CASK} exec ${EMACS} --load server/app.el -Q
+
+PKG_DIR := $(shell ${CASK} package-directory)
 
 export EMACS
-export CARTON
+export CASK
 
-all: unit ecukes
-
-unit: elpa
-	./test/carton-test
+all: ecukes
 
 ecukes: elpa
-	${CARTON} exec ${ECUKES} ${ECUKES_ARGS}
+	${CASK} exec ${ECUKES} ${ECUKES_ARGS}
 
 start-server: elpa tmp
 	${SERVER} --batch > tmp/server.log 2>&1 &
@@ -25,19 +25,17 @@ stop-server:
 server: elpa
 	${SERVER} -nw
 
-elpa: Carton
-	${CARTON} install
+elpa: ${PKG_DIR}
+${PKG_DIR}: Cask
+	${CASK} install
 	touch $@
-# NOTE: `touch` is called here since `carton install` does not update
-# timestamp of `elpa` directory.
+# NOTE: `touch` is called here since `cask install` does not update
+# timestamp of ${PKG_DIR} directory.
 
 tmp:
 	mkdir $@
 
 clean:
-	rm -rf elpa
+	rm -rf ${PKG_DIR}
 
-smoke:
-	cd test/smoke/ && ${CARTON} install
-
-.PHONY:	server ecukes unit all
+.PHONY: elpa server ecukes all
