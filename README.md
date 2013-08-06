@@ -1,6 +1,6 @@
 # Cask [![Build Status](https://api.travis-ci.org/rejeep/cask.el.png?branch=master)](http://travis-ci.org/rejeep/cask.el)
 
-![Cask](https://raw.github.com/rejeep/cask.el/master/cask.png)
+![Cask](cask.png)
 
 Cask for Emacs is what Bundler is to Ruby. It aims to make ELPA
 dependency management in Emacs painless (as painless as it can
