@@ -21,7 +21,7 @@
   (cask-resource-path (format ".cask/%s/bootstrap" emacs-version))
   "Path to Cask ELPA dir.")
 
-(defconst cask-bootstrap-packages '(commander s dash cl-lib)
+(defconst cask-bootstrap-packages '(commander)
   "List of bootstrap packages required by this file.")
 
 (unwind-protect
