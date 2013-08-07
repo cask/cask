@@ -31,6 +31,7 @@
       (condition-case nil
           (mapc 'require cask-bootstrap-packages)
         (error
+         (epl-add-archive "gnu" "http://elpa.gnu.org/packages/")
          (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
          (epl-refresh)
          (mapc 'epl-package-install cask-bootstrap-packages)
