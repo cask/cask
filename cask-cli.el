@@ -41,8 +41,26 @@
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
+(defun cask-cli--check-parens ()
+  (with-temp-buffer
+    (insert-file-contents cask-file)
+    (goto-char (point-min))
+    (condition-case nil
+        (progn
+          (check-parens)
+          nil)
+      (user-error (message "%s:%s:%s: unbalanced parenthesis"
+                           cask-file (line-number-at-pos)
+                           (1+ (current-column)))
+                  t))))
+
 (defun cask-cli--setup ()
-  (cask-setup default-directory))
+  (condition-case nil
+      (cask-setup default-directory)
+    (end-of-file
+     (unless (cask-cli--check-parens)
+       (message "End of file during parsing: %S" cask-file))
+     (kill-emacs 1))))
 
 (defun cask-cli--print-dependency (dependency)
   (let ((name (cask-dependency-name dependency))
