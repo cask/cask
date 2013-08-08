@@ -18,8 +18,9 @@
 
 ;; Bootstrap the dependencies of the CLI wrapper
 (defconst cask-bootstrap-dir
-  (cask-resource-path (format ".cask/%s/bootstrap" emacs-version))
-  "Path to Cask ELPA dir.")
+  (expand-file-name
+   (locate-user-emacs-file (format ".cask/%s/bootstrap" emacs-version)))
+  "Path to Cask bootstrap directory.")
 
 (defconst cask-bootstrap-packages '(commander)
   "List of bootstrap packages required by this file.")
