@@ -87,13 +87,36 @@
     (cask-test   . "http://127.0.0.1:9191/packages/"))
   "Mapping of source name and url.")
 
+(defstruct cask-source-position line column)
+
+(defun cask-current-source-position ()
+  "Get the current position in the buffer."
+  (make-cask-source-position :line (line-number-at-pos)
+                             :column (1+ (current-column))))
+
 (defun cask-read (filename)
   "Read a cask file from FILENAME.
 
 Return all directives in the Cask file as list."
   (with-temp-buffer
     (insert-file-contents-literally filename)
-    (read (format "(%s)" (buffer-string)))))
+    (goto-char (point-min))
+    (let (forms)
+      (condition-case err
+          ;; Skip over blank lines and comments while reading to get exact
+          ;; line/column information for errors (shamelessly taken from
+          ;; `byte-compile-from-buffer')
+          (while (progn
+                   (while (progn (skip-chars-forward " \t\n\^l")
+                                 (looking-at ";"))
+                     (forward-line 1))
+                   (not (eobp)))        ; Read until end of file
+            (push (read (current-buffer)) forms))
+        (error
+         ;; Re-emit any error with position information
+         (signal (car err) (cons (cask-current-source-position)
+                                 (cdr err)))))
+      (nreverse forms))))
 
 (defun cask-get-dep-list-for-scope (scope)
   "Get the dependency list symbol for SCOPE."
