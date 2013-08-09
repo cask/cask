@@ -72,7 +72,7 @@
   (lambda (filename content)
     (let ((filepath (f-expand filename cask-current-project)))
       (with-temp-buffer
-        (insert-file-contents-literally filepath)
+        (insert-file-contents filepath)
         (Then "I should see:" content)))))
 
 (Then "^there should exist a directory called \"\\([^\"]+\\)\"$"

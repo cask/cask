@@ -92,7 +92,7 @@
 
 Return all directives in the Cask file as list."
   (with-temp-buffer
-    (insert-file-contents-literally filename)
+    (insert-file-contents filename)
     (read (format "(%s)" (buffer-string)))))
 
 (defun cask-get-dep-list-for-scope (scope)
@@ -185,7 +185,7 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
   (let* ((templates-dir (cask-resource-path "templates"))
          (template-file (expand-file-name name templates-dir)))
     (with-temp-buffer
-      (insert-file-contents-literally template-file)
+      (insert-file-contents template-file)
       (buffer-string))))
 
 (defun cask-update ()
