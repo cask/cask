@@ -6,7 +6,7 @@
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
-;; Version: 0.4.2
+;; Version: 0.4.3
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/rejeep/cask.el
 
