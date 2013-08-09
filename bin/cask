@@ -13,5 +13,5 @@ else
   CASK_PATH="$(__CASK_SCRIPT="$0" "${EMACS:-emacs}" -Q --batch --eval '(princ (file-truename (getenv "__CASK_SCRIPT")))')"
   CASK_DIR="$(dirname "$(dirname "${CASK_PATH}")")"
 
-  exec "${EMACS:-emacs}" --script "${CASK_DIR}/cask-cli.el" -- "$@"
+  exec "${EMACS:-emacs}" -Q --script "${CASK_DIR}/cask-cli.el" -- "$@"
 fi
