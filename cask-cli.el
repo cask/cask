@@ -42,8 +42,45 @@
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
+(defun cask-cli--find-unbalanced-parenthesis ()
+  (with-temp-buffer
+    (insert-file-contents cask-file)
+    (goto-char (point-min))
+    (condition-case nil
+        (progn
+          (check-parens)
+          nil)
+      (error (cask-current-source-position)))))
+
+(defun cask-cli--exit-error (err)
+  (let ((type (car err))
+        (data (cdr err))
+        pos msg)
+    (if (eq type 'end-of-file)
+        ;; In case of premature end of file, try hard to find the real
+        ;; position, by scanning for unbalanced parenthesis
+        (setq pos (or (cask-cli--find-unbalanced-parenthesis) (cadr err))
+              msg "End of file while reading (possible unbalanced parenthesis)")
+      ;; For other types of error, check whether the error has a position, and
+      ;; print it.  Otherwise just print the error like Emacs would do
+      (when (cask-source-position-p (car data))
+        (setq pos (car data))
+        ;; Strip the position from the error data
+        (setq data (cdr data)))
+      (setq msg (error-message-string (cons type data))))
+    (if pos
+        (message "%s:%s:%s: %s" cask-file (cask-source-position-line pos)
+                 (cask-source-position-column pos) msg)
+      (message "%s: %s" cask-file msg)))
+  (kill-emacs 1))
+
 (defun cask-cli--setup ()
-  (cask-setup default-directory))
+  (condition-case err
+      (cask-setup default-directory)
+    (end-of-file
+     (cask-cli--exit-error err))
+    (invalid-read-syntax
+     (cask-cli--exit-error err))))
 
 (defun cask-cli--print-dependency (dependency)
   (let ((name (cask-dependency-name dependency))
