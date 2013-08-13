@@ -163,6 +163,7 @@
 
 (commander
  (name "cask")
+ (description "Emacs dependency management made easy")
  (command "package" "Create -pkg.el file" cask-cli/package)
  (command "install" "Install dependencies" cask-cli/install)
  (command "update" "Update dependencies" cask-cli/update)
