@@ -66,7 +66,7 @@
   (lambda ()
     (Then
       "I should see command output:"
-      "USAGE: cask COMMAND [OPTIONS]")))
+      "USAGE: cask [COMMAND] [OPTIONS]")))
 
 (Then "^there should exist a file called \"\\([^\"]+\\)\" with this content:$"
   (lambda (filename content)
