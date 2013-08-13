@@ -3,6 +3,12 @@
 if [[ "$1" == "exec" ]]; then
   EMACSLOADPATH="$($0 load-path)" PATH="$($0 path)" exec "${@:2}"
 else
+  if [[ -n "$INSIDE_EMACS" ]]; then
+    CASK_EMACS="emacs"
+  else
+    CASK_EMACS="${EMACS:-emacs}"
+  fi
+
   # Find the Cask installation directory by resolving the symlink chain to the
   # current executable.  We don't use "readlink -f" or "realpath", because these
   # utilities are missing on OS X.  Instead we rely on Emacs doing this work for
@@ -10,8 +16,8 @@ else
   # directly, because that makes Emacs visit the file, printing all sorts of
   # messages and spoiling our output.  Hence We use an environment variable to
   # pass the script path to the Emacs process.
-  CASK_PATH="$(__CASK_SCRIPT="$0" "${EMACS:-emacs}" -Q --batch --eval '(princ (file-truename (getenv "__CASK_SCRIPT")))')"
+  CASK_PATH="$(__CASK_SCRIPT="$0" "${CASK_EMACS}" -Q --batch --eval '(princ (file-truename (getenv "__CASK_SCRIPT")))')"
   CASK_DIR="$(dirname "$(dirname "${CASK_PATH}")")"
 
-  exec "${EMACS:-emacs}" -Q --script "${CASK_DIR}/cask-cli.el" -- "$@"
+  exec "${CASK_EMACS}" -Q --script "${CASK_DIR}/cask-cli.el" -- "$@"
 fi
