@@ -164,6 +164,9 @@
 (commander
  (name "cask")
  (description "Emacs dependency management made easy")
+
+ (default "install")
+
  (command "package" "Create -pkg.el file" cask-cli/package)
  (command "install" "Install dependencies" cask-cli/install)
  (command "update" "Update dependencies" cask-cli/update)
@@ -176,9 +179,9 @@
  (command "load-path" "Print Emacs load-path (including package dependencies)" cask-cli/load-path)
  (command "path" "Print Emacs exec-path (including package bin path)" cask-cli/path)
  (command "package-directory" "Print package installation directory" cask-cli/package-directory)
+
  (option "-h, --help" "Display this help message" cask-cli/help)
  (option "--dev" "Run in dev mode" cask-cli/dev)
- (option "--debug" "Turn on debug output" cask-cli/debug)
- (default "install"))
+ (option "--debug" "Turn on debug output" cask-cli/debug))
 
 ;;; cask-cli.el ends here
