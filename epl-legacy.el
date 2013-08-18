@@ -100,6 +100,8 @@ Parse the package metadata of BUFFER and return a corresponding
 
 ;;;; Package system management
 
+(defvar epl--load-path-before-initialize)
+
 (defun epl-reset ()
   "Reset the package system.
 
@@ -108,7 +110,8 @@ package archives and reset the package directory."
   (setq package-alist nil
         package-obsolete-alist nil
         package-archives nil
-        package-archive-contents nil)
+        package-archive-contents nil
+        load-path epl--load-path-before-initialize)
   (epl-change-package-dir (epl-default-package-dir)))
 
 
