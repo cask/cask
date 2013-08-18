@@ -177,7 +177,15 @@ Return an `epl-package' object with the header metadata."
 
 ;;;; Package system management
 
-(defalias 'epl-initialize 'package-initialize)
+(defvar epl--load-path-before-initialize nil
+  "Remember the load path for `epl-reset'.")
+
+(defun epl-initialize (&optional no-activate)
+  "Load Emacs Lisp packages and activate them.
+
+With NO-ACTIVATE non-nil, do not activate packages."
+  (setq epl--load-path-before-initialize load-path)
+  (package-initialize no-activate))
 
 (defalias 'epl-refresh 'package-refresh-contents)
 
