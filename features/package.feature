@@ -30,7 +30,7 @@ Feature: Package
       (package "super-project" "0.0.1" "Super project.")
       """
     When I run cask "package"
-    Then there should exist a file called "package-pkg.el" with this content:
+    Then there should exist a file called "super-project-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1"
         "Super project.")
@@ -45,7 +45,7 @@ Feature: Package
       (depends-on "bar" "0.2.1")
       """
     When I run cask "package"
-    Then there should exist a file called "package-pkg.el" with this content:
+    Then there should exist a file called "super-project-pkg.el" with this content:
       """
       define-package "super-project" "0.0.1"
         "Super project."
@@ -103,7 +103,7 @@ Feature: Package
       ;;; super-project.el ends here
       """
     And I run cask "package"
-    Then there should exist a file called "package-pkg.el" with this content:
+    Then there should exist a file called "super-project-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1"
         "Super project."

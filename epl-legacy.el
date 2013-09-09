@@ -91,6 +91,8 @@ Parse the package metadata of BUFFER and return a corresponding
     (destructuring-bind (name requires desc version _)
         (append (package-buffer-info) nil) ; `destructing-bind' doesn't like
                                            ; vectors
+      (when (stringp name)
+        (setq name (intern name)))
       (epl-package-create
        :name name
        :summary desc
