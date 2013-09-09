@@ -134,9 +134,9 @@ Return all directives in the Cask file as list."
 (defun cask-parse-epl-package (package)
   "Parse an EPL PACKAGE."
   (setq cask-package
-        (make-cask-package :name (epl-package-name package)
-                             :version (epl-package-version-string package)
-                             :description (epl-package-summary package)))
+        (make-cask-package :name (symbol-name (epl-package-name package))
+                           :version (epl-package-version-string package)
+                           :description (epl-package-summary package)))
   (dolist (req (epl-package-requirements package))
     (cask-add-dependency (epl-requirement-name req)
                              (epl-requirement-version-string req))))
@@ -159,8 +159,8 @@ SCOPE may be nil or :development."
       (package
        (destructuring-bind (_ name version description) form
          (setq cask-package (make-cask-package :name name
-                                                   :version version
-                                                   :description description))))
+                                               :version version
+                                               :description description))))
       (package-file
        (destructuring-bind (_ filename) form
          (cask-parse-epl-package
@@ -185,7 +185,6 @@ SCOPE may be nil or :development."
   (setq cask-project-path (directory-file-name project-path))
   (setq cask-project-name (file-name-nondirectory cask-project-path))
   (setq cask-file (expand-file-name "Cask" cask-project-path))
-  (setq cask-package-file (expand-file-name (concat cask-project-name "-pkg.el") cask-project-path))
   (when (equal (epl-package-dir) (epl-default-package-dir))
     (epl-change-package-dir (cask-elpa-dir)))
   (unless (file-exists-p cask-file)
@@ -195,7 +194,10 @@ SCOPE may be nil or :development."
           (message "[DEPRECATION WARNING] Rename the file 'Carton' to 'Cask'")
           (setq cask-file carton-file))
         (error "Could not locate `Cask` file"))))
-  (cask-eval (cask-read cask-file)))
+  (cask-eval (cask-read cask-file))
+  (when cask-package
+    (let ((package-name (concat (cask-package-name cask-package) "-pkg.el")))
+      (setq cask-package-file (expand-file-name package-name cask-project-path)))))
 
 (defun cask-initialize ()
   "Initialize packages under \"~/.emacs.d/\".
