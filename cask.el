@@ -159,8 +159,8 @@ SCOPE may be nil or :development."
       (package
        (destructuring-bind (_ name version description) form
          (setq cask-package (make-cask-package :name name
-                                                   :version version
-                                                   :description description))))
+                                               :version version
+                                               :description description))))
       (package-file
        (destructuring-bind (_ filename) form
          (cask-parse-epl-package
