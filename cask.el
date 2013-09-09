@@ -185,7 +185,6 @@ SCOPE may be nil or :development."
   (setq cask-project-path (directory-file-name project-path))
   (setq cask-project-name (file-name-nondirectory cask-project-path))
   (setq cask-file (expand-file-name "Cask" cask-project-path))
-  (setq cask-package-file (expand-file-name (concat cask-project-name "-pkg.el") cask-project-path))
   (when (equal (epl-package-dir) (epl-default-package-dir))
     (epl-change-package-dir (cask-elpa-dir)))
   (unless (file-exists-p cask-file)
@@ -195,7 +194,10 @@ SCOPE may be nil or :development."
           (message "[DEPRECATION WARNING] Rename the file 'Carton' to 'Cask'")
           (setq cask-file carton-file))
         (error "Could not locate `Cask` file"))))
-  (cask-eval (cask-read cask-file)))
+  (cask-eval (cask-read cask-file))
+  (when cask-package
+    (let ((package-name (concat (cask-package-name cask-package) "-pkg.el")))
+      (setq cask-package-file (expand-file-name package-name cask-project-path)))))
 
 (defun cask-initialize ()
   "Initialize packages under \"~/.emacs.d/\".
