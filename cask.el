@@ -134,9 +134,9 @@ Return all directives in the Cask file as list."
 (defun cask-parse-epl-package (package)
   "Parse an EPL PACKAGE."
   (setq cask-package
-        (make-cask-package :name (epl-package-name package)
-                             :version (epl-package-version-string package)
-                             :description (epl-package-summary package)))
+        (make-cask-package :name (symbol-name (epl-package-name package))
+                           :version (epl-package-version-string package)
+                           :description (epl-package-summary package)))
   (dolist (req (epl-package-requirements package))
     (cask-add-dependency (epl-requirement-name req)
                              (epl-requirement-version-string req))))
