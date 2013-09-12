@@ -28,6 +28,7 @@ matrix:
 script:
   - make ecukes
   - curl -fsSkL https://raw.github.com/rejeep/cask.el/master/go | sh
+  - export PATH="/home/travis/.cask/bin:$PATH"
 after_failure:
   - cat tmp/server.log
 after_script:
