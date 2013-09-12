@@ -1,4 +1,3 @@
-# Use ?= to respect environment variable (if set):
 EMACS ?= emacs
 TAGS ?=
 CASK ?= ${PWD}/bin/cask
