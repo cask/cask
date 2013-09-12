@@ -9,6 +9,7 @@
 ;; Version: 0.4.6
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/rejeep/cask.el
+;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.10.0"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -35,21 +36,17 @@
 
 (eval-when-compile
   (require 'cl))
+(require 'f)
+(require 's)
+(require 'dash)
 
 (eval-and-compile
-  (defconst cask-directory
-    ;; Fall back to buffer file name to handle M-x eval-buffer
-    (file-name-directory
-     (cond
-      (load-in-progress load-file-name)
-      ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
-       byte-compile-current-file)
-      (:else (buffer-file-name))))
+  (defconst cask-directory (f-dirname (f-this-file))
     "The directory to which Cask is installed.")
 
   (defun cask-resource-path (name)
     "Get the path of a Cask resource with NAME."
-    (expand-file-name name cask-directory)))
+    (f-expand name cask-directory)))
 
 (require 'epl (cask-resource-path "epl"))
 
@@ -99,7 +96,7 @@
 
 Return all directives in the Cask file as list."
   (with-temp-buffer
-    (insert-file-contents filename)
+    (insert (f-read-text filename 'utf-8))
     (goto-char (point-min))
     (let (forms)
       (condition-case err
@@ -165,7 +162,7 @@ SCOPE may be nil or :development."
        (destructuring-bind (_ filename) form
          (cask-parse-epl-package
           (epl-package-from-file
-           (expand-file-name filename cask-project-path)))))
+           (f-expand filename cask-project-path)))))
       (depends-on
        (destructuring-bind (_ name &optional version) form
          (cask-add-dependency name version scope)))
@@ -177,19 +174,18 @@ SCOPE may be nil or :development."
 
 (defun cask-elpa-dir ()
   "Return full path to `cask-project-path'/.cask/elpa/`emacs-version'."
-  (expand-file-name (format ".cask/%s/elpa" emacs-version)
-                    cask-project-path))
+  (f-expand (format ".cask/%s/elpa" emacs-version) cask-project-path))
 
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
-  (setq cask-project-path (directory-file-name project-path))
-  (setq cask-project-name (file-name-nondirectory cask-project-path))
-  (setq cask-file (expand-file-name "Cask" cask-project-path))
-  (when (equal (epl-package-dir) (epl-default-package-dir))
+  (setq cask-project-path project-path)
+  (setq cask-project-name (f-filename cask-project-path))
+  (setq cask-file (f-expand "Cask" cask-project-path))
+  (when (f-same? (epl-package-dir) (epl-default-package-dir))
     (epl-change-package-dir (cask-elpa-dir)))
-  (unless (file-exists-p cask-file)
-    (let ((carton-file (expand-file-name "Carton" cask-project-path)))
-      (if (file-exists-p carton-file)
+  (unless (f-file? cask-file)
+    (let ((carton-file (f-expand "Carton" cask-project-path)))
+      (if (f-file? carton-file)
         (progn
           (message "[DEPRECATION WARNING] Rename the file 'Carton' to 'Cask'")
           (setq cask-file carton-file))
@@ -197,7 +193,7 @@ SCOPE may be nil or :development."
   (cask-eval (cask-read cask-file))
   (when cask-package
     (let ((package-name (concat (cask-package-name cask-package) "-pkg.el")))
-      (setq cask-package-file (expand-file-name package-name cask-project-path)))))
+      (setq cask-package-file (f-expand package-name cask-project-path)))))
 
 (defun cask-initialize ()
   "Initialize packages under \"~/.emacs.d/\".
@@ -208,10 +204,8 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
 (defun cask--template-get (name)
   "Return content of template with NAME."
   (let* ((templates-dir (cask-resource-path "templates"))
-         (template-file (expand-file-name name templates-dir)))
-    (with-temp-buffer
-      (insert-file-contents template-file)
-      (buffer-string))))
+         (template-file (f-expand name templates-dir)))
+    (f-read-text template-file 'utf-8)))
 
 (defun cask-update ()
   "Update dependencies.
@@ -236,11 +230,9 @@ Return a list of updated packages."
          (cask--template-get
           (if dev-mode "init-dev.tpl" "init.tpl")))
         (cask-file-path (expand-file-name "Cask" path)))
-    (if (file-exists-p cask-file-path)
+    (if (f-file? cask-file-path)
         (error "Cask file already exists.")
-      (with-temp-buffer
-        (insert init-content)
-        (write-file cask-file-path)))))
+      (f-write-text init-content 'utf-8 cask-file-path))))
 
 (defmacro with-cask-package (&rest body)
   `(if cask-package
@@ -261,21 +253,13 @@ Return a list of updated packages."
 
 (defun cask-load-path ()
   "Return Emacs `load-path' (including package dependencies)."
-  (mapconcat
-   'identity
-   (append
-    (file-expand-wildcards (concat (cask-elpa-dir) "/*") t)
-    load-path)
-   path-separator))
+  (let ((dirs (when (f-dir? (cask-elpa-dir))
+                (f-directories (cask-elpa-dir)))))
+    (s-join path-separator (append dirs load-path))))
 
 (defun cask-path ()
   "Return Emacs `exec-path' (including package dependencies)."
-  (mapconcat
-   'identity
-   (append
-    (file-expand-wildcards (concat (cask-elpa-dir) "/*/bin") t)
-    exec-path)
-   path-separator))
+  (s-join path-separator (append (f-glob "*/bin" (cask-elpa-dir)) exec-path)))
 
 (defun cask-define-package-string ()
   "Return `define-package' string."
