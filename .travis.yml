@@ -12,6 +12,9 @@ before_install:
           emacs-snapshot-el emacs-snapshot-nox;
     fi
 
+  - curl -fsSkL https://raw.github.com/rejeep/cask.el/master/go | sh
+  - export PATH="/home/travis/.cask/bin:$PATH"
+
   # There is no need for running this as `make ecukes` automatically
   # does it.  However, it makes Travis CI log cleaner and failure in
   # `make elpa` is counted as non-test failure (the gray icon).
@@ -27,8 +30,6 @@ matrix:
     - env: EMACS=emacs23
 script:
   - make ecukes
-  - curl -fsSkL https://raw.github.com/rejeep/cask.el/master/go | sh
-  - export PATH="/home/travis/.cask/bin:$PATH"
 after_failure:
   - cat tmp/server.log
 after_script:
