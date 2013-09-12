@@ -1,6 +1,6 @@
 EMACS ?= emacs
 TAGS ?=
-CASK ?= ${PWD}/bin/cask
+CASK ?= cask
 ECUKES = ecukes
 ECUKES_ARGS = --script features ${TAGS}
 SERVER = ${CASK} exec ${EMACS} --load server/app.el -Q
