@@ -142,8 +142,7 @@
     (princ "\n")))
 
 (defun cask-cli/help ()
-  (commander-print-usage)
-  (kill-emacs 0))
+  (commander-print-usage-and-exit))
 
 (defun cask-cli/load-path ()
   (princ (cask-load-path)))
