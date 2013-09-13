@@ -14,7 +14,7 @@
       (:else (buffer-file-name))))
     "Path to Cask root."))
 
-(require 'cask (expand-file-name "cask" cask-cli-directory))
+(require 'epl (expand-file-name "epl" cask-cli-directory))
 
 ;; Bootstrap the dependencies of the CLI wrapper
 (defconst cask-bootstrap-dir
@@ -38,6 +38,8 @@
          (mapc 'epl-package-install cask-bootstrap-packages)
          (mapc 'require cask-bootstrap-packages))))
   (epl-reset))
+
+(require 'cask (f-expand "cask" cask-cli-directory))
 
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
