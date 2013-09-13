@@ -14,7 +14,7 @@
       (:else (buffer-file-name))))
     "Path to Cask root."))
 
-(require 'cask (expand-file-name "cask" cask-cli-directory))
+(require 'epl (expand-file-name "epl" cask-cli-directory))
 
 ;; Bootstrap the dependencies of the CLI wrapper
 (defconst cask-bootstrap-dir
@@ -22,7 +22,7 @@
    (locate-user-emacs-file (format ".cask/%s/bootstrap" emacs-version)))
   "Path to Cask bootstrap directory.")
 
-(defconst cask-bootstrap-packages '(commander)
+(defconst cask-bootstrap-packages '(commander f s dash)
   "List of bootstrap packages required by this file.")
 
 (unwind-protect
@@ -39,12 +39,14 @@
          (mapc 'require cask-bootstrap-packages))))
   (epl-reset))
 
+(require 'cask (f-expand "cask" cask-cli-directory))
+
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
 (defun cask-cli--find-unbalanced-parenthesis ()
   (with-temp-buffer
-    (insert-file-contents cask-file)
+    (insert (f-read-text cask-file 'utf-8))
     (goto-char (point-min))
     (condition-case nil
         (progn
@@ -93,8 +95,7 @@
 
 (defun cask-cli/package ()
   (cask-cli--setup)
-  (with-temp-file cask-package-file
-    (insert (cask-package))))
+  (f-write-text (cask-package) 'utf-8 cask-package-file))
 
 (defun cask-cli/install ()
   (cask-cli--setup)
