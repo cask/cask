@@ -51,3 +51,19 @@ Feature: Exec
       """
       Hello from HEY
       """
+
+  Scenario: Do not include bootstrap dependencies
+    Given this Cask file:
+      """
+      """
+    And I create a file called "foo.el" with content:
+      """
+      (require 's)
+      (s-upcase "this should fail")
+      """
+    When I run cask "install"
+    And I run cask "exec {{EMACS}} --script foo.el -Q"
+    Then I should see command error:
+      """
+      Symbol's function definition is void: s-upcase
+      """
