@@ -64,5 +64,5 @@ Feature: Exec
     And I run cask "exec {{EMACS}} --script foo.el -Q"
     Then I should see command error:
       """
-      Cannot open load file: s
+      Cannot open load file:
       """
