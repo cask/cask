@@ -112,7 +112,7 @@
     (epl-reset))
   (require 'git)
   (let ((git-repo cask-cli-directory))
-    (if (s-presence (git-run "status" "--porcelain"))
+    (if (s-present? (git-run "status" "--porcelain"))
         (error "Cannot update Cask because of dirty tree")
       (git-pull))))
 
