@@ -22,7 +22,7 @@
    (locate-user-emacs-file (format ".cask/%s/bootstrap" emacs-version)))
   "Path to Cask bootstrap directory.")
 
-(defconst cask-bootstrap-packages '(commander)
+(defconst cask-bootstrap-packages '(commander git)
   "List of bootstrap packages required by this file.")
 
 (unwind-protect
@@ -100,6 +100,22 @@
   (cask-cli--setup)
   (cask-install))
 
+(defun cask-cli/upgrade ()
+  (unwind-protect
+      (progn
+        (epl-change-package-dir cask-bootstrap-dir)
+        (epl-initialize)
+        (epl-add-archive "gnu" "http://elpa.gnu.org/packages/")
+        (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
+        (epl-refresh)
+        (epl-upgrade))
+    (epl-reset))
+  (require 'git)
+  (let ((git-repo cask-cli-directory))
+    (if (s-present? (git-run "status" "--porcelain"))
+        (error "Cannot update Cask because of dirty tree")
+      (git-pull))))
+
 (defun cask-cli/update ()
   (cask-cli--setup)
   (let ((upgrades (cask-update)))
@@ -169,6 +185,7 @@
  (command "package" "Create -pkg.el file" cask-cli/package)
  (command "install" "Install dependencies" cask-cli/install)
  (command "update" "Update dependencies" cask-cli/update)
+ (command "upgrade" "Upgrade Cask" cask-cli/upgrade)
  (command "exec [*]" "Execute command with correct dependencies" ignore)
  (command "init" "Create basic Cask file" cask-cli/init)
  (command "version" "Show the package version" cask-cli/version)
