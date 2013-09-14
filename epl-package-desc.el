@@ -107,7 +107,7 @@ package archives and reset the package directory."
   (setq package-alist nil
         package-archives nil
         package-archive-contents nil
-        load-path epl--load-path-before-initialize)
+        load-path (pop epl--load-path-before-initialize))
   (epl-change-package-dir (epl-default-package-dir)))
 
 
