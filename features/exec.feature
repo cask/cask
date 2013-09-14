@@ -59,11 +59,10 @@ Feature: Exec
     And I create a file called "foo.el" with content:
       """
       (require 's)
-      (s-upcase "this should fail")
       """
     When I run cask "install"
     And I run cask "exec {{EMACS}} --script foo.el -Q"
     Then I should see command error:
       """
-      Symbol's function definition is void: s-upcase
+      Cannot open load file: s
       """
