@@ -171,8 +171,7 @@ Return an `epl-package' object with the header metadata."
 
 (defun epl-change-package-dir (directory)
   "Change the directory of packages to DIRECTORY."
-  (setq package-user-dir directory)
-  (epl-initialize))
+  (setq package-user-dir directory))
 
 
 ;;;; Package system management
