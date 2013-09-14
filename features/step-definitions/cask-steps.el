@@ -20,6 +20,10 @@
 
 (When "^I run \\(cask\\|carton\\) \"\\([^\"]*\\)\"$"
   (lambda (binary command)
+    ;; Note: Since the Ecukes tests runs with Casks dependencies in
+    ;; EMACSLOADPATH, these will also be available in the subprocess
+    ;; created here. Removing all Cask dependencies here to solve it.
+    (setenv "EMACSLOADPATH" (s-join path-separator (--reject (s-matches? ".cask" it) load-path)))
     (setq command (cask-test/template command))
     (let* ((buffer-name "*cask-output*")
            (buffer
