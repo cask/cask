@@ -10,16 +10,16 @@
          (command (s-replace "{{PROJECT-PATH}}" cask-current-project command)))
     command))
 
-(Given "^this \\(Cask\\|Carton\\) file:$"
-  (lambda (filename content)
-    (cask-test/create-project-file filename content)))
+(Given "^this Cask file:$"
+  (lambda (content)
+    (cask-test/create-project-file "Cask" content)))
 
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)
     (cask-test/create-project-file filename content)))
 
-(When "^I run \\(cask\\|carton\\) \"\\([^\"]*\\)\"$"
-  (lambda (binary command)
+(When "^I run cask \"\\([^\"]*\\)\"$"
+  (lambda (command)
     ;; Note: Since the Ecukes tests runs with Casks dependencies in
     ;; EMACSLOADPATH, these will also be available in the subprocess
     ;; created here. Removing all Cask dependencies here to solve it.
@@ -35,14 +35,10 @@
            (args
             (unless (equal command "")
               (s-split " " command)))
-           (bin-command
-            (if (equal binary "cask")
-                cask-bin-command
-              carton-bin-command))
            (exit-code
             (apply
              'call-process
-             (append (list bin-command nil buffer nil) args))))
+             (append (list cask-bin-command nil buffer nil) args))))
       (with-current-buffer buffer
         (let ((content (buffer-string)))
           (cond ((= exit-code 0)

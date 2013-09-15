@@ -184,12 +184,7 @@ SCOPE may be nil or :development."
   (when (f-same? (epl-package-dir) (epl-default-package-dir))
     (epl-change-package-dir (cask-elpa-dir)))
   (unless (f-file? cask-file)
-    (let ((carton-file (f-expand "Carton" cask-project-path)))
-      (if (f-file? carton-file)
-        (progn
-          (message "[DEPRECATION WARNING] Rename the file 'Carton' to 'Cask'")
-          (setq cask-file carton-file))
-        (error "Could not locate `Cask` file"))))
+    (error "Could not locate `Cask` file"))
   (cask-eval (cask-read cask-file))
   (when cask-package
     (let ((package-name (concat (cask-package-name cask-package) "-pkg.el")))

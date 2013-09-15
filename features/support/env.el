@@ -22,9 +22,6 @@
 (defvar cask-bin-command
   (f-expand "cask" cask-bin-path))
 
-(defvar carton-bin-command
-  (f-expand "carton" cask-bin-path))
-
 (defvar cask-error nil)
 (defvar cask-output nil)
 (defvar cask-current-project nil)
