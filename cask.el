@@ -9,7 +9,7 @@
 ;; Version: 0.4.6
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/rejeep/cask.el
-;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.10.0"))
+;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.10.0") (epl "0.0.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
