@@ -2,7 +2,7 @@
   (f-expand (format ".cask/%s/elpa" emacs-version) cask-current-project))
 
 (defun cask-test/create-project-file (filename content)
-  (f-write (f-expand filename cask-current-project) content))
+  (f-write content 'utf-8 (f-expand filename cask-current-project)))
 
 (defun cask-test/template (command)
   (let* ((command (s-replace "{{EMACS-VERSION}}" emacs-version command))
