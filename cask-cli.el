@@ -110,10 +110,9 @@
 
 (defun cask-cli/update ()
   (cask-cli--setup)
-  (let ((upgrades (cask-update)))
-    (when upgrades
-      (princ "Updated packages:\n")
-      (-each upgrades 'cask-cli--print-upgrade))))
+  (-when-let (upgrades (cask-update))
+    (princ "Updated packages:\n")
+    (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
   (cask-init default-directory cask-cli--dev-mode))
@@ -164,10 +163,9 @@
 
 (defun cask-cli/outdated ()
   (cask-cli--setup)
-  (let ((outdated (cask-outdated)))
-    (when outdated
-      (princ "Outdated packages:\n")
-      (-each outdated 'cask-cli--print-upgrade))))
+  (-when-let (outdated (cask-outdated))
+    (princ "Outdated packages:\n")
+    (-each outdated 'cask-cli--print-upgrade)))
 
 (commander
  (name "cask")
