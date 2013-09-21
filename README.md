@@ -37,6 +37,9 @@ Don't forget to add Cask's bin to your `PATH`.
 
     $ export PATH="/path/to/code/cask/bin:$PATH"
 
+To upgrade Cask itself and its dependencies, run:
+
+    $ cask upgrade
 
 ## Usage
 
