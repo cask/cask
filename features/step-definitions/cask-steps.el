@@ -62,6 +62,14 @@
   (lambda (output)
     (should (s-contains? (cask-test/template output) cask-error))))
 
+(Then "^I should not see command output:$"
+  (lambda (output)
+    (should-not (s-contains? (cask-test/template output) cask-output))))
+
+(Then "^I should not see command error:$"
+  (lambda (output)
+    (should-not (s-contains? (cask-test/template output) cask-error))))
+
 (Then "^I should see usage information$"
   (lambda ()
     (Then

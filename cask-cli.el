@@ -93,6 +93,14 @@
        (format " - %s" name)))
     (princ "\n")))
 
+(defun cask-cli--print-upgrade (upgrade)
+  (princ
+   (format
+    "%s %s -> %s\n"
+    (epl-package-name (epl-upgrade-installed upgrade))
+    (epl-package-version-string (epl-upgrade-installed upgrade))
+    (epl-package-version-string (epl-upgrade-available upgrade)))))
+
 (defun cask-cli/package ()
   (cask-cli--setup)
   (f-write-text (cask-package) 'utf-8 cask-package-file))
@@ -119,16 +127,9 @@
 
 (defun cask-cli/update ()
   (cask-cli--setup)
-  (let ((upgrades (cask-update)))
-    (when upgrades
-      (princ "Updated packages:\n")
-      (dolist (upgrade upgrades)
-        (princ
-         (format
-          "%s %s -> %s\n"
-          (epl-package-name (epl-upgrade-installed upgrade))
-          (epl-package-version-string (epl-upgrade-installed upgrade))
-          (epl-package-version-string (epl-upgrade-available upgrade))))))))
+  (-when-let (upgrades (cask-update))
+    (princ "Updated packages:\n")
+    (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
   (cask-init default-directory cask-cli--dev-mode))
@@ -177,6 +178,12 @@
   (setq debug-on-error t)
   (setq debug-on-entry t))
 
+(defun cask-cli/outdated ()
+  (cask-cli--setup)
+  (-when-let (outdated (cask-outdated))
+    (princ "Outdated packages:\n")
+    (-each outdated 'cask-cli--print-upgrade)))
+
 (commander
  (name "cask")
  (description "Emacs dependency management made easy")
@@ -196,6 +203,7 @@
  (command "load-path" "Print Emacs load-path (including package dependencies)" cask-cli/load-path)
  (command "path" "Print Emacs exec-path (including package bin path)" cask-cli/path)
  (command "package-directory" "Print package installation directory" cask-cli/package-directory)
+ (command "outdated" "Show list of outdated packages" cask-cli/outdated)
 
  (option "-h, --help" "Display this help message" cask-cli/help)
  (option "--dev" "Run in dev mode" cask-cli/dev)

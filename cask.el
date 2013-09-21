@@ -276,6 +276,12 @@ Return a list of updated packages."
        (format "(%s \"%s\")" name (or version ""))))
    cask-runtime-dependencies " "))
 
+(defun cask-outdated ()
+  "Return list of `epl-upgrade' objects for outdated packages."
+  (epl-refresh)
+  (epl-initialize)
+  (epl-find-upgrades))
+
 (provide 'cask)
 
 ;;; cask.el ends here
