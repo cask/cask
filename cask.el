@@ -48,7 +48,7 @@
     "Get the path of a Cask resource with NAME."
     (f-expand name cask-directory)))
 
-(require 'epl (cask-resource-path "epl"))
+(require 'epl)
 
 (defstruct cask-package name version description)
 (defstruct cask-dependency name version)
