@@ -14,32 +14,8 @@
       (:else (buffer-file-name))))
     "Path to Cask root."))
 
-(require 'epl (expand-file-name "epl" cask-cli-directory))
-
-;; Bootstrap the dependencies of the CLI wrapper
-(defconst cask-bootstrap-dir
-  (expand-file-name
-   (locate-user-emacs-file (format ".cask/%s/bootstrap" emacs-version)))
-  "Path to Cask bootstrap directory.")
-
-(defconst cask-bootstrap-packages '(commander git f s dash)
-  "List of bootstrap packages required by this file.")
-
-(unwind-protect
-    (progn
-      (epl-change-package-dir cask-bootstrap-dir)
-      (epl-initialize)
-      (condition-case nil
-          (mapc 'require cask-bootstrap-packages)
-        (error
-         (epl-add-archive "gnu" "http://elpa.gnu.org/packages/")
-         (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
-         (epl-refresh)
-         (mapc 'epl-package-install cask-bootstrap-packages)
-         (mapc 'require cask-bootstrap-packages))))
-  (epl-reset))
-
-(require 'cask (f-expand "cask" cask-cli-directory))
+(require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-cli-directory))
+(require 'cask (expand-file-name "cask" cask-cli-directory))
 
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
