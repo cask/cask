@@ -10,9 +10,11 @@ PKG_DIR := $(shell ${CASK} package-directory)
 export EMACS
 export CASK
 
-all: ecukes
+all: test
 
-ecukes: elpa
+test: elpa unit ecukes
+
+ecukes:
 	${CASK} exec ${ECUKES} ${ECUKES_ARGS}
 
 start-server: elpa tmp
@@ -37,4 +39,7 @@ tmp:
 clean:
 	rm -rf ${PKG_DIR}
 
-.PHONY: elpa server ecukes all
+unit:
+	${CASK} exec ert-runner
+
+.PHONY: elpa server ecukes all unit
