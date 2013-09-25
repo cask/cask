@@ -173,7 +173,7 @@ SCOPE may be nil or :development."
        (error "Unknown directive: %S" form)))))
 
 (defun cask-elpa-dir ()
-  "Return full path to `cask-project-path'/.cask/elpa/`emacs-version'."
+  "Return full path to `cask-project-path'/.cask/`emacs-version'/elpa."
   (f-expand (format ".cask/%s/elpa" emacs-version) cask-project-path))
 
 (defun cask-setup (project-path)
