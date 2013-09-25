@@ -182,9 +182,12 @@ SCOPE may be nil or :development."
 
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
-  (setq cask-project-path (directory-file-name project-path))
-  (setq cask-project-name (file-name-nondirectory cask-project-path))
-  (setq cask-file (expand-file-name "Cask" cask-project-path))
+  (unless cask-project-path
+    (setq cask-project-path (directory-file-name project-path)))
+  (unless cask-project-name
+    (setq cask-project-name (file-name-nondirectory cask-project-path)))
+  (unless cask-file
+    (setq cask-file (expand-file-name "Cask" cask-project-path)))
   (when (equal (epl-package-dir) (epl-default-package-dir))
     (epl-change-package-dir (cask-elpa-dir)))
   (unless (file-exists-p cask-file)
