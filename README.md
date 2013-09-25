@@ -65,7 +65,7 @@ To list all dependencies, run:
 
 Add this to your `.emacs` file.
 
-    (require 'cask "~/.cask/cask.el")
+    (require 'cask "/path/to/code/cask/cask.el")
     (cask-initialize)
 
 #### Tips
