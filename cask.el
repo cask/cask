@@ -57,9 +57,6 @@
 (defvar cask-project-path nil
   "Path to project.")
 
-(defvar cask-project-name nil
-  "Name of project.")
-
 (defvar cask-file nil
   "Path to `Cask` file.")
 
@@ -179,7 +176,6 @@ SCOPE may be nil or :development."
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
   (setq cask-project-path project-path)
-  (setq cask-project-name (f-filename cask-project-path))
   (setq cask-file (f-expand "Cask" cask-project-path))
   (when (f-same? (epl-package-dir) (epl-default-package-dir))
     (epl-change-package-dir (cask-elpa-dir)))
