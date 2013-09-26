@@ -194,11 +194,9 @@ SCOPE may be nil or :development."
       (setq cask-package-file (f-expand package-name cask-project-path)))))
 
 (defun cask-initialize (&optional project-path)
-  "Initialize packages under PROJECT-PATH (defaults to \"~/.emacs.d/\"x).
+  "Initialize packages under PROJECT-PATH (defaults to `user-emacs-directory').
 Setup `package-user-dir' appropriately and then call `package-initialize'."
-  (cask-setup (if project-path
-                  project-path
-                user-emacs-directory))
+  (cask-setup (or project-path user-emacs-directory))
   (epl-initialize))
 
 (defun cask--template-get (name)
