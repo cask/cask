@@ -108,7 +108,7 @@
     (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
-  (cask-init default-directory cask-cli--dev-mode))
+  (cask-new-project default-directory cask-cli--dev-mode))
 
 (defun cask-cli/list ()
   (cask-cli--setup)
