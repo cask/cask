@@ -54,7 +54,7 @@
 (defstruct cask-dependency name version)
 (defstruct cask-source name url)
 
-(defvar cask-filename "Cask"
+(defconst cask-filename "Cask"
   "Name of the `Cask` file.")
 
 (defvar cask-project-path nil
