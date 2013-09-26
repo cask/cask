@@ -122,7 +122,7 @@
 
 (defun cask-cli/version ()
   (cask-cli--setup)
-  (princ (cask-version)))
+  (message "%s" (cask-version)))
 
 (defun cask-cli/info ()
   (cask-cli--setup)
