@@ -39,6 +39,7 @@
 (require 'f)
 (require 's)
 (require 'dash)
+(require 'epl)
 
 (eval-and-compile
   (defconst cask-directory (f-dirname (f-this-file))
@@ -47,8 +48,6 @@
   (defun cask-resource-path (name)
     "Get the path of a Cask resource with NAME."
     (f-expand name cask-directory)))
-
-(require 'epl)
 
 (defstruct cask-package name version description)
 (defstruct cask-dependency name version)
