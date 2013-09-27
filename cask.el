@@ -54,9 +54,6 @@
 (require 'epl)
 
 (eval-and-compile
-  (defconst cask-directory (f-dirname (f-this-file))
-    "The directory to which Cask is installed.")
-
   (defun cask-resource-path (name)
     "Get the path of a Cask resource with NAME."
     (f-expand name cask-directory)))
