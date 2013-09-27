@@ -34,6 +34,18 @@
 
 ;;; Code:
 
+(eval-and-compile
+  (defconst cask-directory
+    (file-name-directory
+     (cond
+      (load-in-progress load-file-name)
+      ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+       byte-compile-current-file)
+      (:else (buffer-file-name))))
+    "Path to Cask root."))
+
+(require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
+
 (eval-when-compile
   (require 'cl))
 (require 'f)
