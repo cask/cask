@@ -139,13 +139,13 @@
   (commander-print-usage-and-exit))
 
 (defun cask-cli/load-path ()
-  (princ (cask-load-path)))
+  (princ (concat (cask-load-path) "\n")))
 
 (defun cask-cli/path ()
-  (princ (cask-path)))
+  (princ (concat (cask-path) "\n")))
 
 (defun cask-cli/package-directory ()
-  (princ (cask-elpa-dir)))
+  (princ (concat (cask-elpa-dir) "\n")))
 
 (defun cask-cli/dev ()
   (setq cask-cli--dev-mode t))
