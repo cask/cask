@@ -62,6 +62,9 @@
 (defstruct cask-dependency name version)
 (defstruct cask-source name url)
 
+(defconst cask-filename "Cask"
+  "Name of the `Cask` file.")
+
 (defvar cask-project-path nil
   "Path to project.")
 
@@ -181,10 +184,14 @@ SCOPE may be nil or :development."
   "Return full path to `cask-project-path'/.cask/`emacs-version'/elpa."
   (f-expand (format ".cask/%s/elpa" emacs-version) cask-project-path))
 
+(defun cask-setup-project-variables (project-path)
+  "Setup cask variables for project at PROJECT-PATH."
+  (setq cask-project-path project-path)
+  (setq cask-file (f-expand cask-filename cask-project-path)))
+
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
-  (setq cask-project-path project-path)
-  (setq cask-file (f-expand "Cask" cask-project-path))
+  (cask-setup-project-variables project-path)
   (when (f-same? (epl-package-dir) (epl-default-package-dir))
     (epl-change-package-dir (cask-elpa-dir)))
   (unless (f-file? cask-file)
@@ -194,10 +201,10 @@ SCOPE may be nil or :development."
     (let ((package-name (concat (cask-package-name cask-package) "-pkg.el")))
       (setq cask-package-file (f-expand package-name cask-project-path)))))
 
-(defun cask-initialize ()
-  "Initialize packages under \"~/.emacs.d/\".
+(defun cask-initialize (&optional project-path)
+  "Initialize packages under PROJECT-PATH (defaults to `user-emacs-directory').
 Setup `package-user-dir' appropriately and then call `package-initialize'."
-  (cask-setup user-emacs-directory)
+  (cask-setup (or project-path user-emacs-directory))
   (epl-initialize))
 
 (defun cask--template-get (name)
@@ -223,15 +230,15 @@ Return a list of updated packages."
       (dolist (dependency cask-dependencies)
         (epl-package-install (cask-dependency-name dependency))))))
 
-(defun cask-init (path &optional dev-mode)
-  "Create new project at PATH with optional DEV-MODE."
+(defun cask-new-project (project-path &optional dev-mode)
+  "Create new project at PROJECT-PATH with optional DEV-MODE."
   (let ((init-content
          (cask--template-get
-          (if dev-mode "init-dev.tpl" "init.tpl")))
-        (cask-file-path (expand-file-name "Cask" path)))
-    (if (f-file? cask-file-path)
+          (if dev-mode "init-dev.tpl" "init.tpl"))))
+    (cask-setup-project-variables project-path)
+    (if (f-file? cask-file)
         (error "Cask file already exists.")
-      (f-write-text init-content 'utf-8 cask-file-path))))
+      (f-write-text init-content 'utf-8 cask-file))))
 
 (defmacro with-cask-package (&rest body)
   `(if cask-package
