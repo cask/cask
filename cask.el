@@ -248,7 +248,14 @@ Return a list of updated packages."
   (epl-upgrade))
 
 (defun cask-install ()
-  "Install dependencies."
+  "Install dependencies.
+
+Install all available dependencies.
+
+If some dependencies are not available, signal a
+`cask-missing-dependencies' error, whose data is a list of all
+missing dependencies.  All available dependencies are installed
+nonetheless."
   (let ((cask-dependencies (append cask-development-dependencies cask-runtime-dependencies))
         missing-dependencies)
     (when cask-dependencies
