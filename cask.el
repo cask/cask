@@ -228,7 +228,10 @@ Return a list of updated packages."
       (epl-refresh)
       (epl-initialize)
       (dolist (dependency cask-dependencies)
-        (epl-package-install (cask-dependency-name dependency))))))
+        (let ((name (cask-dependency-name dependency)))
+          (unless (epl-package-installed-p name)
+            (let ((package (car (epl-find-available-packages name))))
+              (epl-package-install package))))))))
 
 (defun cask-new-project (project-path &optional dev-mode)
   "Create new project at PROJECT-PATH with optional DEV-MODE."
