@@ -83,7 +83,15 @@
 
 (defun cask-cli/install ()
   (cask-cli--setup)
-  (cask-install))
+  (condition-case err
+      (cask-install)
+    (cask-missing-dependencies
+     (let ((missing-dependencies (cdr err)))
+       (error "Some dependencies were not available: %s"
+                (->> missing-dependencies
+                  (-map #'cask-dependency-name)
+                  (-map #'symbol-name)
+                  (s-join ", ")))))))
 
 (defun cask-cli/upgrade ()
   (unwind-protect
