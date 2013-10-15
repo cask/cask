@@ -58,6 +58,32 @@
     "Get the path of a Cask resource with NAME."
     (f-expand name cask-directory)))
 
+(eval-and-compile
+  (unless (fboundp 'define-error)
+    ;; Shamelessly copied from Emacs trunk :)
+    (defun define-error (name message &optional parent)
+      "Define NAME as a new error signal.
+MESSAGE is a string that will be output to the echo area if such an error
+is signaled without being caught by a `condition-case'.
+PARENT is either a signal or a list of signals from which it inherits.
+Defaults to `error'."
+      (unless parent (setq parent 'error))
+      (let ((conditions
+             (if (consp parent)
+                 (apply #'nconc
+                        (mapcar (lambda (parent)
+                                  (cons parent
+                                        (or (get parent 'error-conditions)
+                                            (error "Unknown signal `%s'" parent))))
+                                parent))
+               (cons parent (get parent 'error-conditions)))))
+        (put name 'error-conditions
+             (delete-dups (copy-sequence (cons name conditions))))
+        (when message (put name 'error-message message))))))
+
+(define-error 'cask-error "Cask error")
+(define-error 'cask-missing-dependencies "Missing dependencies" 'cask-error)
+
 (defstruct cask-package name version description)
 (defstruct cask-dependency name version)
 (defstruct cask-source name url)
@@ -223,7 +249,8 @@ Return a list of updated packages."
 
 (defun cask-install ()
   "Install dependencies."
-  (let ((cask-dependencies (append cask-development-dependencies cask-runtime-dependencies)))
+  (let ((cask-dependencies (append cask-development-dependencies cask-runtime-dependencies))
+        missing-dependencies)
     (when cask-dependencies
       (epl-refresh)
       (epl-initialize)
@@ -231,7 +258,11 @@ Return a list of updated packages."
         (let ((name (cask-dependency-name dependency)))
           (unless (epl-package-installed-p name)
             (let ((package (car (epl-find-available-packages name))))
-              (epl-package-install package))))))))
+              (if package
+                  (epl-package-install package)
+                (push dependency missing-dependencies))))))
+      (when missing-dependencies
+        (signal 'cask-missing-dependencies missing-dependencies)))))
 
 (defun cask-new-project (project-path &optional dev-mode)
   "Create new project at PROJECT-PATH with optional DEV-MODE."
