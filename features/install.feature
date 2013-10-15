@@ -63,7 +63,7 @@ Feature: Install
     Given this Cask file:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
-      
+
       (package-file "super-project.el")
       """
     When I create a file called "super-project.el" with content:
