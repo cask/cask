@@ -5,7 +5,7 @@
 
 
 (eval-and-compile
-  (defconst cask-cli-directory
+  (defconst cask-directory
     (file-name-directory
      (cond
       (load-in-progress load-file-name)
@@ -14,8 +14,8 @@
       (:else (buffer-file-name))))
     "Path to Cask root."))
 
-(require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-cli-directory))
-(require 'cask (expand-file-name "cask" cask-cli-directory))
+(require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
+(require 'cask (expand-file-name "cask" cask-directory))
 
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
@@ -104,7 +104,7 @@
         (epl-upgrade))
     (epl-reset))
   (require 'git)
-  (let ((git-repo cask-cli-directory))
+  (let ((git-repo cask-directory))
     (if (s-present? (git-run "status" "--porcelain"))
         (error "Cannot update Cask because of dirty tree")
       (git-pull))))

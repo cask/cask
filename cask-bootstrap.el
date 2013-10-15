@@ -1,7 +1,7 @@
 ;;; cask-bootstrap.el --- Bootstrap Casks's internal dependencies
 
 (eval-when-compile
-  (defvar cask-cli-directory))
+  (defvar cask-directory))
 
 (defconst cask-bootstrap-dir
   (expand-file-name
@@ -12,7 +12,7 @@
   "List of bootstrap packages required by this file.")
 
 (unless (require 'package nil :noerror)
-  (require 'package (expand-file-name "package-legacy" cask-cli-directory)))
+  (require 'package (expand-file-name "package-legacy" cask-directory)))
 
 (let ((orig-load-path load-path))
   (unwind-protect
