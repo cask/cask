@@ -269,7 +269,7 @@ nonetheless."
                   (epl-package-install package)
                 (push dependency missing-dependencies))))))
       (when missing-dependencies
-        (signal 'cask-missing-dependencies missing-dependencies)))))
+        (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
 (defun cask-new-project (project-path &optional dev-mode)
   "Create new project at PROJECT-PATH with optional DEV-MODE."
