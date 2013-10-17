@@ -55,6 +55,15 @@ def fail(s):
     sys.exit(1)
 
 
+def bootstrap_cask(target_directory):
+    cask = os.path.join(target_directory, 'bin', 'cask')
+    try:
+        check_call([cask, 'upgrade'])
+    except CalledProcessError:
+        raise CaskGoError('Cask could not be bootstrapped. Try again later, '
+                          'or report an issue at {0}'.format(ISSUE_TRACKER))
+
+
 def install_cask(target_directory):
     if os.path.isdir(target_directory):
         raise CaskGoError(
@@ -76,7 +85,9 @@ def install_cask(target_directory):
 
 def main():
     try:
-        install_cask(os.path.expandvars(TARGET_DIRECTORY))
+        target_directory = os.path.expandvars(TARGET_DIRECTORY)
+        install_cask(target_directory)
+        bootstrap_cask(target_directory)
         success("""\
 Successfully installed Cask!  Now, add the cask binary to your $PATH:
   export PATH="{0}/bin:$PATH"'""".format(TARGET_DIRECTORY))
