@@ -66,3 +66,13 @@ Feature: Exec
       """
       Cannot open load file:
       """
+
+  Scenario: Executable does not exist
+    Given this Cask file:
+      """
+      """
+    When I run cask "exec does-not-exist"
+    Then I should see command error:
+      """
+      cask exec: does-not-exist: [Errno 2] No such file or directory
+      """

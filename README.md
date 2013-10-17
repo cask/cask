@@ -10,7 +10,7 @@ package development.
 To install Cask, run this command:
 
 ```bash
-$ curl -fsSkL https://raw.github.com/cask/cask/master/go | sh
+$ curl -fsSkL https://raw.github.com/cask/cask/master/go | python
 ```
 
 See <http://cask.github.io/> for more information!

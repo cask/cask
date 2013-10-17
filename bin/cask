@@ -1,23 +1,90 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python
+# -*- coding: utf-8; -*-
 
-if [[ "$1" == "exec" ]]; then
-  EMACSLOADPATH="$($0 load-path)" PATH="$($0 path)" exec "${@:2}"
-else
-  if [[ -n "$INSIDE_EMACS" ]]; then
-    CASK_EMACS="emacs"
-  else
-    CASK_EMACS="${EMACS:-emacs}"
-  fi
+# Copyright (C) 2012, 2013 Johan Andersson
+# Copyright (C) 2013 Sebastian Wiesner
 
-  # Find the Cask installation directory by resolving the symlink chain to the
-  # current executable.  We don't use "readlink -f" or "realpath", because these
-  # utilities are missing on OS X.  Instead we rely on Emacs doing this work for
-  # us.  Unfortunately we can't give the script path as command line argument
-  # directly, because that makes Emacs visit the file, printing all sorts of
-  # messages and spoiling our output.  Hence We use an environment variable to
-  # pass the script path to the Emacs process.
-  CASK_PATH="$(__CASK_SCRIPT="$0" "${CASK_EMACS}" -Q --batch --eval '(princ (file-truename (getenv "__CASK_SCRIPT")))')"
-  CASK_DIR="$(dirname "$(dirname "${CASK_PATH}")")"
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
 
-  exec "${CASK_EMACS}" -Q --script "${CASK_DIR}/cask-cli.el" -- "$@"
-fi
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GNU Emacs; see the file COPYING.  If not, write to the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+"""Cask start script
+=================
+
+This script is the command line frontend to Cask.  Basically it just delegates
+all commands to the Emacs Lisp implementation, with the exception of `exec`,
+due to the lack of a corresponding function in Emacs.
+"""
+
+
+from __future__ import print_function, unicode_literals
+
+
+import sys
+import os
+import subprocess
+
+
+# The Cask executable
+CASK = os.path.realpath(os.path.abspath(sys.argv[0]))
+CASK_BIN_DIRECTORY = os.path.dirname(CASK)
+CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
+
+
+def get_cask_path(path):
+    process = subprocess.Popen([CASK, path], stdout=subprocess.PIPE)
+    stdout, _ = process.communicate()
+    return stdout.rstrip()
+
+
+def get_cask_emacs():
+    # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. in M-x
+    # shell or M-x compile.  In this case $EMACS does not contain a meaningful
+    # path at all.  It is simply set to t :(.  Hence, we default to using the
+    # standard "emacs".  Otherwise, if Cask is called from other places, we
+    # just use the $EMACS variable as source of our Emacs executable, and
+    # default to the standard Emacs.  TODO: Find out how to determine the
+    # calling Emacs executable
+    return ('emacs' if 'INSIDE_EMACS' in os.environ
+            else os.environ.get('EMACS', 'emacs'))
+
+
+def exec_command(command):
+    # Copy the environment and update the paths
+    os.environ['EMACSLOADPATH'] = get_cask_path('load-path')
+    os.environ['PATH'] = get_cask_path('path')
+    os.execvp(command[0], command)
+
+
+def exec_cask(args):
+    emacs = get_cask_emacs()
+    cli = os.path.join(CASK_DIRECTORY, 'cask-cli.el')
+    command = [emacs, '-Q', '--script', cli, '--'] + args
+    os.execvp(command[0], command)
+
+
+def main():
+    if len(sys.argv) > 1 and sys.argv[1] == 'exec':
+        try:
+            exec_command(sys.argv[2:])
+        except OSError as error:
+            print('{0} exec: {1}: {2}'.format(
+                os.path.basename(sys.argv[0]), sys.argv[2], error))
+            sys.exit(1)
+    else:
+        exec_cask(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    main()
