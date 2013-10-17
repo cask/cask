@@ -76,7 +76,12 @@ def exec_cask(args):
 
 def main():
     if sys.argv[1] == 'exec':
-        exec_command(sys.argv[2:])
+        try:
+            exec_command(sys.argv[2:])
+        except OSError as error:
+            print('{0} exec: {1}: {2}'.format(
+                os.path.basename(sys.argv[0]), sys.argv[2], error))
+            sys.exit(1)
     else:
         exec_cask(sys.argv[1:])
 
