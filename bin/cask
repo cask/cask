@@ -75,7 +75,7 @@ def exec_cask(args):
 
 
 def main():
-    if sys.argv[1] == 'exec':
+    if len(sys.argv) > 1 and sys.argv[1] == 'exec':
         try:
             exec_command(sys.argv[2:])
         except OSError as error:
