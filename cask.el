@@ -1,4 +1,4 @@
-;;; cask.el --- Emacs dependency management made easy
+;;; cask.el --- Cask: Emacs dependency management made easy
 
 ;; Copyright (C) 2012, 2013 Johan Andersson
 ;; Copyright (C) 2013 Sebastian Wiesner
@@ -12,8 +12,6 @@
 ;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.10.0") (epl "0.0.1"))
 
 ;; This file is NOT part of GNU Emacs.
-
-;;; License:
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -31,6 +29,8 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+
+;; Easy dependency management for Emacs!
 
 ;;; Code:
 

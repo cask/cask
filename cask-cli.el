@@ -1,8 +1,34 @@
-;;; cask-cli.el --- Cli interface to Cask
+;;; cask-cli.el --- Cask: CLI interface
+
+;; Copyright (C) 2012, 2013 Johan Andersson
+
+;; Author: Johan Andersson <johan.rejeep@gmail.com>
+;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
+;; URL: http://github.com/cask/cask
+
+;; This file is NOT part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; CLI interface of Cask.
+
+;;; Code:
 
 ;; Avoid "Loading vc-git..." messages
 (remove-hook 'find-file-hooks 'vc-find-file-hook)
-
 
 (eval-and-compile
   (defconst cask-directory
@@ -192,5 +218,7 @@
  (option "-h, --help" "Display this help message" cask-cli/help)
  (option "--dev" "Run in dev mode" cask-cli/dev)
  (option "--debug" "Turn on debug output" cask-cli/debug))
+
+(provide 'cask-cli)
 
 ;;; cask-cli.el ends here
