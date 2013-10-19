@@ -1,4 +1,4 @@
-;;; cask-bootstrap.el --- Cask: Bootstrap internal dependencies
+;;; cask-bootstrap.el --- Cask: Bootstrap internal dependencies  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012, 2013 Johan Andersson
 

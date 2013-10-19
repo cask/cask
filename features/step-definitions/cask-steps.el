@@ -1,4 +1,4 @@
-;;; cask-steps.el --- Cask: Step definitions for Ecukes tests
+;;; cask-steps.el --- Cask: Step definitions for Ecukes tests  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012, 2013 Johan Andersson
 
