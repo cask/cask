@@ -12,8 +12,8 @@ before_install:
           emacs-snapshot-el emacs-snapshot-nox;
     fi
 
-  - curl -fsSkL https://raw.github.com/rejeep/cask.el/master/go | sh
-  - export PATH="/home/travis/.cask/bin:$PATH"
+  - curl -fsSkL "https://raw.github.com/cask/cask/${TRAVIS_BRANCH}/go" | python
+  - export PATH="${HOME}/.cask/bin:$PATH"
 
   # There is no need for running this as `make ecukes` automatically
   # does it.  However, it makes Travis CI log cleaner and failure in

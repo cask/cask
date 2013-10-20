@@ -43,11 +43,27 @@ Feature: Install
     Then there should exist a package directory called "foo-0.0.1"
     And there should exist a package directory called "bar-0.0.2"
 
+  Scenario: Missing dependencies
+    Given this Cask file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "missing-a" "0.0.1")
+      (depends-on "missing-b" "0.0.2")
+      """
+    When I run cask "install"
+    Then there should not exist a package directory called "missing-a-0.0.1"
+    And there should not exist a package directory called "missing-b-0.0.2"
+    And I should see command error:
+      """
+      Some dependencies were not available: missing-a, missing-b
+      """
+
   Scenario: Using package-file directive
     Given this Cask file:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
-      
+
       (package-file "super-project.el")
       """
     When I create a file called "super-project.el" with content:

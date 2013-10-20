@@ -1,3 +1,32 @@
+;;; cask-steps.el --- Cask: Step definitions for Ecukes tests  -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2012, 2013 Johan Andersson
+
+;; Author: Johan Andersson <johan.rejeep@gmail.com>
+;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
+;; URL: http://github.com/cask/cask
+
+;; This file is NOT part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Step definitions for Ecukes integration tests of Cask.
+
+;;; Code:
+
 (defun cask-test/elpa-dir ()
   (f-expand (format ".cask/%s/elpa" emacs-version) cask-current-project))
 
@@ -10,16 +39,20 @@
          (command (s-replace "{{PROJECT-PATH}}" cask-current-project command)))
     command))
 
-(Given "^this \\(Cask\\|Carton\\) file:$"
-  (lambda (filename content)
-    (cask-test/create-project-file filename content)))
+(Given "^this Cask file:$"
+  (lambda (content)
+    (cask-test/create-project-file "Cask" content)))
 
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)
     (cask-test/create-project-file filename content)))
 
-(When "^I run \\(cask\\|carton\\) \"\\([^\"]*\\)\"$"
-  (lambda (binary command)
+(When "^I run cask \"\\([^\"]*\\)\"$"
+  (lambda (command)
+    ;; Note: Since the Ecukes tests runs with Casks dependencies in
+    ;; EMACSLOADPATH, these will also be available in the subprocess
+    ;; created here. Removing all Cask dependencies here to solve it.
+    (setenv "EMACSLOADPATH" (s-join path-separator (--reject (s-matches? ".cask" it) load-path)))
     (setq command (cask-test/template command))
     (let* ((buffer-name "*cask-output*")
            (buffer
@@ -31,14 +64,10 @@
            (args
             (unless (equal command "")
               (s-split " " command)))
-           (bin-command
-            (if (equal binary "cask")
-                cask-bin-command
-              carton-bin-command))
            (exit-code
             (apply
              'call-process
-             (append (list bin-command nil buffer nil) args))))
+             (append (list cask-bin-command nil buffer nil) args))))
       (with-current-buffer buffer
         (let ((content (buffer-string)))
           (cond ((= exit-code 0)
@@ -61,6 +90,14 @@
 (Then "^I should see command error:$"
   (lambda (output)
     (should (s-contains? (cask-test/template output) cask-error))))
+
+(Then "^I should not see command output:$"
+  (lambda (output)
+    (should-not (s-contains? (cask-test/template output) cask-output))))
+
+(Then "^I should not see command error:$"
+  (lambda (output)
+    (should-not (s-contains? (cask-test/template output) cask-error))))
 
 (Then "^I should see usage information$"
   (lambda ()
@@ -99,3 +136,7 @@
   (lambda (from to)
     (let ((default-directory cask-current-project))
       (f-move (cask-test/template from) (cask-test/template to)))))
+
+(provide 'cask-steps)
+
+;;; cask-steps.el ends here

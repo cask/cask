@@ -9,5 +9,5 @@
  (depends-on "dash")
  (depends-on "ansi")
  (depends-on "ecukes")
- (depends-on "espuds")
- (depends-on "elnode"))
+ (depends-on "elnode")
+ (depends-on "ert-runner"))

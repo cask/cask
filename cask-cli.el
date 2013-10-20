@@ -1,11 +1,37 @@
-;;; cask-cli.el --- Cli interface to Cask
+;;; cask-cli.el --- Cask: CLI interface  -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2012, 2013 Johan Andersson
+
+;; Author: Johan Andersson <johan.rejeep@gmail.com>
+;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
+;; URL: http://github.com/cask/cask
+
+;; This file is NOT part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; CLI interface of Cask.
+
+;;; Code:
 
 ;; Avoid "Loading vc-git..." messages
 (remove-hook 'find-file-hooks 'vc-find-file-hook)
 
-
 (eval-and-compile
-  (defconst cask-cli-directory
+  (defconst cask-directory
     (file-name-directory
      (cond
       (load-in-progress load-file-name)
@@ -14,37 +40,15 @@
       (:else (buffer-file-name))))
     "Path to Cask root."))
 
-(require 'cask (expand-file-name "cask" cask-cli-directory))
-
-;; Bootstrap the dependencies of the CLI wrapper
-(defconst cask-bootstrap-dir
-  (expand-file-name
-   (locate-user-emacs-file (format ".cask/%s/bootstrap" emacs-version)))
-  "Path to Cask bootstrap directory.")
-
-(defconst cask-bootstrap-packages '(commander)
-  "List of bootstrap packages required by this file.")
-
-(unwind-protect
-    (progn
-      (epl-change-package-dir cask-bootstrap-dir)
-      (epl-initialize)
-      (condition-case nil
-          (mapc 'require cask-bootstrap-packages)
-        (error
-         (epl-add-archive "gnu" "http://elpa.gnu.org/packages/")
-         (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
-         (epl-refresh)
-         (mapc 'epl-package-install cask-bootstrap-packages)
-         (mapc 'require cask-bootstrap-packages))))
-  (epl-reset))
+(require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
+(require 'cask (expand-file-name "cask" cask-directory))
 
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
 (defun cask-cli--find-unbalanced-parenthesis ()
   (with-temp-buffer
-    (insert-file-contents cask-file)
+    (insert (f-read-text cask-file 'utf-8))
     (goto-char (point-min))
     (condition-case nil
         (progn
@@ -91,30 +95,54 @@
        (format " - %s" name)))
     (princ "\n")))
 
+(defun cask-cli--print-upgrade (upgrade)
+  (princ
+   (format
+    "%s %s -> %s\n"
+    (epl-package-name (epl-upgrade-installed upgrade))
+    (epl-package-version-string (epl-upgrade-installed upgrade))
+    (epl-package-version-string (epl-upgrade-available upgrade)))))
+
 (defun cask-cli/package ()
   (cask-cli--setup)
-  (with-temp-file cask-package-file
-    (insert (cask-package))))
+  (f-write-text (cask-package) 'utf-8 cask-package-file))
 
 (defun cask-cli/install ()
   (cask-cli--setup)
-  (cask-install))
+  (condition-case err
+      (cask-install)
+    (cask-missing-dependencies
+     (let ((missing-dependencies (cdr err)))
+       (error "Some dependencies were not available: %s"
+                (->> missing-dependencies
+                  (-map #'cask-dependency-name)
+                  (-map #'symbol-name)
+                  (s-join ", ")))))))
+
+(defun cask-cli/upgrade ()
+  (unwind-protect
+      (progn
+        (epl-change-package-dir cask-bootstrap-dir)
+        (epl-initialize)
+        (epl-add-archive "gnu" "http://elpa.gnu.org/packages/")
+        (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
+        (epl-refresh)
+        (epl-upgrade))
+    (epl-reset))
+  (require 'git)
+  (let ((git-repo cask-directory))
+    (if (s-present? (git-run "status" "--porcelain"))
+        (error "Cannot update Cask because of dirty tree")
+      (git-pull))))
 
 (defun cask-cli/update ()
   (cask-cli--setup)
-  (let ((upgrades (cask-update)))
-    (when upgrades
-      (princ "Updated packages:\n")
-      (dolist (upgrade upgrades)
-        (princ
-         (format
-          "%s %s -> %s\n"
-          (epl-package-name (epl-upgrade-installed upgrade))
-          (epl-package-version-string (epl-upgrade-installed upgrade))
-          (epl-package-version-string (epl-upgrade-available upgrade))))))))
+  (-when-let (upgrades (cask-update))
+    (princ "Updated packages:\n")
+    (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
-  (cask-init default-directory cask-cli--dev-mode))
+  (cask-new-project default-directory cask-cli--dev-mode))
 
 (defun cask-cli/list ()
   (cask-cli--setup)
@@ -128,7 +156,7 @@
 
 (defun cask-cli/version ()
   (cask-cli--setup)
-  (princ (cask-version)))
+  (princ (concat (cask-version) "\n")))
 
 (defun cask-cli/info ()
   (cask-cli--setup)
@@ -145,13 +173,13 @@
   (commander-print-usage-and-exit))
 
 (defun cask-cli/load-path ()
-  (princ (cask-load-path)))
+  (princ (concat (cask-load-path) "\n")))
 
 (defun cask-cli/path ()
-  (princ (cask-path)))
+  (princ (concat (cask-path) "\n")))
 
 (defun cask-cli/package-directory ()
-  (princ (cask-elpa-dir)))
+  (princ (concat (cask-elpa-dir) "\n")))
 
 (defun cask-cli/dev ()
   (setq cask-cli--dev-mode t))
@@ -159,6 +187,12 @@
 (defun cask-cli/debug ()
   (setq debug-on-error t)
   (setq debug-on-entry t))
+
+(defun cask-cli/outdated ()
+  (cask-cli--setup)
+  (-when-let (outdated (cask-outdated))
+    (princ "Outdated packages:\n")
+    (-each outdated 'cask-cli--print-upgrade)))
 
 (commander
  (name "cask")
@@ -169,6 +203,7 @@
  (command "package" "Create -pkg.el file" cask-cli/package)
  (command "install" "Install dependencies" cask-cli/install)
  (command "update" "Update dependencies" cask-cli/update)
+ (command "upgrade" "Upgrade Cask" cask-cli/upgrade)
  (command "exec [*]" "Execute command with correct dependencies" ignore)
  (command "init" "Create basic Cask file" cask-cli/init)
  (command "version" "Show the package version" cask-cli/version)
@@ -178,9 +213,12 @@
  (command "load-path" "Print Emacs load-path (including package dependencies)" cask-cli/load-path)
  (command "path" "Print Emacs exec-path (including package bin path)" cask-cli/path)
  (command "package-directory" "Print package installation directory" cask-cli/package-directory)
+ (command "outdated" "Show list of outdated packages" cask-cli/outdated)
 
  (option "-h, --help" "Display this help message" cask-cli/help)
  (option "--dev" "Run in dev mode" cask-cli/dev)
  (option "--debug" "Turn on debug output" cask-cli/debug))
+
+(provide 'cask-cli)
 
 ;;; cask-cli.el ends here

@@ -51,3 +51,28 @@ Feature: Exec
       """
       Hello from HEY
       """
+
+  Scenario: Do not include bootstrap dependencies
+    Given this Cask file:
+      """
+      """
+    And I create a file called "foo.el" with content:
+      """
+      (require 's)
+      """
+    When I run cask "install"
+    And I run cask "exec {{EMACS}} --script foo.el -Q"
+    Then I should see command error:
+      """
+      Cannot open load file:
+      """
+
+  Scenario: Executable does not exist
+    Given this Cask file:
+      """
+      """
+    When I run cask "exec does-not-exist"
+    Then I should see command error:
+      """
+      cask exec: does-not-exist: [Errno 2] No such file or directory
+      """
