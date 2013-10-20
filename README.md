@@ -13,7 +13,9 @@ To install Cask, run this command:
 $ curl -fsSkL https://raw.github.com/cask/cask/master/go | python
 ```
 
-See <http://cask.github.io/> for more information!
+See <http://cask.github.io/> for more information and
+<https://groups.google.com/forum/#!forum/cask-dev> for development
+related discussion.
 
 ## License
 
