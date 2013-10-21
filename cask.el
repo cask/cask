@@ -222,6 +222,7 @@ SCOPE may be nil or :development."
     (epl-change-package-dir (cask-elpa-dir)))
   (unless (f-file? cask-file)
     (error "Could not locate `Cask` file"))
+  (setq package-archives nil)
   (cask-eval (cask-read cask-file))
   (when cask-package
     (let ((package-name (concat (cask-package-name cask-package) "-pkg.el")))
