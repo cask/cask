@@ -43,7 +43,8 @@ CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
 
 
 def get_cask_path(path):
-    process = subprocess.Popen([CASK, path], stdout=subprocess.PIPE)
+    process = subprocess.Popen([CASK, path], stdout=subprocess.PIPE,
+                               universal_newlines=True)
     stdout, _ = process.communicate()
     return stdout.rstrip()
 
