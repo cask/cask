@@ -41,6 +41,9 @@ CASK = os.path.realpath(os.path.abspath(sys.argv[0]))
 CASK_BIN_DIRECTORY = os.path.dirname(CASK)
 CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
 
+# Get the byte-string process environment
+ENVB = getattr(os, 'environb', os.environ)
+
 
 def get_cask_path(path):
     process = subprocess.Popen([CASK, path], stdout=subprocess.PIPE)
@@ -56,14 +59,14 @@ def get_cask_emacs():
     # just use the $EMACS variable as source of our Emacs executable, and
     # default to the standard Emacs.  TODO: Find out how to determine the
     # calling Emacs executable
-    return ('emacs' if 'INSIDE_EMACS' in os.environ
-            else os.environ.get('EMACS', 'emacs'))
+    return (b'emacs' if b'INSIDE_EMACS' in ENVB
+            else ENVB.get(b'EMACS', b'emacs'))
 
 
 def exec_command(command):
     # Copy the environment and update the paths
-    os.environ['EMACSLOADPATH'] = get_cask_path('load-path')
-    os.environ['PATH'] = get_cask_path('path')
+    ENVB[b'EMACSLOADPATH'] = get_cask_path('load-path')
+    ENVB[b'PATH'] = get_cask_path('path')
     os.execvp(command[0], command)
 
 
