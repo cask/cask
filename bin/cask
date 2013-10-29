@@ -34,7 +34,6 @@ from __future__ import print_function, unicode_literals
 import sys
 import os
 import locale
-import re
 import subprocess
 
 
@@ -45,9 +44,6 @@ CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
 
 # Get the byte-string process environment
 ENVB = getattr(os, 'environb', os.environ)
-
-# Regular expression to extract the version number from emacs --version
-VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)$', re.MULTILINE)
 
 MIN_EMACS_VERSION = (23,)
 
@@ -69,14 +65,15 @@ def get_cask_path(path):
 
 
 def get_emacs_version(emacs):
-    process = subprocess.Popen(
-        [emacs, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    command = [emacs, '-Q', '--batch', '--eval', '(princ emacs-version)']
+    process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
     stdout, _ = process.communicate()
-    version = VERSION_RE.match(stdout.decode(locale.getpreferredencoding()))
+    version = stdout.decode(locale.getpreferredencoding())
     if not version:
         raise ValueError('Could not determine the Emacs version')
     else:
-        return tuple(map(int, version.group('version').split('.')))
+        return tuple(map(int, version.split('.')))
 
 
 def find_best_emacs():
@@ -100,6 +97,7 @@ def find_best_emacs():
             return 'emacs'
     else:
         return 'emacs'
+
 
 def get_cask_emacs():
     emacs = ENVB.get(b'EMACS')
