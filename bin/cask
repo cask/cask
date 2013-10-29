@@ -33,6 +33,8 @@ from __future__ import print_function, unicode_literals
 
 import sys
 import os
+import locale
+import re
 import subprocess
 
 
@@ -44,6 +46,21 @@ CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
 # Get the byte-string process environment
 ENVB = getattr(os, 'environb', os.environ)
 
+# Regular expression to extract the version number from emacs --version
+VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)$', re.MULTILINE)
+
+MIN_EMACS_VERSION = (23,)
+
+
+class EmacsVersionError(Exception):
+    def __init__(self, version):
+        Exception.__init__(self)
+        self.version = version
+
+
+def is_executable_file(path):
+    return os.path.isfile(path) and os.access(path, os.X_OK)
+
 
 def get_cask_path(path):
     process = subprocess.Popen([CASK, path], stdout=subprocess.PIPE)
@@ -51,16 +68,52 @@ def get_cask_path(path):
     return stdout.rstrip()
 
 
+def get_emacs_version(emacs):
+    process = subprocess.Popen(
+        [emacs, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, _ = process.communicate()
+    version = VERSION_RE.match(stdout.decode(locale.getpreferredencoding()))
+    if not version:
+        raise ValueError('Could not determine the Emacs version')
+    else:
+        return tuple(map(int, version.group('version').split('.')))
+
+
+def find_best_emacs():
+    if (sys.platform == 'darwin' and
+        get_emacs_version('emacs') < MIN_EMACS_VERSION):
+        # On OS X, we have a chance to look at other places, if the default
+        # Emacs is not recent enough.  We look for an Emacs.app bundle at
+        # various places, and eventually try a brew'd Emacs at
+        # /usr/local/bin/emacs.  If all this fails, we return the default Emacs
+        # nonetheless, and let Cask fail later on.
+        candidates = [
+            os.path.expanduser('~/Applications/Emacs.app/Contents/MacOS/Emacs'),
+            '/Applications/Emacs.app/Contents/MacOS/Emacs',
+            '/usr/local/bin/emacs',
+        ]
+        for candidate in candidates:
+            if (is_executable_file(candidate) and
+                get_emacs_version(candidate) >= MIN_EMACS_VERSION):
+                return candidate
+        else:
+            return 'emacs'
+    else:
+        return 'emacs'
+
 def get_cask_emacs():
-    # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. in M-x
-    # shell or M-x compile.  In this case $EMACS does not contain a meaningful
-    # path at all.  It is simply set to t :(.  Hence, we default to using the
-    # standard "emacs".  Otherwise, if Cask is called from other places, we
-    # just use the $EMACS variable as source of our Emacs executable, and
-    # default to the standard Emacs.  TODO: Find out how to determine the
-    # calling Emacs executable
-    return (b'emacs' if b'INSIDE_EMACS' in ENVB
-            else ENVB.get(b'EMACS', b'emacs'))
+    emacs = ENVB.get(b'EMACS')
+    if b'INSIDE_EMACS' in ENVB and emacs == b't':
+        # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. M-x
+        # compile.  In this case, $EMACS may be set as well to the rather
+        # meaningless value of "t".  If this is the case, we just ignore the
+        # value of $EMACS.
+        emacs = None
+    emacs = emacs or find_best_emacs()
+    version = get_emacs_version(emacs)
+    if version < MIN_EMACS_VERSION:
+        raise EmacsVersionError(version)
+    return emacs
 
 
 def exec_command(command):
@@ -77,16 +130,25 @@ def exec_cask(args):
     os.execvp(command[0], command)
 
 
+def exit_error(error):
+    executable = os.path.basename(sys.argv[0])
+    command = (' ' + sys.argv[1]) if len(sys.argv) > 1 else ''
+    print('{0}{1}: error: {2}'.format(executable, command, error),
+          file=sys.stderr)
+    sys.exit(1)
+
+
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == 'exec':
-        try:
+    try:
+        if len(sys.argv) > 1 and sys.argv[1] == 'exec':
             exec_command(sys.argv[2:])
-        except OSError as error:
-            print('{0} exec: {1}: {2}'.format(
-                os.path.basename(sys.argv[0]), sys.argv[2], error))
-            sys.exit(1)
-    else:
-        exec_cask(sys.argv[1:])
+        else:
+            exec_cask(sys.argv[1:])
+    except OSError as error:
+        exit_error(error)
+    except EmacsVersionError as error:
+        exit_error('Emacs 23 required, yours is Emacs {0}.'.format(
+            '.'.join(map(str, error.version))))
 
 
 if __name__ == '__main__':
