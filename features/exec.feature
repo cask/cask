@@ -74,5 +74,5 @@ Feature: Exec
     When I run cask "exec does-not-exist"
     Then I should see command error:
       """
-      cask exec: does-not-exist: [Errno 2] No such file or directory
+      cask exec: error: [Errno 2] No such file or directory
       """
