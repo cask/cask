@@ -60,7 +60,10 @@
               (when (get-buffer buffer-name)
                 (kill-buffer buffer-name))
               (get-buffer-create buffer-name)))
-           (default-directory (file-name-as-directory cask-current-project))
+           (default-directory
+             (if cask-current-project
+                 (f-full cask-current-project)
+               default-directory))
            (args
             (unless (equal command "")
               (s-split " " command)))
