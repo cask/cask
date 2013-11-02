@@ -36,6 +36,7 @@
 (defun cask-test/template (command)
   (let* ((command (s-replace "{{EMACS-VERSION}}" emacs-version command))
          (command (s-replace "{{EMACS}}" (getenv "EMACS") command))
+         (command (s-replace "{{PROJECTS-PATH}}" cask-projects-path command))
          (command (s-replace "{{PROJECT-PATH}}" cask-current-project command)))
     command))
 

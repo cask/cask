@@ -46,6 +46,9 @@
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
+(defvar cask-cli--path default-directory
+  "Cask commands will execute in this path.")
+
 (defun cask-cli--find-unbalanced-parenthesis ()
   (with-temp-buffer
     (insert (f-read-text cask-file 'utf-8))
@@ -80,7 +83,7 @@
 
 (defun cask-cli--setup ()
   (condition-case err
-      (cask-setup default-directory)
+      (cask-setup cask-cli--path)
     (end-of-file
      (cask-cli--exit-error err))
     (invalid-read-syntax
@@ -142,7 +145,7 @@
     (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
-  (cask-new-project default-directory cask-cli--dev-mode))
+  (cask-new-project cask-cli--path cask-cli--dev-mode))
 
 (defun cask-cli/list ()
   (cask-cli--setup)
@@ -194,6 +197,9 @@
     (princ "Outdated packages:\n")
     (-each outdated 'cask-cli--print-upgrade)))
 
+(defun cask-cli/set-path (path)
+  (setq cask-cli--path path))
+
 (commander
  (name "cask")
  (description "Emacs dependency management made easy")
@@ -217,7 +223,8 @@
 
  (option "-h, --help" "Display this help message" cask-cli/help)
  (option "--dev" "Run in dev mode" cask-cli/dev)
- (option "--debug" "Turn on debug output" cask-cli/debug))
+ (option "--debug" "Turn on debug output" cask-cli/debug)
+ (option "--path <path>" "Run command in this path" cask-cli/set-path))
 
 (provide 'cask-cli)
 
