@@ -83,6 +83,7 @@ Defaults to `error'."
 
 (define-error 'cask-error "Cask error")
 (define-error 'cask-missing-dependencies "Missing dependencies" 'cask-error)
+(define-error 'cask-failed-installation "Failed installation" 'cask-error)
 
 (defstruct cask-package name version description)
 (defstruct cask-dependency name version)
@@ -256,7 +257,12 @@ Install all available dependencies.
 If some dependencies are not available, signal a
 `cask-missing-dependencies' error, whose data is a list of all
 missing dependencies.  All available dependencies are installed
-nonetheless."
+nonetheless.
+
+If a dependency failed to install, signal a
+`cask-failed-installation' error, whose data is a `(DEPENDENCY
+. ERR)', where DEPENDENCY is the `cask-dependency' which failed
+to install, and ERR is the original error data."
   (let ((cask-dependencies (append cask-development-dependencies cask-runtime-dependencies))
         missing-dependencies)
     (when cask-dependencies
@@ -267,7 +273,9 @@ nonetheless."
           (unless (epl-package-installed-p name)
             (let ((package (car (epl-find-available-packages name))))
               (if package
-                  (epl-package-install package)
+                  (condition-case err
+                      (epl-package-install package)
+                    (signal 'cask-failed-installation (cons dependency err)))
                 (push dependency missing-dependencies))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
