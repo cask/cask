@@ -275,7 +275,7 @@ to install, and ERR is the original error data."
               (if package
                   (condition-case err
                       (epl-package-install package)
-                    (signal 'cask-failed-installation (cons dependency err)))
+                    (error (signal 'cask-failed-installation (cons dependency err))))
                 (push dependency missing-dependencies))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
