@@ -31,6 +31,6 @@ matrix:
 script:
   - make ecukes
 after_failure:
-  - cat tmp/server.log
+  - cat servant/tmp/servant.log
 after_script:
   - make stop-sever
