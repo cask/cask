@@ -1,5 +1,3 @@
 tmp
 .cask
 *.elc
-
-*-pkg.el

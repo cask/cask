@@ -3,7 +3,7 @@ TAGS ?=
 CASK ?= cask
 ECUKES = ecukes
 ECUKES_ARGS = --script features ${TAGS}
-SERVER = ${CASK} exec ${EMACS} --load server/app.el -Q
+SERVER = ${CASK} exec ${EMACS} -Q --load servant/app.el
 
 PKG_DIR := $(shell ${CASK} package-directory)
 
@@ -17,14 +17,12 @@ test: elpa unit ecukes
 ecukes:
 	${CASK} exec ${ECUKES} ${ECUKES_ARGS}
 
-start-server: elpa tmp
-	${SERVER} --batch > tmp/server.log 2>&1 &
+start-server: elpa
+	mkdir -p servant/tmp
+	${SERVER} --batch > servant/tmp/servant.log 2>&1 &
 
 stop-server:
-	kill $$(cat tmp/server.pid)
-
-server: elpa
-	${SERVER} -nw
+	kill $$(cat servant/tmp/servant.pid)
 
 elpa: ${PKG_DIR}
 ${PKG_DIR}: Cask
@@ -32,9 +30,6 @@ ${PKG_DIR}: Cask
 	touch $@
 # NOTE: `touch` is called here since `cask install` does not update
 # timestamp of ${PKG_DIR} directory.
-
-tmp:
-	mkdir $@
 
 clean:
 	rm -rf ${PKG_DIR}
