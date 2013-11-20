@@ -24,9 +24,6 @@ start-server: elpa
 stop-server:
 	kill $$(cat servant/tmp/servant.pid)
 
-server: elpa
-	${SERVER} -nw
-
 elpa: ${PKG_DIR}
 ${PKG_DIR}: Cask
 	${CASK} install

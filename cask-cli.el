@@ -120,7 +120,12 @@
                 (->> missing-dependencies
                   (-map #'cask-dependency-name)
                   (-map #'symbol-name)
-                  (s-join ", ")))))))
+                  (s-join ", ")))))
+    (cask-failed-installation
+     (let* ((data (cdr err))
+            (dependency (cask-dependency-name (car data)))
+            (message (error-message-string (cdr data))))
+       (error "Dependency %s failed to install: %s" dependency message)))))
 
 (defun cask-cli/upgrade ()
   (unwind-protect
