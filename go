@@ -90,7 +90,7 @@ def main():
         bootstrap_cask(target_directory)
         success("""\
 Successfully installed Cask!  Now, add the cask binary to your $PATH:
-  export PATH="{0}/bin:$PATH"'""".format(TARGET_DIRECTORY))
+  export PATH="{0}/bin:$PATH\"""".format(TARGET_DIRECTORY))
     except CaskGoError as error:
         fail('{0!s}'.format(error))
 
