@@ -103,10 +103,10 @@ def find_best_emacs():
 
 def get_cask_emacs():
     emacs = ENVB.get(b'EMACS')
-    if b'INSIDE_EMACS' in ENVB and emacs == b't':
+    if b'INSIDE_EMACS' in ENVB:
         # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. M-x
-        # compile.  In this case, $EMACS may be set as well to the rather
-        # meaningless value of "t".  If this is the case, we just ignore the
+        # compile.  In this case, $EMACS may be set as well to a rather
+        # meaningless value.  If $INSIDE_EMACS is set, we just ignore the
         # value of $EMACS.
         emacs = None
     emacs = emacs or find_best_emacs()
