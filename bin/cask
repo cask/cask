@@ -65,12 +65,15 @@ OSX_EMACSEN = [
 class UnsupportedEmacsVersionError(Exception):
     """An exception indicating an unsupported Emacs version.
 
-    The ``version`` attribute provides the version of the affected Emacs.
+    The ``actual_version`` attribute provides the actual version of the
+    affected Emacs as tuple of integers.  The ``expected_version`` attribute
+    provides the expected version in the same type.
 
     """
-    def __init__(self, version):
+    def __init__(self, actual_version, expected_version):
         Exception.__init__(self)
-        self.version = version
+        self.actual_version = actual_version
+        self.expected_version = expected_version
 
 
 def is_executable_file(path):
@@ -159,6 +162,23 @@ def is_supported_emacs(emacs):
     return get_emacs_version(emacs) >= MIN_EMACS_VERSION
 
 
+def ensure_supported_emacs(emacs):
+    """Ensure that ``emacs`` is a supported Emacs version.
+
+    ``emacs`` is a string containing the path to an Emacs executable.
+
+    Raise ``UnsupportedEmacsVersionError`` if the Emacs executable is not a
+    supported Emacs version.  Raise ``ValueError``, if the version of ``emacs``
+    could not be determined, e.g. because ``emacs`` was not a valid Emacs
+    executable.  Raise ``OSError``, if ``emacs`` did not refer to an existing
+    executable file.
+
+    """
+    if not is_supported_emacs(emacs):
+        raise UnsupportedEmacsVersionError(get_emacs_version(emacs),
+                                           MIN_EMACS_VERSION)
+
+
 def find_best_emacs():
     """Find the best Emacs executable for the current platform.
 
@@ -176,6 +196,7 @@ def find_best_emacs():
         return next(suitable_candidates, 'emacs')
     else:
         return 'emacs'
+
 
 def get_cask_emacs():
     """Get the Emacs executable to use for Cask.
@@ -196,8 +217,7 @@ def get_cask_emacs():
     # value of $EMACS.
     emacs = ENVB.get(b'EMACS') if b'INSIDE_EMACS' not in ENVB else None
     emacs = emacs or find_best_emacs()
-    if not is_supported_emacs(emacs):
-        raise UnsupportedEmacsVersionError(get_emacs_version(emacs))
+    ensure_supported_emacs(emacs)
     return emacs
 
 
@@ -268,8 +288,9 @@ def main():
     except OSError as error:
         exit_error(error)
     except UnsupportedEmacsVersionError as error:
-        exit_error('Emacs 23 required, yours is Emacs {0}.'.format(
-            format_version(error.version)))
+        exit_error('Emacs {0} required, yours is Emacs {1}.'.format(
+            format_version(error.expected_version),
+            format_version(error.actual_version)))
 
 
 if __name__ == '__main__':
