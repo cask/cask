@@ -281,6 +281,10 @@ def main():
 
     """
     try:
+        if sys.version_info[:2] < (2, 6):
+            exit_error(
+                'Python 2.6 required, yours is {0.major}.{0.minor}'.format(
+                    sys.version_info))
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
             exec_command(sys.argv[2:])
         else:
