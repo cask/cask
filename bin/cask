@@ -79,6 +79,10 @@ def get_emacs_version(emacs):
         return tuple(map(int, version.group('version').split('.')))
 
 
+def has_min_version(emacs):
+    return get_emacs_version(emacs) >= MIN_EMACS_VERSION
+
+
 def find_best_emacs():
     if (sys.platform == 'darwin' and
         get_emacs_version('emacs') < MIN_EMACS_VERSION):
@@ -92,23 +96,18 @@ def find_best_emacs():
             '/Applications/Emacs.app/Contents/MacOS/Emacs',
             '/usr/local/bin/emacs',
         ]
-        for candidate in candidates:
-            if (is_executable_file(candidate) and
-                get_emacs_version(candidate) >= MIN_EMACS_VERSION):
-                return candidate
-        else:
-            return 'emacs'
+        suitable_candidates = (c for c in candidates if
+                               is_executable_file(c) and has_min_version(c))
+        return next(suitable_candidates, 'emacs')
     else:
         return 'emacs'
 
 def get_cask_emacs():
-    emacs = ENVB.get(b'EMACS')
-    if b'INSIDE_EMACS' in ENVB:
-        # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. M-x
-        # compile.  In this case, $EMACS may be set as well to a rather
-        # meaningless value.  If $INSIDE_EMACS is set, we just ignore the
-        # value of $EMACS.
-        emacs = None
+    # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. M-x
+    # compile.  In this case, $EMACS may be set as well to a rather
+    # meaningless value.  If $INSIDE_EMACS is set, we just ignore the
+    # value of $EMACS.
+    emacs = ENVB.get(b'EMACS') if b'INSIDE_EMACS' not in ENVB else None
     emacs = emacs or find_best_emacs()
     version = get_emacs_version(emacs)
     if version < MIN_EMACS_VERSION:
