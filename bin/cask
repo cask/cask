@@ -84,6 +84,29 @@ def is_executable_file(path):
     return os.path.isfile(path) and os.access(path, os.X_OK)
 
 
+def parse_version(version_string):
+    """Parse a version ``version_string``.
+
+    ``version_string`` is a string containing a simple version number, where
+    all parts are nummeric, and separated by a dot.
+
+    Return a tuple with the parsed version.  The length of the tuple is equal
+    to the number of parts in ``version_string``.  Raise ``ValueError`` if no
+    version could be parsed from ``version_string``.
+
+    """
+    return tuple(int(part) for part in version_string.split('.'))
+
+
+def format_version(version):
+    """Format a ``version`` into a human-readable string.
+
+    ``version`` is a tuple of integral components.
+
+    Return a string representing ``version``."""
+    return '.'.join(str(part) for part in version)
+
+
 def get_cask_path(kind):
     """Get the Cask package environment path of the given ``kind``.
 
@@ -114,11 +137,12 @@ def get_emacs_version(emacs):
     process = subprocess.Popen(
         [emacs, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, _ = process.communicate()
-    version = VERSION_RE.search(stdout.decode(locale.getpreferredencoding()))
+    version = VERSION_RE.search(stdout.decode(
+        locale.getpreferredencoding()))
     if not version:
-        raise ValueError('Could not determine the Emacs version')
+        raise ValueError('Could not determine the version of {0}'.format(emacs))
     else:
-        return tuple(map(int, version.group('version').split('.')))
+        return parse_version(version.group('version'))
 
 
 def is_supported_emacs(emacs):
@@ -245,7 +269,7 @@ def main():
         exit_error(error)
     except UnsupportedEmacsVersionError as error:
         exit_error('Emacs 23 required, yours is Emacs {0}.'.format(
-            '.'.join(map(str, error.version))))
+            format_version(error.version)))
 
 
 if __name__ == '__main__':
