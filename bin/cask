@@ -108,9 +108,8 @@ def get_cask_emacs():
     # value of $EMACS.
     emacs = ENVB.get(b'EMACS') if b'INSIDE_EMACS' not in ENVB else None
     emacs = emacs or find_best_emacs()
-    version = get_emacs_version(emacs)
-    if version < MIN_EMACS_VERSION:
-        raise EmacsVersionError(version)
+    if not has_min_version(emacs):
+        raise EmacsVersionError(get_emacs_version(emacs))
     return emacs
 
 
