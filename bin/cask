@@ -49,8 +49,18 @@ ENVB = getattr(os, 'environb', os.environ)
 # Regular expression to extract the version number from emacs --version
 VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)$', re.MULTILINE)
 
+# The minimum support Emacs version
 MIN_EMACS_VERSION = (23,)
 
+# Various Emacs locations on OS X.  We use these to try and find a better Emacs
+# when the default Emacs is not supported.
+OSX_EMACSEN = [
+    # Emacs.app at various places
+    os.path.expanduser('~/Applications/Emacs.app/Contents/MacOS/Emacs'),
+    '/Applications/Emacs.app/Contents/MacOS/Emacs',
+    # Homebrew'ed Emacs
+    '/usr/local/bin/emacs',
+]
 
 class EmacsVersionError(Exception):
     def __init__(self, version):
@@ -84,20 +94,9 @@ def has_min_version(emacs):
 
 
 def find_best_emacs():
-    if (sys.platform == 'darwin' and
-        get_emacs_version('emacs') < MIN_EMACS_VERSION):
-        # On OS X, we have a chance to look at other places, if the default
-        # Emacs is not recent enough.  We look for an Emacs.app bundle at
-        # various places, and eventually try a brew'd Emacs at
-        # /usr/local/bin/emacs.  If all this fails, we return the default Emacs
-        # nonetheless, and let Cask fail later on.
-        candidates = [
-            os.path.expanduser('~/Applications/Emacs.app/Contents/MacOS/Emacs'),
-            '/Applications/Emacs.app/Contents/MacOS/Emacs',
-            '/usr/local/bin/emacs',
-        ]
-        suitable_candidates = (c for c in candidates if
-                               is_executable_file(c) and has_min_version(c))
+    if sys.platform == 'darwin' and not has_min_version('emacs'):
+        suitable_candidates = (e for e in OSX_EMACSEN if
+                               is_executable_file(e) and has_min_version(e))
         return next(suitable_candidates, 'emacs')
     else:
         return 'emacs'
