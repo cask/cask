@@ -38,7 +38,7 @@ import re
 import subprocess
 
 
-# The Cask executable
+# The Cask executable and directories
 CASK = os.path.realpath(os.path.abspath(sys.argv[0]))
 CASK_BIN_DIRECTORY = os.path.dirname(CASK)
 CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
@@ -62,23 +62,55 @@ OSX_EMACSEN = [
     '/usr/local/bin/emacs',
 ]
 
-class EmacsVersionError(Exception):
+class UnsupportedEmacsVersionError(Exception):
+    """An exception indicating an unsupported Emacs version.
+
+    The ``version`` attribute provides the version of the affected Emacs.
+
+    """
     def __init__(self, version):
         Exception.__init__(self)
         self.version = version
 
 
 def is_executable_file(path):
+    """Determine whether ``path`` is an executable file.
+
+    ``path`` is a string containing the path to test.
+
+    Return ``True``, if ``path`` is executable, or ``False`` otherwise.
+
+    """
     return os.path.isfile(path) and os.access(path, os.X_OK)
 
 
-def get_cask_path(path):
-    process = subprocess.Popen([CASK, path], stdout=subprocess.PIPE)
+def get_cask_path(kind):
+    """Get the Cask package environment path of the given ``kind``.
+
+    ``kind`` is a string, denoting the kind of the path to get.  Cask supports
+    two different kinds, namely ``'path'`` for the executable path of the
+    package environment, and ``'load-path'`` for the Emacs Lisp load path of
+    the package environment.
+
+    Return the path as string, which contains all directories of the path
+    separated by path separators.
+
+    """
+    process = subprocess.Popen([CASK, kind], stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
     return stdout.rstrip()
 
 
 def get_emacs_version(emacs):
+    """Determine the version of the Emacs executable denoted by ``emacs``.
+
+    ``emacs`` is a string containing the path to an Emacs executable.
+
+    Return the version of ``emacs`` as tuple of integers.  Raise
+    ``ValueError``, if the version of ``emacs`` could not be determined,
+    e.g. because ``emacs`` was not a valid Emacs executable.  Raise
+    ``OSError``, if ``emacs`` did not refer to an existing executable file.
+    """
     process = subprocess.Popen(
         [emacs, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, _ = process.communicate()
@@ -89,45 +121,107 @@ def get_emacs_version(emacs):
         return tuple(map(int, version.group('version').split('.')))
 
 
-def has_min_version(emacs):
+def is_supported_emacs(emacs):
+    """Determine whether Cask supports the given ``emacs``.
+
+    ``emacs`` is a string containing the path to an Emacs executable.
+
+    Return ``True``, if Cask supports the version of ``emacs``.  Raise
+    ``ValueError``, if the version of ``emacs`` could not be determined,
+    e.g. because ``emacs`` was not a valid Emacs executable.  Raise
+    ``OSError``, if ``emacs`` did not refer to an existing executable file.
+
+    """
     return get_emacs_version(emacs) >= MIN_EMACS_VERSION
 
 
 def find_best_emacs():
-    if sys.platform == 'darwin' and not has_min_version('emacs'):
+    """Find the best Emacs executable for the current platform.
+
+    On OS X, try hard to avoid the system's default Emacs, which Cask does not
+    support, and look for third-party Emacs installations at various places.
+    On any other system, just use the default Emacs.
+
+    Return the name or path for the best Emacs command for the current platform
+    as string.
+
+    """
+    if sys.platform == 'darwin' and not is_supported_emacs('emacs'):
         suitable_candidates = (e for e in OSX_EMACSEN if
-                               is_executable_file(e) and has_min_version(e))
+                               is_executable_file(e) and is_supported_emacs(e))
         return next(suitable_candidates, 'emacs')
     else:
         return 'emacs'
 
 def get_cask_emacs():
+    """Get the Emacs executable to use for Cask.
+
+    Try to use the command denoted by the environment variable ``$EMACS``.  If
+    the value of this variable does not refer to a real Emacs executable
+    (i.e. Cask is run from inside Emacs), automatically find a good Emacs for
+    the current platform (see ``find_best_emacs``).
+
+    Return the name or path for the Emacs command Cask shall use as string.
+    Raise ``UnsupportedEmacsVersionError``, if the Emacs command does not meet
+    the minimum version requirements of Cask.
+
+    """
     # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. M-x
     # compile.  In this case, $EMACS may be set as well to a rather
     # meaningless value.  If $INSIDE_EMACS is set, we just ignore the
     # value of $EMACS.
     emacs = ENVB.get(b'EMACS') if b'INSIDE_EMACS' not in ENVB else None
     emacs = emacs or find_best_emacs()
-    if not has_min_version(emacs):
-        raise EmacsVersionError(get_emacs_version(emacs))
+    if not is_supported_emacs(emacs):
+        raise UnsupportedEmacsVersionError(get_emacs_version(emacs))
     return emacs
 
 
 def exec_command(command):
+    """Execute a ``command`` with the proper Cask environment.
+
+    ``command`` is a list of strings, containing the command to execute and its
+    arguments.
+
+    Set ``$PATH`` and ``$EMACSLISPPATH`` to include the Cask package
+    environment, and execute ``command``.
+
+    This function replaces the current process.  It does **not** return.
+
+    """
     # Copy the environment and update the paths
     ENVB[b'EMACSLOADPATH'] = get_cask_path('load-path')
     ENVB[b'PATH'] = get_cask_path('path')
     os.execvp(command[0], command)
 
 
-def exec_cask(args):
+def exec_cask(arguments):
+    """Execute the Cask CLI with the given ``arguments``.
+
+    ``arguments`` is a list of strings, containing the arguments for Cask.
+
+    Find the Emacs to use for Cask, and run the Cask CLI with the given
+    ``arguments``.
+
+    This function replaces the current process.  It does **not** return.
+
+    """
     emacs = get_cask_emacs()
     cli = os.path.join(CASK_DIRECTORY, 'cask-cli.el')
-    command = [emacs, '-Q', '--script', cli, '--'] + args
+    command = [emacs, '-Q', '--script', cli, '--'] + arguments
     os.execvp(command[0], command)
 
 
 def exit_error(error):
+    """Report an ``error`` and exit.
+
+    ``error`` is a string, or an object representing an error, which provides a
+    human-readable error description when stringified.
+
+    Print a human-readable error message to standard error, and exit with
+    return code 1.  See ``sys.exit``.
+
+    """
     executable = os.path.basename(sys.argv[0])
     command = (' ' + sys.argv[1]) if len(sys.argv) > 1 else ''
     print('{0}{1}: error: {2}'.format(executable, command, error),
@@ -136,6 +230,12 @@ def exit_error(error):
 
 
 def main():
+    """Entry point.
+
+    Partially parse arguments, and either execute commands within the Cask
+    package environment, or delegate to the Cask CLI.
+
+    """
     try:
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
             exec_command(sys.argv[2:])
@@ -143,7 +243,7 @@ def main():
             exec_cask(sys.argv[1:])
     except OSError as error:
         exit_error(error)
-    except EmacsVersionError as error:
+    except UnsupportedEmacsVersionError as error:
         exit_error('Emacs 23 required, yours is Emacs {0}.'.format(
             '.'.join(map(str, error.version))))
 
