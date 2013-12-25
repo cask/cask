@@ -106,11 +106,19 @@
     (epl-package-version-string (epl-upgrade-installed upgrade))
     (epl-package-version-string (epl-upgrade-available upgrade)))))
 
+
+;;;; Commands
+
 (defun cask-cli/package ()
+  "Create -pkg.el file."
   (cask-cli--setup)
   (f-write-text (cask-package) 'utf-8 cask-package-file))
 
 (defun cask-cli/install ()
+  "Install all packages specified in the Cask-file.
+
+The dependencies to packages are also installed.  If a package
+already is installed, it will not be installed again."
   (cask-cli--setup)
   (condition-case err
       (cask-install)
@@ -128,6 +136,10 @@
        (error "Dependency %s failed to install: %s" dependency message)))))
 
 (defun cask-cli/upgrade ()
+  "Upgrade Cask itself and its dependencies.
+
+This command requires that Cask is installed using Git and that
+Git is available in `exec-path'."
   (unwind-protect
       (progn
         (epl-change-package-dir cask-bootstrap-dir)
@@ -143,16 +155,25 @@
         (error "Cannot update Cask because of dirty tree")
       (git-pull))))
 
+(defun cask-cli/exec (&rest args)
+  "Execute ARGS with correct `exec-path' and `load-path'.")
+
 (defun cask-cli/update ()
+  "Update package version.
+
+All packages that are specified in the Cask-file will be updated
+including their dependencies."
   (cask-cli--setup)
   (-when-let (upgrades (cask-update))
     (princ "Updated packages:\n")
     (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
+  "Initialize the current directory with a Cask-file."
   (cask-new-project cask-cli--path cask-cli--dev-mode))
 
 (defun cask-cli/list ()
+  "List this package dependencies."
   (cask-cli--setup)
   (princ "### Dependencies ###\n\n")
   (princ (format "Runtime [%s]:\n" (length cask-runtime-dependencies)))
@@ -163,10 +184,12 @@
   (mapc 'cask-cli--print-dependency cask-development-dependencies))
 
 (defun cask-cli/version ()
+  "Print version for the current project."
   (cask-cli--setup)
   (princ (concat (cask-version) "\n")))
 
 (defun cask-cli/info ()
+  "Show info about the current package."
   (cask-cli--setup)
   (let* ((info (cask-info))
          (name (cask-package-name info))
@@ -178,32 +201,40 @@
     (princ "\n")))
 
 (defun cask-cli/help ()
+  "Display usage information."
   (commander-print-usage-and-exit))
 
 (defun cask-cli/load-path ()
+  "Print `load-path' for all packages and dependencies.
+
+The output is formatted as a colon path."
   (princ (concat (cask-load-path) "\n")))
 
 (defun cask-cli/path ()
+  "Print `exec-path' for all packages and dependencies.
+
+A dependency will be included in this list of the package has a
+directory called bin in the root directory.
+
+The output is formatted as a colon path."
   (princ (concat (cask-path) "\n")))
 
 (defun cask-cli/package-directory ()
+  "Print current package installation directory."
   (princ (concat (cask-elpa-dir) "\n")))
 
-(defun cask-cli/dev ()
-  (setq cask-cli--dev-mode t))
-
-(defun cask-cli/debug ()
-  (setq debug-on-error t)
-  (setq debug-on-entry t))
-
 (defun cask-cli/outdated ()
+  "Print list of outdated packages.
+
+That is packages that have a more recent version available for
+installation."
   (cask-cli--setup)
   (-when-let (outdated (cask-outdated))
     (princ "Outdated packages:\n")
     (-each outdated 'cask-cli--print-upgrade)))
 
-(defun cask-cli/set-path (path)
-  (setq cask-cli--path path))
+
+;;;; Options
 
 (defun cask-cli/cask-version ()
   "Print Cask's version.
@@ -216,32 +247,48 @@ This function prints Cask's version on the format:
     (princ "\n"))
   (kill-emacs 0))
 
+(defun cask-cli/set-path (path)
+  "Run command in this PATH instead of in `default-directory'."
+  (setq cask-cli--path path))
+
+(defun cask-cli/dev ()
+  "Run in dev mode."
+  (setq cask-cli--dev-mode t))
+
+(defun cask-cli/debug ()
+  "Turn on debug output."
+  (setq debug-on-error t)
+  (setq debug-on-entry t))
+
+
+;;;; Commander schedule
+
 (commander
  (name "cask")
  (description "Emacs dependency management made easy")
 
  (default "install")
 
- (command "package" "Create -pkg.el file" cask-cli/package)
- (command "install" "Install dependencies" cask-cli/install)
- (command "update" "Update dependencies" cask-cli/update)
- (command "upgrade" "Upgrade Cask" cask-cli/upgrade)
- (command "exec [*]" "Execute command with correct dependencies" ignore)
- (command "init" "Create basic Cask file" cask-cli/init)
- (command "version" "Show the package version" cask-cli/version)
- (command "list" "List dependencies" cask-cli/list)
- (command "info" "Show info about this project" cask-cli/info)
- (command "help" "Display this help message" cask-cli/help)
- (command "load-path" "Print Emacs load-path (including package dependencies)" cask-cli/load-path)
- (command "path" "Print Emacs exec-path (including package bin path)" cask-cli/path)
- (command "package-directory" "Print package installation directory" cask-cli/package-directory)
- (command "outdated" "Show list of outdated packages" cask-cli/outdated)
+ (command "package" cask-cli/package)
+ (command "install" cask-cli/install)
+ (command "update" cask-cli/update)
+ (command "upgrade" cask-cli/upgrade)
+ (command "exec [*]" cask-cli/exec)
+ (command "init" cask-cli/init)
+ (command "version" cask-cli/version)
+ (command "list" cask-cli/list)
+ (command "info" cask-cli/info)
+ (command "help" cask-cli/help)
+ (command "load-path" cask-cli/load-path)
+ (command "path" cask-cli/path)
+ (command "package-directory" cask-cli/package-directory)
+ (command "outdated" cask-cli/outdated)
 
- (option "--version" "Print Casks's version" cask-cli/cask-version)
- (option "-h, --help" "Display this help message" cask-cli/help)
- (option "--dev" "Run in dev mode" cask-cli/dev)
- (option "--debug" "Turn on debug output" cask-cli/debug)
- (option "--path <path>" "Run command in this path" cask-cli/set-path))
+ (option "--version" cask-cli/cask-version)
+ (option "-h, --help" cask-cli/help)
+ (option "--dev" cask-cli/dev)
+ (option "--debug" cask-cli/debug)
+ (option "--path <path>" cask-cli/set-path))
 
 (provide 'cask-cli)
 
