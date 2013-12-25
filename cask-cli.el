@@ -205,6 +205,17 @@
 (defun cask-cli/set-path (path)
   (setq cask-cli--path path))
 
+(defun cask-cli/cask-version ()
+  "Print Cask's version.
+
+This function prints Cask's version on the format:
+'vMAJOR.MINOR.PATCH'."
+  (let* ((package (epl-package-from-lisp-file (f-expand "cask.el" cask-directory)))
+         (version (epl-package-version-string package)))
+    (princ version)
+    (princ "\n"))
+  (kill-emacs 0))
+
 (commander
  (name "cask")
  (description "Emacs dependency management made easy")
@@ -226,6 +237,7 @@
  (command "package-directory" "Print package installation directory" cask-cli/package-directory)
  (command "outdated" "Show list of outdated packages" cask-cli/outdated)
 
+ (option "--version" "Print Casks's version" cask-cli/cask-version)
  (option "-h, --help" "Display this help message" cask-cli/help)
  (option "--dev" "Run in dev mode" cask-cli/dev)
  (option "--debug" "Turn on debug output" cask-cli/debug)
