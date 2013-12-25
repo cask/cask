@@ -27,9 +27,6 @@
 
 ;;; Code:
 
-;; Avoid "Loading vc-git..." messages
-(remove-hook 'find-file-hooks 'vc-find-file-hook)
-
 (eval-and-compile
   (defconst cask-directory
     (file-name-directory
