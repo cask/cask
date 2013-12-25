@@ -209,7 +209,7 @@
   "Print Cask's version.
 
 This function prints Cask's version on the format:
-'vMAJOR.MINOR.PATCH'."
+'MAJOR.MINOR.PATCH'."
   (let* ((package (epl-package-from-lisp-file (f-expand "cask.el" cask-directory)))
          (version (epl-package-version-string package)))
     (princ version)
