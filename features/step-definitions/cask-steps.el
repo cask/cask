@@ -141,6 +141,10 @@
     (let ((default-directory cask-current-project))
       (f-move (cask-test/template from) (cask-test/template to)))))
 
+(Then "^I should see cask version$"
+  (lambda ()
+    (should (s-matches? "^[0-9]+\.[0-9]+\.[0-9]+\n$" cask-output))))
+
 (provide 'cask-steps)
 
 ;;; cask-steps.el ends here
