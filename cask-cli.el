@@ -196,15 +196,14 @@ including their dependencies."
 
 (defun cask-cli/info ()
   "Show info about the current package."
-  (cask-cli--setup)
-  (let* ((info (cask-info))
-         (name (plist-get info :name))
-         (version (plist-get info :version))
-         (description (plist-get info :description)))
-    (princ (format "### %s (%s) ###" name version))
-    (princ "\n\n")
-    (princ description)
-    (princ "\n")))
+  (cask-cli--with-setup
+   (let ((name (cask-package-name it))
+         (version (cask-package-version it))
+         (description (cask-package-description it)))
+     (princ (format "### %s (%s) ###" name version))
+     (princ "\n\n")
+     (princ description)
+     (princ "\n"))))
 
 (defun cask-cli/help ()
   "Display usage information."

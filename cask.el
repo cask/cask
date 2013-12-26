@@ -288,11 +288,7 @@ to install, and ERR is the original error data."
         (error "Cask file already exists.")
       (f-write-text init-content 'utf-8 cask-file))))
 
-;; TODO: Replace with `with-cask-project'.
-(defmacro with-cask-package-old (&rest body)
-  `(if cask-package
        (progn ,@body)
-     (signal 'cask-not-a-package nil)))
 
 (put 'with-cask-package 'lisp-indent-function 2)
 (defmacro with-cask-package (bundle &rest body)
@@ -309,15 +305,23 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
          (progn ,@body)
        (signal 'cask-not-a-package nil))))
 
-(defun cask-info ()
-  "Return info about this project."
-  (with-cask-package-old cask-package))
+(defun cask-package-name (bundle)
+  "Return BUNDLE name.
+
+If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
+  (with-cask-package bundle (cask-bundle-name bundle)))
 
 (defun cask-package-version (bundle)
   "Return BUNDLE version.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   (with-cask-package bundle (cask-bundle-version bundle)))
+
+(defun cask-package-description (bundle)
+  "Return BUNDLE description.
+
+If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
+  (with-cask-package bundle (cask-bundle-description bundle)))
 
 (defun cask-version ()
   "Return Cask's version."
