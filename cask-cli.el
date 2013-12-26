@@ -229,7 +229,8 @@ The output is formatted as a colon path."
 
 (defun cask-cli/package-directory ()
   "Print current package installation directory."
-  (princ (concat (cask-elpa-dir) "\n")))
+  (cask-cli--with-setup
+   (princ (concat (cask-elpa-dir it) "\n"))))
 
 (defun cask-cli/outdated ()
   "Print list of outdated packages.
