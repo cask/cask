@@ -242,10 +242,10 @@ The output is formatted as a colon path."
 
 That is packages that have a more recent version available for
 installation."
-  (cask-cli--setup)
-  (-when-let (outdated (cask-outdated))
-    (princ "Outdated packages:\n")
-    (-each outdated 'cask-cli--print-upgrade)))
+  (cask-cli--with-setup
+   (-when-let (outdated (cask-outdated it))
+     (princ "Outdated packages:\n")
+     (-each outdated 'cask-cli--print-upgrade))))
 
 
 ;;;; Options

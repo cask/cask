@@ -114,6 +114,13 @@ Defaults to `error'."
     (cask-test   . "http://127.0.0.1:9191/packages/"))
   "Mapping of source name and url.")
 
+(defun cask--packages (bundle)
+  "Return list of `epl-package' objects for BUNDLE dependencies."
+  (-map
+    (lambda (dependency)
+      (epl-find-installed-package (cask-dependency-name dependency)))
+    (cask-dependencies bundle)))
+
 (defun cask-current-source-position ()
   "Get the current position in the buffer."
   (make-cask-source-position :line (line-number-at-pos)
@@ -246,10 +253,7 @@ Return list of updated packages."
   (epl-refresh)
   (epl-initialize)
   (epl-upgrade
-   (-map
-    (lambda (dependency)
-      (epl-find-installed-package (cask-dependency-name dependency)))
-    (cask-dependencies bundle))))
+   (cask--packages bundle)))
 
 (defun cask-install (bundle)
   "Install BUNDLE dependencies.
@@ -389,11 +393,11 @@ Return value is a list of `cask-dependency' objects."
   (with-cask-package bundle
       (f-expand (concat (cask-bundle-name bundle) "-pkg.el") (cask-bundle-path bundle))))
 
-(defun cask-outdated ()
-  "Return list of `epl-upgrade' objects for outdated packages."
+(defun cask-outdated (bundle)
+  "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
   (epl-refresh)
   (epl-initialize)
-  (epl-find-upgrades))
+  (epl-find-upgrades (cask--packages bundle)))
 
 (defun cask-path (bundle)
   "Return BUNDLE root path."

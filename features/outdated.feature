@@ -9,10 +9,7 @@ Feature: Outdated
 
   Scenario: No Cask file
     When I run cask "outdated"
-    Then I should see command error:
-      """
-      Could not locate `Cask` file
-      """
+    Then I should see no cask file error
 
   Scenario: Without outdated dependency
     Given this Cask file:
