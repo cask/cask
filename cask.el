@@ -170,7 +170,7 @@ Return all directives in the Cask file as list."
                            :description (epl-package-summary package)))
   (cl-dolist (req (epl-package-requirements package))
     (cask-add-dependency (epl-requirement-name req)
-                             (epl-requirement-version-string req))))
+                         (epl-requirement-version-string req))))
 
 (defun cask-eval (forms &optional scope)
   "Evaluate cask FORMS in SCOPE.
