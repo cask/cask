@@ -93,9 +93,11 @@ Defaults to `error'."
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
 
+;; TODO: Remove
 (defvar cask-project-path nil
   "Path to project.")
 
+;; TODO: Remove
 (defvar cask-file nil
   "Path to `Cask` file.")
 
