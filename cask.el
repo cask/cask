@@ -305,12 +305,12 @@ If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   `(with-cask-file bundle
-    (if (and
-         (cask-bundle-name bundle)
-         (cask-bundle-version bundle)
-         (cask-bundle-description bundle))
-        (progn ,@body)
-      (signal 'cask-not-a-package nil))))
+       (if (and
+            (cask-bundle-name bundle)
+            (cask-bundle-version bundle)
+            (cask-bundle-description bundle))
+           (progn ,@body)
+         (signal 'cask-not-a-package nil))))
 
 (defun cask-package-name (bundle)
   "Return BUNDLE name.
