@@ -175,8 +175,12 @@ including their dependencies."
     (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
-  "Initialize the current directory with a Cask-file."
-  (cask-new-project cask-cli--path cask-cli--dev-mode))
+  "Initialize the current directory with a Cask-file.
+
+By default, the created Cask-file will be for an Emacs
+configuration.  If the --dev option is specified, the Cask-file
+will be for an Emacs package."
+  (cask-caskify cask-cli--path cask-cli--dev-mode))
 
 (defun cask-cli/list ()
   "List this package dependencies."

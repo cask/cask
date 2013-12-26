@@ -278,12 +278,14 @@ to install, and ERR is the original error data."
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
-(defun cask-new-project (project-path &optional dev-mode)
-  "Create new project at PROJECT-PATH with optional DEV-MODE."
+(defun cask-caskify (path &optional dev-mode)
+  "Create Cask-file in PATH.
+
+If DEV-MODE is true, the dev template is used, otherwise the
+configuration template is used."
   (let ((init-content
-         (cask--template-get
-          (if dev-mode "init-dev.tpl" "init.tpl"))))
-    (cask-setup-project-variables project-path)
+         (cask--template-get (if dev-mode "init-dev.tpl" "init.tpl")))
+        (cask-file (f-expand "Cask" path)))
     (if (f-file? cask-file)
         (error "Cask file already exists.")
       (f-write-text init-content 'utf-8 cask-file))))
