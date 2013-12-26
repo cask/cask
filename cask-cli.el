@@ -191,16 +191,16 @@ including their dependencies."
 
 (defun cask-cli/version ()
   "Print version for the current project."
-  (cask-cli--setup)
-  (princ (concat (cask-version) "\n")))
+  (cask-cli--with-setup
+   (princ (concat (cask-package-version it) "\n"))))
 
 (defun cask-cli/info ()
   "Show info about the current package."
   (cask-cli--setup)
   (let* ((info (cask-info))
-         (name (cask-package-name info))
-         (version (cask-package-version info))
-         (description (cask-package-description info)))
+         (name (plist-get info :name))
+         (version (plist-get info :version))
+         (description (plist-get info :description)))
     (princ (format "### %s (%s) ###" name version))
     (princ "\n\n")
     (princ description)
@@ -243,14 +243,8 @@ installation."
 ;;;; Options
 
 (defun cask-cli/cask-version ()
-  "Print Cask's version.
-
-This function prints Cask's version on the format:
-'MAJOR.MINOR.PATCH'."
-  (let* ((package (epl-package-from-lisp-file (f-expand "cask.el" cask-directory)))
-         (version (epl-package-version-string package)))
-    (princ version)
-    (princ "\n"))
+  "Print Cask's version."
+  (princ (concat (cask-version) "\n"))
   (kill-emacs 0))
 
 (defun cask-cli/set-path (path)

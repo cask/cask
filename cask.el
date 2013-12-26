@@ -85,7 +85,6 @@ Defaults to `error'."
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
 
-(cl-defstruct cask-package name version description)
 (cl-defstruct cask-dependency name version)
 (cl-defstruct cask-source name url)
 (cl-defstruct cask-bundle name version description dependencies)
@@ -161,9 +160,9 @@ Return all directives in the Cask file as list."
 (defun cask-parse-epl-package (package)
   "Parse an EPL PACKAGE."
   (setq cask-package
-        (make-cask-package :name (symbol-name (epl-package-name package))
-                           :version (epl-package-version-string package)
-                           :description (epl-package-summary package)))
+        (list :name (symbol-name (epl-package-name package))
+              :version (epl-package-version-string package)
+              :description (epl-package-summary package)))
   (cl-dolist (req (epl-package-requirements package))
     (cask-add-dependency (epl-requirement-name req)
                          (epl-requirement-version-string req))))
@@ -185,9 +184,9 @@ SCOPE may be nil or :development."
          (epl-add-archive name-or-alias url)))
       (package
        (cl-destructuring-bind (_ name version description) form
-         (setq cask-package (make-cask-package :name name
-                                               :version version
-                                               :description description))))
+         (setq cask-package (list :name name
+                                  :version version
+                                  :description description))))
       (package-file
        (cl-destructuring-bind (_ filename) form
          (cask-parse-epl-package
@@ -225,9 +224,9 @@ SCOPE may be nil or :development."
                    :dependencies (list :runtime cask-runtime-dependencies
                                        :development cask-development-dependencies))))
       (when cask-package
-        (setf (cask-bundle-name bundle) (cask-package-name cask-package))
-        (setf (cask-bundle-version bundle) (cask-package-version cask-package))
-        (setf (cask-bundle-description bundle) (cask-package-description cask-package)))
+        (setf (cask-bundle-name bundle) (plist-get cask-package :name))
+        (setf (cask-bundle-version bundle) (plist-get cask-package :version))
+        (setf (cask-bundle-description bundle) (plist-get cask-package :description)))
       bundle)))
 
 (defun cask-initialize (&optional project-path)
@@ -313,9 +312,17 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return info about this project."
   (with-cask-package-old cask-package))
 
+(defun cask-package-version (bundle)
+  "Return BUNDLE version.
+
+If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
+  (with-cask-package bundle (cask-bundle-version bundle)))
+
 (defun cask-version ()
-  "Return the version of this project."
-  (with-cask-package-old (cask-package-version cask-package)))
+  "Return Cask's version."
+  (let ((package (epl-package-from-lisp-file
+                  (f-expand "cask.el" cask-directory))))
+    (epl-package-version-string package)))
 
 (defun cask-load-path ()
   "Return Emacs `load-path' (including package dependencies)."

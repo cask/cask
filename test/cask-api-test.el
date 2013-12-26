@@ -61,3 +61,20 @@
 (ert-deftest cask-define-package-file-test/config ()
   (let ((bundle (cask-setup cask-test/config-path)))
     (should-error (cask-define-package-file bundle) :type 'cask-not-a-package)))
+
+
+;;;; cask-package-version
+
+(ert-deftest cask-package-version-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should (string= (cask-package-version bundle) "0.8.3"))))
+
+(ert-deftest cask-package-version-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should-error (cask-package-version bundle) :type 'cask-not-a-package)))
+
+
+;;;; cask-version
+
+(ert-deftest cask-version-test ()
+  (should (s-matches? "^[0-9]+\.[0-9]+\.[0-9]+$" (cask-version))))
