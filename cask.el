@@ -237,8 +237,9 @@ SCOPE may be nil or :development."
 (defun cask-initialize (&optional project-path)
   "Initialize packages under PROJECT-PATH (defaults to `user-emacs-directory').
 Setup `package-user-dir' appropriately and then call `package-initialize'."
-  (cask-setup (or project-path user-emacs-directory))
-  (epl-initialize))
+  (let ((bundle (cask-setup (or project-path user-emacs-directory))))
+    (epl-initialize)
+    bundle))
 
 (defun cask--template-get (name)
   "Return content of template with NAME."

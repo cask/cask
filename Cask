@@ -10,4 +10,5 @@
  (depends-on "ansi")
  (depends-on "ecukes")
  (depends-on "servant")
- (depends-on "ert-runner"))
+ (depends-on "ert-runner")
+ (depends-on "el-mock"))

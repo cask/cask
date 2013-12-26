@@ -233,3 +233,18 @@
 
 
 ;;;; cask-outdated
+
+
+;;;; cask-initialize
+
+(ert-deftest cask-initialize-test/package ()
+  (with-sandbox
+   (mock (epl-initialize) :times 1)
+   (let ((bundle (cask-initialize cask-test/package-path)))
+     (should (cask-bundle-p bundle)))))
+
+(ert-deftest cask-initialize-test/config ()
+  (with-sandbox
+   (mock (epl-initialize) :times 1)
+   (let ((bundle (cask-initialize cask-test/config-path)))
+     (should (cask-bundle-p bundle)))))

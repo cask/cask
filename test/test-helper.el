@@ -20,13 +20,16 @@
 
 (defmacro with-sandbox (&rest body)
   `(let ((default-directory cask-test/sandbox-path))
-     ,@body))
+     (with-mock ,@body)))
 
 (defun should-be-colon-path (string)
   (should (s-matches? ".:." string)))
 
 ;; Do not pollute the Cask environment.
 (unload-feature 'f 'force)
+
+(require 'el-mock)
+(eval-when-compile (require 'cl))       ; for el-mock
 
 ;; Since ert-runner is executed with `cask exec` all Cask dependencies
 ;; will be in `load-path'. This cleans up the environment.
