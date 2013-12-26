@@ -40,7 +40,7 @@ Feature: Package
     Given this Cask file:
       """
       (package "super-project" "0.0.1" "Super project.")
-      
+
       (depends-on "foo" "0.1.2")
       (depends-on "bar" "0.2.1")
       """
