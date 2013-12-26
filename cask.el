@@ -95,10 +95,6 @@ Defaults to `error'."
   "Name of the `Cask` file.")
 
 ;; TODO: Remove
-(defvar cask-project-path nil
-  "Path to project.")
-
-;; TODO: Remove
 (defvar cask-file nil
   "Path to `Cask` file.")
 
@@ -170,7 +166,7 @@ Return all directives in the Cask file as list."
     (cask-add-dependency (epl-requirement-name req)
                          (epl-requirement-version-string req))))
 
-(defun cask-eval (forms &optional scope)
+(defun cask-eval (bundle forms &optional scope)
   "Evaluate cask FORMS in SCOPE.
 
 SCOPE may be nil or :development."
@@ -194,13 +190,13 @@ SCOPE may be nil or :development."
        (cl-destructuring-bind (_ filename) form
          (cask-parse-epl-package
           (epl-package-from-file
-           (f-expand filename cask-project-path)))))
+           (f-expand filename (cask-bundle-path bundle))))))
       (depends-on
        (cl-destructuring-bind (_ name &optional version) form
          (cask-add-dependency name version scope)))
       (development
        (cl-destructuring-bind (_ . body) form
-         (cask-eval body :development)))
+         (cask-eval bundle body :development)))
       (t
        (error "Unknown directive: %S" form)))))
 
@@ -210,8 +206,7 @@ SCOPE may be nil or :development."
 
 (defun cask-setup-project-variables (project-path)
   "Setup cask variables for project at PROJECT-PATH."
-  (setq cask-project-path project-path)
-  (setq cask-file (f-expand cask-filename cask-project-path)))
+  (setq cask-file (f-expand cask-filename project-path)))
 
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
@@ -222,7 +217,7 @@ SCOPE may be nil or :development."
     (setq package-archives nil)
     (let (cask-package cask-runtime-dependencies cask-development-dependencies)
       (when (f-file? cask-file)
-        (cask-eval (cask-read cask-file)))
+        (cask-eval bundle (cask-read cask-file)))
       (setf (cask-bundle-dependencies bundle)
             (list :runtime cask-runtime-dependencies
                   :development cask-development-dependencies))
@@ -363,7 +358,7 @@ Return value is a list of `cask-dependency' objects."
 (defun cask-define-package-file (bundle)
   "Return path to `define-package' file for BUNDLE."
   (with-cask-package bundle
-      (f-expand (concat (cask-bundle-name bundle) "-pkg.el") cask-project-path)))
+      (f-expand (concat (cask-bundle-name bundle) "-pkg.el") (cask-bundle-path bundle))))
 
 (defun cask-outdated ()
   "Return list of `epl-upgrade' objects for outdated packages."
