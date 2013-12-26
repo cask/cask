@@ -254,8 +254,7 @@ This function prints Cask's version on the format:
 
 (defun cask-cli/debug ()
   "Turn on debug output."
-  (setq debug-on-error t)
-  (setq debug-on-entry t))
+  (setq debug-on-error t))
 
 
 ;;;; Commander schedule
