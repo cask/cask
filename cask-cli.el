@@ -125,21 +125,21 @@ The file is written to the Cask project root path with name
 
 The dependencies to packages are also installed.  If a package
 already is installed, it will not be installed again."
-  (cask-cli--setup)
-  (condition-case err
-      (cask-install)
-    (cask-missing-dependencies
-     (let ((missing-dependencies (cdr err)))
-       (error "Some dependencies were not available: %s"
-              (->> missing-dependencies
-                (-map #'cask-dependency-name)
-                (-map #'symbol-name)
-                (s-join ", ")))))
-    (cask-failed-installation
-     (let* ((data (cdr err))
-            (dependency (cask-dependency-name (car data)))
-            (message (error-message-string (cdr data))))
-       (error "Dependency %s failed to install: %s" dependency message)))))
+  (cask-cli--with-setup
+   (condition-case err
+       (cask-install it)
+     (cask-missing-dependencies
+      (let ((missing-dependencies (cdr err)))
+        (error "Some dependencies were not available: %s"
+               (->> missing-dependencies
+                 (-map #'cask-dependency-name)
+                 (-map #'symbol-name)
+                 (s-join ", ")))))
+     (cask-failed-installation
+      (let* ((data (cdr err))
+             (dependency (cask-dependency-name (car data)))
+             (message (error-message-string (cdr data))))
+        (error "Dependency %s failed to install: %s" dependency message))))))
 
 (defun cask-cli/upgrade ()
   "Upgrade Cask itself and its dependencies.
@@ -169,10 +169,10 @@ Git is available in `exec-path'."
 
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
-  (cask-cli--setup)
-  (-when-let (upgrades (cask-update))
-    (princ "Updated packages:\n")
-    (-each upgrades 'cask-cli--print-upgrade)))
+  (cask-cli--with-setup
+   (-when-let (upgrades (cask-update it))
+     (princ "Updated packages:\n")
+     (-each upgrades 'cask-cli--print-upgrade))))
 
 (defun cask-cli/init ()
   "Initialize the current directory with a Cask-file.

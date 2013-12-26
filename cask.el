@@ -239,16 +239,20 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
          (template-file (f-expand name templates-dir)))
     (f-read-text template-file 'utf-8)))
 
-(defun cask-update ()
-  "Update dependencies.
+(defun cask-update (bundle)
+  "Update BUNDLE dependencies.
 
-Return a list of updated packages."
+Return list of updated packages."
   (epl-refresh)
   (epl-initialize)
-  (epl-upgrade))
+  (epl-upgrade
+   (-map
+    (lambda (dependency)
+      (epl-find-installed-package (cask-dependency-name dependency)))
+    (cask-dependencies bundle))))
 
-(defun cask-install ()
-  "Install dependencies.
+(defun cask-install (bundle)
+  "Install BUNDLE dependencies.
 
 Install all available dependencies.
 
@@ -261,12 +265,11 @@ If a dependency failed to install, signal a
 `cask-failed-installation' error, whose data is a `(DEPENDENCY
 . ERR)', where DEPENDENCY is the `cask-dependency' which failed
 to install, and ERR is the original error data."
-  (let ((cask-dependencies (append cask-development-dependencies cask-runtime-dependencies))
-        missing-dependencies)
-    (when cask-dependencies
+  (let (missing-dependencies)
+    (-when-let (dependencies (cask-dependencies bundle))
       (epl-refresh)
       (epl-initialize)
-      (cl-dolist (dependency cask-dependencies)
+      (cl-dolist (dependency dependencies)
         (let ((name (cask-dependency-name dependency)))
           (unless (epl-package-installed-p name)
             (let ((package (car (epl-find-available-packages name))))
@@ -359,6 +362,13 @@ Return value is a list of `cask-dependency' objects."
 Return value is a list of `cask-dependency' objects."
   (with-cask-file bundle
       (plist-get (cask-bundle-dependencies bundle) :development)))
+
+(defun cask-dependencies (bundle)
+  "Return BUNDLE's runtime and development dependencies.
+
+Return value is a list of `cask-dependency' objects."
+  (append (cask-runtime-dependencies bundle)
+          (cask-development-dependencies bundle)))
 
 (defun cask-define-package-string (bundle)
   "Return `define-package' string for BUNDLE."

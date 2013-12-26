@@ -9,10 +9,7 @@ Feature: Install
 
   Scenario: No Cask file
     When I run cask "install"
-    Then I should see command error:
-      """
-      Could not locate `Cask` file
-      """
+    Then I should see no cask file error
 
   Scenario: No dependencies
     Given this Cask file:

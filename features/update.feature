@@ -9,10 +9,7 @@ Feature: Update
 
   Scenario: No Cask file
     When I run cask "update"
-    Then I should see command error:
-      """
-      Could not locate `Cask` file
-      """
+    Then I should see no cask file error
 
   Scenario: With dependency
     Given this Cask file:
