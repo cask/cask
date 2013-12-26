@@ -110,6 +110,6 @@
   (let ((bundle (cask-setup cask-test/package-path)))
     (should-be-colon-path (cask-load-path bundle))))
 
-(ert-deftest cask-loat-path-test/config ()
+(ert-deftest cask-load-path-test/config ()
   (let ((bundle (cask-setup cask-test/config-path)))
     (should-be-colon-path (cask-load-path bundle))))
