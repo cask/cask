@@ -113,3 +113,15 @@
 (ert-deftest cask-load-path-test/config ()
   (let ((bundle (cask-setup cask-test/config-path)))
     (should-be-colon-path (cask-load-path bundle))))
+
+
+;;;; cask-path
+
+(ert-deftest cask-path-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should (f-same? cask-test/package-path (cask-path bundle)))))
+
+(ert-deftest cask-path-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should (f-same? cask-test/config-path (cask-path bundle)))))
+

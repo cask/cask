@@ -366,6 +366,10 @@ Return value is a list of `cask-dependency' objects."
   (epl-initialize)
   (epl-find-upgrades))
 
+(defun cask-path (bundle)
+  "Return BUNDLE root path."
+  (cask-bundle-path bundle))
+
 (provide 'cask)
 
 ;;; cask.el ends here
