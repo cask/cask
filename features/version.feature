@@ -9,10 +9,7 @@ Feature: Version
 
   Scenario: No Cask file
     When I run cask "version"
-    Then I should see command error:
-      """
-      Could not locate `Cask` file
-      """
+    Then I should see no cask file error
 
   Scenario: Empty Cask file
     Given this Cask file:
