@@ -180,14 +180,16 @@ including their dependencies."
 
 (defun cask-cli/list ()
   "List this package dependencies."
-  (cask-cli--setup)
-  (princ "### Dependencies ###\n\n")
-  (princ (format "Runtime [%s]:\n" (length cask-runtime-dependencies)))
-  (mapc 'cask-cli--print-dependency cask-runtime-dependencies)
-  (if (> (length cask-runtime-dependencies) 0)
-      (princ "\n"))
-  (princ (format "Development [%s]:\n" (length cask-development-dependencies)))
-  (mapc 'cask-cli--print-dependency cask-development-dependencies))
+  (cask-cli--with-setup
+   (let ((runtime-dependencies (cask-runtime-dependencies it))
+         (development-dependencies (cask-development-dependencies it)))
+     (princ "### Dependencies ###\n\n")
+     (princ (format "Runtime [%s]:\n" (length runtime-dependencies)))
+     (mapc 'cask-cli--print-dependency runtime-dependencies)
+     (if (> (length runtime-dependencies) 0)
+         (princ "\n"))
+     (princ (format "Development [%s]:\n" (length development-dependencies)))
+     (mapc 'cask-cli--print-dependency development-dependencies))))
 
 (defun cask-cli/version ()
   "Print version for the current project."

@@ -288,22 +288,27 @@ to install, and ERR is the original error data."
         (error "Cask file already exists.")
       (f-write-text init-content 'utf-8 cask-file))))
 
+(put 'with-cask-file 'lisp-indent-function 2)
+(defmacro with-cask-file (bundle &rest body)
+  "If BUNDLE path has a Cask-file, yield BODY.
+
+If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
+  `(if (f-file? cask-file)
        (progn ,@body)
+     (signal 'cask-no-cask-file (list cask-file))))
 
 (put 'with-cask-package 'lisp-indent-function 2)
 (defmacro with-cask-package (bundle &rest body)
   "If BUNDLE is a package, yield BODY.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  `(progn
-     (unless (f-file? cask-file)
-       (signal 'cask-no-cask-file (list cask-file)))
-     (if (and
-          (cask-bundle-name bundle)
-          (cask-bundle-version bundle)
-          (cask-bundle-description bundle))
-         (progn ,@body)
-       (signal 'cask-not-a-package nil))))
+  `(with-cask-file bundle
+    (if (and
+         (cask-bundle-name bundle)
+         (cask-bundle-version bundle)
+         (cask-bundle-description bundle))
+        (progn ,@body)
+      (signal 'cask-not-a-package nil))))
 
 (defun cask-package-name (bundle)
   "Return BUNDLE name.
@@ -343,7 +348,15 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return BUNDLE's runtime dependencies.
 
 Return value is a list of `cask-dependency' objects."
-  (plist-get (cask-bundle-dependencies bundle) :runtime))
+  (with-cask-file bundle
+      (plist-get (cask-bundle-dependencies bundle) :runtime)))
+
+(defun cask-development-dependencies (bundle)
+  "Return BUNDLE's development dependencies.
+
+Return value is a list of `cask-dependency' objects."
+  (with-cask-file bundle
+      (plist-get (cask-bundle-dependencies bundle) :development)))
 
 (defun cask-define-package-string (bundle)
   "Return `define-package' string for BUNDLE."

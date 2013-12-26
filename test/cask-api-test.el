@@ -37,6 +37,34 @@
      (should (string= (cask-dependency-name dependency-2) "baz"))
      (should (string= (cask-dependency-version dependency-2) "1.2.3")))))
 
+(ert-deftest cask-runtime-dependencies-test/no-cask ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/no-cask-path)))
+     (should-error (cask-runtime-dependencies bundle) :type 'cask-no-cask-file))))
+
+
+;;;; cask-development-dependencies
+
+(ert-deftest cask-development-dependencies-test/package ()
+  (with-sandbox
+   (let* ((bundle (cask-setup cask-test/package-path))
+          (dependencies (cask-development-dependencies bundle))
+          (dependency (car dependencies)))
+     (should (= (length dependencies) 1))
+     (should (cask-dependency-p dependency))
+     (should (string= (cask-dependency-name dependency) "baz"))
+     (should (string= (cask-dependency-version dependency) "1.2.3")))))
+
+(ert-deftest cask-development-dependencies-test/config ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/config-path)))
+     (should (= (length (cask-development-dependencies bundle)) 0)))))
+
+(ert-deftest cask-development-dependencies-test/no-cask ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/no-cask-path)))
+     (should-error (cask-development-dependencies bundle) :type 'cask-no-cask-file))))
+
 
 ;;;; cask-define-package-string
 

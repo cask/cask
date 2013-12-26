@@ -9,10 +9,7 @@ Feature: List
 
   Scenario: No Cask file
     When I run cask "list"
-    Then I should see command error:
-      """
-      Could not locate `Cask` file
-      """
+    Then I should see no cask file error
 
   Scenario: No dependencies
     Given this Cask file:
