@@ -103,13 +103,22 @@
     (epl-package-version-string (epl-upgrade-installed upgrade))
     (epl-package-version-string (epl-upgrade-available upgrade)))))
 
+(defmacro cask-cli--with-setup (&rest body)
+  "Setup Cask and yield BODY with `cask-bundle' object as `it'."
+  `(let ((it (cask-setup cask-cli--path)))
+     ,@body))
+
 
 ;;;; Commands
 
 (defun cask-cli/package ()
-  "Create -pkg.el file."
-  (cask-cli--setup)
-  (f-write-text (cask-package) 'utf-8 cask-package-file))
+  "Write a `define-package' file.
+
+The file is written to the Cask project root path with name
+{project-name}-pkg.el."
+  (cask-cli--with-setup
+   (f-write-text (cask-define-package-string it) 'utf-8
+                 (cask-define-package-file it))))
 
 (defun cask-cli/install ()
   "Install all packages specified in the Cask-file.

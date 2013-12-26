@@ -83,10 +83,12 @@ Defaults to `error'."
 (define-error 'cask-error "Cask error")
 (define-error 'cask-missing-dependencies "Missing dependencies" 'cask-error)
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
+(define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
 
 (cl-defstruct cask-package name version description)
 (cl-defstruct cask-dependency name version)
 (cl-defstruct cask-source name url)
+(cl-defstruct cask-bundle name version description dependencies)
 (cl-defstruct cask-source-position line column)
 
 (defconst cask-filename "Cask"
@@ -98,17 +100,12 @@ Defaults to `error'."
 (defvar cask-file nil
   "Path to `Cask` file.")
 
-(defvar cask-package-file nil
-  "Path to project package (`-pkg.el`) file.")
-
-(defvar cask-development-dependencies nil
-  "List of development dependencies.")
-
-(defvar cask-runtime-dependencies nil
-  "List of runtime dependencies.")
-
-(defvar cask-package nil
-  "Project package information.")
+;; Do not trust the value of these variables externally, they should
+;; only be used by Cask itself. The same information is externally
+;; available from the Cask API.
+(defvar cask-package nil)
+(defvar cask-runtime-dependencies nil)
+(defvar cask-development-dependencies nil)
 
 (defvar cask-source-mapping
   '((gnu         . "http://elpa.gnu.org/packages/")
@@ -222,10 +219,16 @@ SCOPE may be nil or :development."
   (unless (f-file? cask-file)
     (error "Could not locate `Cask` file"))
   (setq package-archives nil)
-  (cask-eval (cask-read cask-file))
-  (when cask-package
-    (let ((package-name (concat (cask-package-name cask-package) "-pkg.el")))
-      (setq cask-package-file (f-expand package-name cask-project-path)))))
+  (let (cask-package cask-runtime-dependencies cask-development-dependencies)
+    (cask-eval (cask-read cask-file))
+    (let ((bundle (make-cask-bundle
+                   :dependencies (list :runtime cask-runtime-dependencies
+                                       :development cask-development-dependencies))))
+      (when cask-package
+        (setf (cask-bundle-name bundle) (cask-package-name cask-package))
+        (setf (cask-bundle-version bundle) (cask-package-version cask-package))
+        (setf (cask-bundle-description bundle) (cask-package-description cask-package)))
+      bundle)))
 
 (defun cask-initialize (&optional project-path)
   "Initialize packages under PROJECT-PATH (defaults to `user-emacs-directory').
@@ -288,22 +291,31 @@ to install, and ERR is the original error data."
         (error "Cask file already exists.")
       (f-write-text init-content 'utf-8 cask-file))))
 
-(defmacro with-cask-package (&rest body)
+;; TODO: Replace with `with-cask-project'.
+(defmacro with-cask-package-old (&rest body)
   `(if cask-package
        (progn ,@body)
-     (error "Missing `package` or `package-file` directive")))
+     (signal 'cask-not-a-package nil)))
+
+(put 'with-cask-package 'lisp-indent-function 2)
+(defmacro with-cask-package (bundle &rest body)
+  "If BUNDLE is a package, yield BODY.
+
+If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
+  `(if (and
+        (cask-bundle-name bundle)
+        (cask-bundle-version bundle)
+        (cask-bundle-description bundle))
+       (progn ,@body)
+     (signal 'cask-not-a-package nil)))
 
 (defun cask-info ()
   "Return info about this project."
-  (with-cask-package cask-package))
+  (with-cask-package-old cask-package))
 
 (defun cask-version ()
   "Return the version of this project."
-  (with-cask-package (cask-package-version cask-package)))
-
-(defun cask-package ()
-  "Package this project."
-  (with-cask-package (cask-define-package-string)))
+  (with-cask-package-old (cask-package-version cask-package)))
 
 (defun cask-load-path ()
   "Return Emacs `load-path' (including package dependencies)."
@@ -315,25 +327,30 @@ to install, and ERR is the original error data."
   "Return Emacs `exec-path' (including package dependencies)."
   (s-join path-separator (append (f-glob "*/bin" (cask-elpa-dir)) exec-path)))
 
-(defun cask-define-package-string ()
-  "Return `define-package' string."
-  (format
-   "(define-package \"%s\" \"%s\"\n  \"%s\"%s)\n"
-   (cask-package-name cask-package)
-   (cask-package-version cask-package)
-   (cask-package-description cask-package)
-   (let ((dependency-string (cask-dependency-string)))
-     (if (equal dependency-string "")
-         "" (format "\n  '(%s)" dependency-string)))))
+(defun cask-runtime-dependencies (bundle)
+  "Return BUNDLE's runtime dependencies.
 
-(defun cask-dependency-string ()
-  "Return dependencies as string."
-  (mapconcat
-   (lambda (package)
-     (let ((name (cask-dependency-name package))
-           (version (cask-dependency-version package)))
-       (format "(%s \"%s\")" name (or version ""))))
-   cask-runtime-dependencies " "))
+Return value is a list of `cask-dependency' objects."
+  (plist-get (cask-bundle-dependencies bundle) :runtime))
+
+(defun cask-define-package-string (bundle)
+  "Return `define-package' string for BUNDLE."
+  (with-cask-package bundle
+      (let ((name (cask-bundle-name bundle))
+            (version (cask-bundle-version bundle))
+            (description (cask-bundle-description bundle))
+            (dependencies
+             (-map
+              (lambda (dependency)
+                (list (cask-dependency-name dependency)
+                      (cask-dependency-version dependency)))
+              (cask-runtime-dependencies bundle))))
+        (pp-to-string `(define-package ,name ,version ,description ',dependencies)))))
+
+(defun cask-define-package-file (bundle)
+  "Return path to `define-package' file for BUNDLE."
+  (with-cask-package bundle
+      (f-expand (concat (cask-bundle-name bundle) "-pkg.el") cask-project-path)))
 
 (defun cask-outdated ()
   "Return list of `epl-upgrade' objects for outdated packages."

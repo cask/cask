@@ -1,0 +1,2 @@
+(depends-on "bar" "0.4.3")
+(depends-on "baz" "1.2.3")

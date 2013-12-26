@@ -32,8 +32,7 @@ Feature: Package
     When I run cask "package"
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
-      (define-package "super-project" "0.0.1"
-        "Super project.")
+      (define-package "super-project" "0.0.1" "Super project." 'nil)
       """
 
   Scenario: Using package directive with dependencies
@@ -47,9 +46,9 @@ Feature: Package
     When I run cask "package"
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
-      define-package "super-project" "0.0.1"
-        "Super project."
-        '((foo "0.1.2") (bar "0.2.1")))
+      (define-package "super-project" "0.0.1" "Super project."
+        '((foo "0.1.2")
+          (bar "0.2.1")))
       """
 
   Scenario: Using package-file directive
@@ -105,7 +104,7 @@ Feature: Package
     And I run cask "package"
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
-      (define-package "super-project" "0.0.1"
-        "Super project."
-        '((baz "0.1.2") (qux "0.2.1")))
+      (define-package "super-project" "0.0.1" "Super project."
+        '((baz "0.1.2")
+          (qux "0.2.1")))
       """
