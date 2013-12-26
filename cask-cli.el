@@ -279,7 +279,8 @@ installation."
  (command "info" cask-cli/info)
  (command "help" cask-cli/help)
  (command "load-path" cask-cli/load-path)
- (command "path" cask-cli/path)
+ (command "exec-path" cask-cli/exec-path)
+ (command "path" cask-cli/exec-path)
  (command "package-directory" cask-cli/package-directory)
  (command "outdated" cask-cli/outdated)
 
