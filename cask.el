@@ -87,6 +87,7 @@ Defaults to `error'."
 (cl-defstruct cask-package name version description)
 (cl-defstruct cask-dependency name version)
 (cl-defstruct cask-source name url)
+(cl-defstruct cask-source-position line column)
 
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
@@ -117,8 +118,6 @@ Defaults to `error'."
     (org         . "http://orgmode.org/elpa/")
     (cask-test   . "http://127.0.0.1:9191/packages/"))
   "Mapping of source name and url.")
-
-(cl-defstruct cask-source-position line column)
 
 (defun cask-current-source-position ()
   "Get the current position in the buffer."
