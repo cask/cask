@@ -122,10 +122,10 @@ already is installed, it will not be installed again."
     (cask-missing-dependencies
      (let ((missing-dependencies (cdr err)))
        (error "Some dependencies were not available: %s"
-                (->> missing-dependencies
-                  (-map #'cask-dependency-name)
-                  (-map #'symbol-name)
-                  (s-join ", ")))))
+              (->> missing-dependencies
+                (-map #'cask-dependency-name)
+                (-map #'symbol-name)
+                (s-join ", ")))))
     (cask-failed-installation
      (let* ((data (cdr err))
             (dependency (cask-dependency-name (car data)))
