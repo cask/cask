@@ -78,3 +78,38 @@
 
 (ert-deftest cask-version-test ()
   (should (s-matches? "^[0-9]+\.[0-9]+\.[0-9]+$" (cask-version))))
+
+
+;;;; cask-elpa-dir
+
+(ert-deftest cask-elpa-dir-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should (string= (cask-elpa-dir bundle)
+                     (f-join cask-test/package-path ".cask" emacs-version "elpa")))))
+
+(ert-deftest cask-elpa-dir-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should (string= (cask-elpa-dir bundle)
+                     (f-join cask-test/config-path ".cask" emacs-version "elpa")))))
+
+
+;;;; cask-exec-path
+
+(ert-deftest cask-exec-path-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should-be-colon-path (cask-exec-path bundle))))
+
+(ert-deftest cask-exec-path-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should-be-colon-path (cask-exec-path bundle))))
+
+
+;;;; cask-load-path
+
+(ert-deftest cask-load-path-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should-be-colon-path (cask-load-path bundle))))
+
+(ert-deftest cask-loat-path-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should-be-colon-path (cask-load-path bundle))))

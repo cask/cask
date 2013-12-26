@@ -145,6 +145,10 @@
   (lambda ()
     (should (s-matches? "^[0-9]+\.[0-9]+\.[0-9]+\n$" cask-output))))
 
+(Then "^I should see a colon path$"
+  (lambda ()
+    (should (s-matches? ".:." cask-output))))
+
 (Then "^I should see no cask file error$"
   (lambda ()
     (should (string= cask-error (concat "Cask file does not exist: \"" (f-expand "Cask" cask-current-project) "\"\n")))))

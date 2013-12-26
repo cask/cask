@@ -19,6 +19,9 @@
   `(let ((default-directory cask-test/sandbox-path))
      ,@body))
 
+(defun should-be-colon-path (string)
+  (should (s-matches? ".:." string)))
+
 ;; Do not pollute the Cask environment.
 (unload-feature 'f 'force)
 

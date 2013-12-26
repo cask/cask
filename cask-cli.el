@@ -214,16 +214,18 @@ including their dependencies."
   "Print `load-path' for all packages and dependencies.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-load-path) "\n")))
+  (cask-cli--with-setup
+   (princ (concat (cask-load-path it) "\n"))))
 
-(defun cask-cli/path ()
+(defun cask-cli/exec-path ()
   "Print `exec-path' for all packages and dependencies.
 
 A dependency will be included in this list of the package has a
 directory called bin in the root directory.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-path) "\n")))
+  (cask-cli--with-setup
+   (princ (concat (cask-exec-path it) "\n"))))
 
 (defun cask-cli/package-directory ()
   "Print current package installation directory."

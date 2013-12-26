@@ -84,10 +84,11 @@ Defaults to `error'."
 (define-error 'cask-missing-dependencies "Missing dependencies" 'cask-error)
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
+(define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
 
 (cl-defstruct cask-dependency name version)
 (cl-defstruct cask-source name url)
-(cl-defstruct cask-bundle name version description dependencies)
+(cl-defstruct cask-bundle name version description dependencies path)
 (cl-defstruct cask-source-position line column)
 
 (defconst cask-filename "Cask"
@@ -203,9 +204,9 @@ SCOPE may be nil or :development."
       (t
        (error "Unknown directive: %S" form)))))
 
-(defun cask-elpa-dir ()
-  "Return full path to `cask-project-path'/.cask/`emacs-version'/elpa."
-  (f-expand (format ".cask/%s/elpa" emacs-version) cask-project-path))
+(defun cask-elpa-dir (bundle)
+  "Return full path to BUNDLE elpa directory."
+  (f-expand (format ".cask/%s/elpa" emacs-version) (cask-bundle-path bundle)))
 
 (defun cask-setup-project-variables (project-path)
   "Setup cask variables for project at PROJECT-PATH."
@@ -214,22 +215,22 @@ SCOPE may be nil or :development."
 
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
-  (cask-setup-project-variables project-path)
-  (when (f-same? (epl-package-dir) (epl-default-package-dir))
-    (epl-change-package-dir (cask-elpa-dir)))
-  (unless (f-file? cask-file)
-    (error "Could not locate `Cask` file"))
-  (setq package-archives nil)
-  (let (cask-package cask-runtime-dependencies cask-development-dependencies)
-    (cask-eval (cask-read cask-file))
-    (let ((bundle (make-cask-bundle
-                   :dependencies (list :runtime cask-runtime-dependencies
-                                       :development cask-development-dependencies))))
+  (let ((bundle (make-cask-bundle :path project-path)))
+    (cask-setup-project-variables project-path)
+    (when (f-same? (epl-package-dir) (epl-default-package-dir))
+      (epl-change-package-dir (cask-elpa-dir bundle)))
+    (setq package-archives nil)
+    (let (cask-package cask-runtime-dependencies cask-development-dependencies)
+      (when (f-file? cask-file)
+        (cask-eval (cask-read cask-file)))
+      (setf (cask-bundle-dependencies bundle)
+            (list :runtime cask-runtime-dependencies
+                  :development cask-development-dependencies))
       (when cask-package
         (setf (cask-bundle-name bundle) (plist-get cask-package :name))
         (setf (cask-bundle-version bundle) (plist-get cask-package :version))
-        (setf (cask-bundle-description bundle) (plist-get cask-package :description)))
-      bundle)))
+        (setf (cask-bundle-description bundle) (plist-get cask-package :description))))
+    bundle))
 
 (defun cask-initialize (&optional project-path)
   "Initialize packages under PROJECT-PATH (defaults to `user-emacs-directory').
@@ -303,12 +304,15 @@ to install, and ERR is the original error data."
   "If BUNDLE is a package, yield BODY.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  `(if (and
-        (cask-bundle-name bundle)
-        (cask-bundle-version bundle)
-        (cask-bundle-description bundle))
-       (progn ,@body)
-     (signal 'cask-not-a-package nil)))
+  `(progn
+     (unless (f-file? cask-file)
+       (signal 'cask-no-cask-file (list cask-file)))
+     (if (and
+          (cask-bundle-name bundle)
+          (cask-bundle-version bundle)
+          (cask-bundle-description bundle))
+         (progn ,@body)
+       (signal 'cask-not-a-package nil))))
 
 (defun cask-info ()
   "Return info about this project."
@@ -326,15 +330,15 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
                   (f-expand "cask.el" cask-directory))))
     (epl-package-version-string package)))
 
-(defun cask-load-path ()
-  "Return Emacs `load-path' (including package dependencies)."
-  (let ((dirs (when (f-dir? (cask-elpa-dir))
-                (f-directories (cask-elpa-dir)))))
+(defun cask-load-path (bundle)
+  "Return Emacs `load-path' (including BUNDLE dependencies)."
+  (let ((dirs (when (f-dir? (cask-elpa-dir bundle))
+                (f-directories (cask-elpa-dir bundle)))))
     (s-join path-separator (append dirs load-path))))
 
-(defun cask-path ()
-  "Return Emacs `exec-path' (including package dependencies)."
-  (s-join path-separator (append (f-glob "*/bin" (cask-elpa-dir)) exec-path)))
+(defun cask-exec-path (bundle)
+  "Return Emacs `exec-path' (including BUNDLE dependencies)."
+  (s-join path-separator (append (f-glob "*/bin" (cask-elpa-dir bundle)) exec-path)))
 
 (defun cask-runtime-dependencies (bundle)
   "Return BUNDLE's runtime dependencies.
