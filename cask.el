@@ -9,7 +9,7 @@
 ;; Version: 0.5.1
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
-;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.10.0") (epl "0.0.1"))
+;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.10.0") (epl "0.0.1") (cl-lib "0.3"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -46,12 +46,11 @@
 
 (require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
 
-(eval-when-compile
-  (require 'cl))
 (require 'f)
 (require 's)
 (require 'dash)
 (require 'epl)
+(require 'cl-lib)
 
 (eval-and-compile
   (defun cask-resource-path (name)
@@ -85,9 +84,9 @@ Defaults to `error'."
 (define-error 'cask-missing-dependencies "Missing dependencies" 'cask-error)
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
 
-(defstruct cask-package name version description)
-(defstruct cask-dependency name version)
-(defstruct cask-source name url)
+(cl-defstruct cask-package name version description)
+(cl-defstruct cask-dependency name version)
+(cl-defstruct cask-source name url)
 
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
@@ -119,7 +118,7 @@ Defaults to `error'."
     (cask-test   . "http://127.0.0.1:9191/packages/"))
   "Mapping of source name and url.")
 
-(defstruct cask-source-position line column)
+(cl-defstruct cask-source-position line column)
 
 (defun cask-current-source-position ()
   "Get the current position in the buffer."
@@ -169,7 +168,7 @@ Return all directives in the Cask file as list."
         (make-cask-package :name (symbol-name (epl-package-name package))
                            :version (epl-package-version-string package)
                            :description (epl-package-summary package)))
-  (dolist (req (epl-package-requirements package))
+  (cl-dolist (req (epl-package-requirements package))
     (cask-add-dependency (epl-requirement-name req)
                              (epl-requirement-version-string req))))
 
@@ -177,10 +176,10 @@ Return all directives in the Cask file as list."
   "Evaluate cask FORMS in SCOPE.
 
 SCOPE may be nil or :development."
-  (dolist (form forms)
-    (case (car form)
+  (cl-dolist (form forms)
+    (cl-case (car form)
       (source
-       (destructuring-bind (_ name-or-alias &optional url) form
+       (cl-destructuring-bind (_ name-or-alias &optional url) form
          (unless url
            (let ((mapping (assq name-or-alias cask-source-mapping)))
              (unless mapping
@@ -189,20 +188,20 @@ SCOPE may be nil or :development."
              (setq url (cdr mapping))))
          (epl-add-archive name-or-alias url)))
       (package
-       (destructuring-bind (_ name version description) form
+       (cl-destructuring-bind (_ name version description) form
          (setq cask-package (make-cask-package :name name
                                                :version version
                                                :description description))))
       (package-file
-       (destructuring-bind (_ filename) form
+       (cl-destructuring-bind (_ filename) form
          (cask-parse-epl-package
           (epl-package-from-file
            (f-expand filename cask-project-path)))))
       (depends-on
-       (destructuring-bind (_ name &optional version) form
+       (cl-destructuring-bind (_ name &optional version) form
          (cask-add-dependency name version scope)))
       (development
-       (destructuring-bind (_ . body) form
+       (cl-destructuring-bind (_ . body) form
          (cask-eval body :development)))
       (t
        (error "Unknown directive: %S" form)))))
@@ -268,7 +267,7 @@ to install, and ERR is the original error data."
     (when cask-dependencies
       (epl-refresh)
       (epl-initialize)
-      (dolist (dependency cask-dependencies)
+      (cl-dolist (dependency cask-dependencies)
         (let ((name (cask-dependency-name dependency)))
           (unless (epl-package-installed-p name)
             (let ((package (car (epl-find-available-packages name))))
