@@ -63,6 +63,17 @@
     (should-error (cask-define-package-file bundle) :type 'cask-not-a-package)))
 
 
+;;;; cask-package-name
+
+(ert-deftest cask-package-name-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should (string= (cask-package-name bundle) "foo"))))
+
+(ert-deftest cask-package-name-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should-error (cask-package-name bundle) :type 'cask-not-a-package)))
+
+
 ;;;; cask-package-version
 
 (ert-deftest cask-package-version-test/package ()
@@ -72,6 +83,17 @@
 (ert-deftest cask-package-version-test/config ()
   (let ((bundle (cask-setup cask-test/config-path)))
     (should-error (cask-package-version bundle) :type 'cask-not-a-package)))
+
+
+;;;; cask-package-description
+
+(ert-deftest cask-package-description-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should (string= (cask-package-description bundle) "Foo"))))
+
+(ert-deftest cask-package-description-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should-error (cask-package-description bundle) :type 'cask-not-a-package)))
 
 
 ;;;; cask-version
