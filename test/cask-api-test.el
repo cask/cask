@@ -125,3 +125,13 @@
   (let ((bundle (cask-setup cask-test/config-path)))
     (should (f-same? cask-test/config-path (cask-path bundle)))))
 
+
+;;;; cask-file
+
+(ert-deftest cask-file-test/package ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should (f-same? (f-expand "Cask" cask-test/package-path) (cask-file bundle)))))
+
+(ert-deftest cask-file-test/config ()
+  (let ((bundle (cask-setup cask-test/config-path)))
+    (should (f-same? (f-expand "Cask" cask-test/config-path) (cask-file bundle)))))

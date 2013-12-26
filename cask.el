@@ -370,6 +370,10 @@ Return value is a list of `cask-dependency' objects."
   "Return BUNDLE root path."
   (cask-bundle-path bundle))
 
+(defun cask-file (bundle)
+  "Return path to BUNDLE Cask-file."
+  (f-expand "Cask" (cask-path bundle)))
+
 (provide 'cask)
 
 ;;; cask.el ends here
