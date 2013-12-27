@@ -207,6 +207,14 @@ If no files directive or no files, do nothing."
          (lambda (file)
            (princ (concat (f-relative file cask-cli--path) "\n")))))
 
+(defun cask-cli/build ()
+  "Build all Elisp files in the files directive."
+  (cask-build (cask--cli-bundle)))
+
+(defun cask-cli/clean-elc ()
+  "Remove all byte compiled Elisp files in the files directive."
+  (cask-clean-elc (cask--cli-bundle)))
+
 
 ;;;; Options
 
@@ -252,6 +260,8 @@ If no files directive or no files, do nothing."
  (command "package-directory" cask-cli/package-directory)
  (command "outdated" cask-cli/outdated)
  (command "files" cask-cli/files)
+ (command "build" cask-cli/build)
+ (command "clean-elc" cask-cli/clean-elc)
 
  (option "--version" cask-cli/cask-version)
  (option "-h, --help" cask-cli/help)

@@ -124,6 +124,14 @@
         (insert-file-contents filepath)
         (Then "I should see:" content)))))
 
+(Then "^there should exist a file called \"\\([^\"]+\\)\"$"
+  (lambda (filename)
+    (should (f-file? (f-expand filename cask-current-project)))))
+
+(Then "^there should not exist a file called \"\\([^\"]+\\)\"$"
+  (lambda (filename)
+    (should-not (f-file? (f-expand filename cask-current-project)))))
+
 (Then "^there should exist a directory called \"\\([^\"]+\\)\"$"
   (lambda (dirname)
     (should (f-dir? (f-expand dirname cask-current-project)))))

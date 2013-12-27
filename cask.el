@@ -505,6 +505,24 @@ URL is the url to the mirror."
       (setq url (cdr mapping))))
   (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle)))
 
+(defun cask-build (bundle)
+  "Build BUNDLE Elisp files."
+  (cask-with-file bundle
+    (require 'bytecomp)
+    (-each (cask-files bundle)
+           (lambda (path)
+             (when (and (f-file? path) (f-ext? path "el"))
+               (byte-recompile-file path 'force 0))))))
+
+(defun cask-clean-elc (bundle)
+  "Remove BUNDLE Elisp byte compiled files."
+  (cask-with-file bundle
+    (-each (cask-files bundle)
+           (lambda (path)
+             (when (and (f-file? path) (f-ext? path "el"))
+               (when (f-file? (concat path "c"))
+                 (f-delete (concat path "c"))))))))
+
 (provide 'cask)
 
 ;;; cask.el ends here

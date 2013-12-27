@@ -322,3 +322,10 @@
     (let ((source (car (cask-bundle-sources bundle))))
       (should (string= (cask-source-name source) "melpa"))
       (should (string= (cask-source-url source) "http://melpa.milkbox.net/packages/")))))
+
+
+;;; cask-build
+
+
+;;; cask-clean-elc
+
