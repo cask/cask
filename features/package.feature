@@ -44,8 +44,8 @@ Feature: Package
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1" "Super project."
-        '((foo "0.1.2")
-          (bar "0.2.1")))
+        '((bar "0.2.1")
+          (foo "0.1.2")))
       """
 
   Scenario: Using package-file directive
@@ -102,6 +102,6 @@ Feature: Package
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1" "Super project."
-        '((baz "0.1.2")
-          (qux "0.2.1")))
+        '((qux "0.2.1")
+          (baz "0.1.2")))
       """

@@ -68,8 +68,8 @@ Feature: List
       ### Dependencies ###
 
       Runtime [2]:
-       - foo (0.1.2)
        - bar (0.2.1)
+       - foo (0.1.2)
 
       Development [0]:
       """
@@ -88,8 +88,8 @@ Feature: List
 
       Runtime [0]:
       Development [2]:
-       - baz
        - qux
+       - baz
       """
 
   Scenario: Multiple runtime and development dependencies
@@ -108,10 +108,10 @@ Feature: List
       ### Dependencies ###
 
       Runtime [2]:
-       - foo (0.1.2)
        - bar (0.2.1)
+       - foo (0.1.2)
 
       Development [2]:
-       - baz
        - qux
+       - baz
       """

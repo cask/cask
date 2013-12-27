@@ -32,10 +32,10 @@
      (should (= (length dependencies) 2))
      (should (cask-dependency-p dependency-1))
      (should (cask-dependency-p dependency-2))
-     (should (eq (cask-dependency-name dependency-1) 'bar))
-     (should (string= (cask-dependency-version dependency-1) "0.4.3"))
-     (should (eq (cask-dependency-name dependency-2) 'baz))
-     (should (string= (cask-dependency-version dependency-2) "1.2.3")))))
+     (should (eq (cask-dependency-name dependency-1) 'baz))
+     (should (string= (cask-dependency-version dependency-1) "1.2.3"))
+     (should (eq (cask-dependency-name dependency-2) 'bar))
+     (should (string= (cask-dependency-version dependency-2) "0.4.3")))))
 
 (ert-deftest cask-runtime-dependencies-test/no-cask ()
   (with-sandbox
@@ -68,10 +68,10 @@
      (should (= (length dependencies) 2))
      (should (cask-dependency-p dependency-1))
      (should (cask-dependency-p dependency-2))
-     (should (eq (cask-dependency-name dependency-1) 'bar))
-     (should (string= (cask-dependency-version dependency-1) "0.4.3"))
-     (should (eq (cask-dependency-name dependency-2) 'baz))
-     (should (string= (cask-dependency-version dependency-2) "1.2.3")))))
+     (should (eq (cask-dependency-name dependency-1) 'baz))
+     (should (string= (cask-dependency-version dependency-1) "1.2.3"))
+     (should (eq (cask-dependency-name dependency-2) 'bar))
+     (should (string= (cask-dependency-version dependency-2) "0.4.3")))))
 
 (ert-deftest cask-dependencies-test/no-cask ()
   (with-sandbox

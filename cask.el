@@ -88,17 +88,11 @@ Defaults to `error'."
 
 (cl-defstruct cask-dependency name version)
 (cl-defstruct cask-source name url)
-(cl-defstruct cask-bundle name version description dependencies path files)
+(cl-defstruct cask-bundle name version description runtime-dependencies development-dependencies path files)
 (cl-defstruct cask-source-position line column)
 
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
-
-;; Do not trust the value of these variables externally, they should
-;; only be used by Cask itself. The same information is externally
-;; available from the Cask API.
-(defvar cask-runtime-dependencies nil)
-(defvar cask-development-dependencies nil)
 
 (defvar cask-source-mapping
   '((gnu         . "http://elpa.gnu.org/packages/")
@@ -180,18 +174,14 @@ Return all directives in the Cask file as list."
                                  (cdr err)))))
       (nreverse forms))))
 
-(defun cask-get-dep-list-for-scope (scope)
-  "Get the dependency list symbol for SCOPE."
-  (if (eq scope :development)
-      'cask-development-dependencies
-    'cask-runtime-dependencies))
-
-(defun cask-add-dependency (name &optional version scope)
-  "Add the dependency NAME with VERSION in SCOPE."
+(defun cask-add-dependency (bundle name version &optional scope)
+  "Add to BUNDLE the dependency NAME with VERSION in SCOPE."
   (let* ((name (if (stringp name) (intern name) name))
-         (dependency (make-cask-dependency :name name :version version))
-         (dep-list (cask-get-dep-list-for-scope scope)))
-    (add-to-list dep-list dependency t)))
+         (dependency (make-cask-dependency :name name :version version)))
+    (push dependency
+          (if (eq scope :development)
+              (cask-bundle-development-dependencies bundle)
+            (cask-bundle-runtime-dependencies bundle)))))
 
 (defun cask-eval (bundle forms &optional scope)
   "Evaluate cask FORMS in SCOPE.
@@ -222,11 +212,12 @@ SCOPE may be nil or :development."
            (setf (cask-bundle-description bundle) (epl-package-summary package))
            (-each (epl-package-requirements package)
                   (lambda (requirement)
-                    (cask-add-dependency (epl-requirement-name requirement)
+                    (cask-add-dependency bundle
+                                         (epl-requirement-name requirement)
                                          (epl-requirement-version-string requirement)))))))
       (depends-on
        (cl-destructuring-bind (_ name &optional version) form
-         (cask-add-dependency name version scope)))
+         (cask-add-dependency bundle name version scope)))
       (files
        (cl-destructuring-bind (_ &rest args) form
          (let ((files (-flatten (--map (f-glob it (cask-bundle-path bundle)) args))))
@@ -274,17 +265,13 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
     (when (f-same? (epl-package-dir) (epl-default-package-dir))
       (epl-change-package-dir (cask-elpa-dir bundle)))
     (setq package-archives nil)
-    (let (cask-runtime-dependencies cask-development-dependencies)
-      (when (f-file? (cask-file bundle))
-        (condition-case err
-            (cask-eval bundle (cask-read (cask-file bundle)))
-          (end-of-file
-           (cask-exit-error bundle err))
-          (invalid-read-syntax
-           (cask-exit-error bundle err))))
-      (setf (cask-bundle-dependencies bundle)
-            (list :runtime cask-runtime-dependencies
-                  :development cask-development-dependencies)))
+    (when (f-file? (cask-file bundle))
+      (condition-case err
+          (cask-eval bundle (cask-read (cask-file bundle)))
+        (end-of-file
+         (cask-exit-error bundle err))
+        (invalid-read-syntax
+         (cask-exit-error bundle err))))
     bundle))
 
 (defun cask-elpa-dir (bundle)
@@ -386,15 +373,13 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return BUNDLE's runtime dependencies.
 
 Return value is a list of `cask-dependency' objects."
-  (with-cask-file bundle
-      (plist-get (cask-bundle-dependencies bundle) :runtime)))
+  (with-cask-file bundle (cask-bundle-runtime-dependencies bundle)))
 
 (defun cask-development-dependencies (bundle)
   "Return BUNDLE's development dependencies.
 
 Return value is a list of `cask-dependency' objects."
-  (with-cask-file bundle
-      (plist-get (cask-bundle-dependencies bundle) :development)))
+  (with-cask-file bundle (cask-bundle-development-dependencies bundle)))
 
 (defun cask-dependencies (bundle)
   "Return BUNDLE's runtime and development dependencies.

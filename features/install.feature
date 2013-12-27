@@ -53,7 +53,7 @@ Feature: Install
     And there should not exist a package directory called "missing-b-0.0.2"
     And I should see command error:
       """
-      Some dependencies were not available: missing-a, missing-b
+      Some dependencies were not available: missing-b, missing-a
       """
 
   Scenario: Using package-file directive
