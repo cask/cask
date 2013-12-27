@@ -334,6 +334,12 @@ Return list of updated packages."
   (epl-initialize)
   (epl-upgrade (cask-packages bundle)))
 
+(defun cask-outdated (bundle)
+  "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
+  (epl-refresh)
+  (epl-initialize)
+  (epl-find-upgrades (cask-packages bundle)))
+
 (defun cask-install (bundle)
   "Install BUNDLE dependencies.
 
@@ -447,12 +453,6 @@ Return value is a list of `cask-dependency' objects."
   "Return path to `define-package' file for BUNDLE."
   (with-cask-package bundle
       (f-expand (concat (symbol-name (cask-bundle-name bundle)) "-pkg.el") (cask-bundle-path bundle))))
-
-(defun cask-outdated (bundle)
-  "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
-  (epl-refresh)
-  (epl-initialize)
-  (epl-find-upgrades (cask-packages bundle)))
 
 (defun cask-path (bundle)
   "Return BUNDLE root path."
