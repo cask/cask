@@ -94,10 +94,6 @@ Defaults to `error'."
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
 
-;; TODO: Remove
-(defvar cask-file nil
-  "Path to `Cask` file.")
-
 ;; Do not trust the value of these variables externally, they should
 ;; only be used by Cask itself. The same information is externally
 ;; available from the Cask API.
@@ -117,9 +113,9 @@ Defaults to `error'."
 
 ;;;; Internal functions
 
-(defun cask-find-unbalanced-parenthesis ()
+(defun cask-find-unbalanced-parenthesis (bundle)
   (with-temp-buffer
-    (insert (f-read-text cask-file 'utf-8))
+    (insert (f-read-text (cask-file bundle) 'utf-8))
     (goto-char (point-min))
     (condition-case nil
         (progn
@@ -127,14 +123,14 @@ Defaults to `error'."
           nil)
       (error (cask-current-source-position)))))
 
-(defun cask-exit-error (err)
+(defun cask-exit-error (bundle err)
   (let ((type (car err))
         (data (cdr err))
         pos msg)
     (if (eq type 'end-of-file)
         ;; In case of premature end of file, try hard to find the real
         ;; position, by scanning for unbalanced parenthesis
-        (setq pos (or (cask-find-unbalanced-parenthesis) (cadr err))
+        (setq pos (or (cask-find-unbalanced-parenthesis bundle) (cadr err))
               msg "End of file while reading (possible unbalanced parenthesis)")
       ;; For other types of error, check whether the error has a position, and
       ;; print it.  Otherwise just print the error like Emacs would do
@@ -144,9 +140,9 @@ Defaults to `error'."
         (setq data (cdr data)))
       (setq msg (error-message-string (cons type data))))
     (if pos
-        (message "%s:%s:%s: %s" cask-file (cask-source-position-line pos)
+        (message "%s:%s:%s: %s" (cask-file bundle) (cask-source-position-line pos)
                  (cask-source-position-column pos) msg)
-      (message "%s: %s" cask-file msg)))
+      (message "%s: %s" (cask-file bundle) msg)))
   (kill-emacs 1))
 
 (defun cask-packages (bundle)
@@ -155,10 +151,6 @@ Defaults to `error'."
    (lambda (dependency)
      (epl-find-installed-package (cask-dependency-name dependency)))
    (cask-dependencies bundle)))
-
-(defun cask-setup-project-variables (project-path)
-  "Setup cask variables for project at PROJECT-PATH."
-  (setq cask-file (f-expand cask-filename project-path)))
 
 (defun cask-current-source-position ()
   "Get the current position in the buffer."
@@ -257,9 +249,9 @@ SCOPE may be nil or :development."
   "If BUNDLE path has a Cask-file, yield BODY.
 
 If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
-  `(if (f-file? cask-file)
+  `(if (f-file? (cask-file bundle))
        (progn ,@body)
-     (signal 'cask-no-cask-file (list cask-file))))
+     (signal 'cask-no-cask-file (list (cask-file bundle)))))
 
 (put 'with-cask-package 'lisp-indent-function 2)
 (defmacro with-cask-package (bundle &rest body)
@@ -280,18 +272,17 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
   (let ((bundle (make-cask-bundle :path project-path)))
-    (cask-setup-project-variables project-path)
     (when (f-same? (epl-package-dir) (epl-default-package-dir))
       (epl-change-package-dir (cask-elpa-dir bundle)))
     (setq package-archives nil)
     (let (cask-package cask-runtime-dependencies cask-development-dependencies)
-      (when (f-file? cask-file)
+      (when (f-file? (cask-file bundle))
         (condition-case err
-            (cask-eval bundle (cask-read cask-file))
+            (cask-eval bundle (cask-read (cask-file bundle)))
           (end-of-file
-           (cask-exit-error err))
+           (cask-exit-error bundle err))
           (invalid-read-syntax
-           (cask-exit-error err))))
+           (cask-exit-error bundle err))))
       (setf (cask-bundle-dependencies bundle)
             (list :runtime cask-runtime-dependencies
                   :development cask-development-dependencies))
@@ -357,7 +348,7 @@ If DEV-MODE is true, the dev template is used, otherwise the
 configuration template is used."
   (let ((init-content
          (cask-template-get (if dev-mode "init-dev.tpl" "init.tpl")))
-        (cask-file (f-expand "Cask" path)))
+        (cask-file (f-expand cask-filename path)))
     (if (f-file? cask-file)
         (error "Cask-file already exists")
       (f-write-text init-content 'utf-8 cask-file))))
