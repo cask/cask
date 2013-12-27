@@ -359,7 +359,7 @@ configuration template is used."
          (cask-template-get (if dev-mode "init-dev.tpl" "init.tpl")))
         (cask-file (f-expand "Cask" path)))
     (if (f-file? cask-file)
-        (error "Cask file already exists.")
+        (error "Cask-file already exists")
       (f-write-text init-content 'utf-8 cask-file))))
 
 (defun cask-package-name (bundle)

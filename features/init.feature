@@ -14,7 +14,7 @@ Feature: Init
     When I run cask "init"
     Then I should see command error:
       """
-      Cask file already exists.
+      Cask-file already exists
       """
 
   Scenario: No Cask file - development
