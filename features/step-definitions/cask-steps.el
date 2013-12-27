@@ -48,7 +48,6 @@
   (lambda (filename content)
     (cask-test/create-project-file filename content)))
 
-
 (When "^I create a file called \"\\([^\"]+\\)\"$"
   (lambda (filename)
     (f-touch (f-expand filename cask-current-project))))
