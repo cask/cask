@@ -86,10 +86,60 @@ Defaults to `error'."
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
 (define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
 
-(cl-defstruct cask-dependency name version)
-(cl-defstruct cask-source name url)
-(cl-defstruct cask-bundle name version description runtime-dependencies development-dependencies path files)
-(cl-defstruct cask-source-position line column)
+(cl-defstruct cask-dependency
+  "Structure representing a dependency.
+
+Slots:
+
+`name' The package name, as symbol.
+
+`version' The version of the dependency package, as version string."
+  name version)
+
+(cl-defstruct cask-source
+  "Structure representing a package source.
+
+Slots:
+
+`name' Name of the source, as string.
+
+`url' Package source url."
+  name url)
+
+(cl-defstruct cask-bundle
+  "Structure for a Cask project. All information necessary to
+  describe the current project is in this structure. Most public
+  API functions take this structure as argument.
+
+Slots:
+
+`name' Name of the package, as symbol.
+
+`version' The version of the dependency package, as version string.
+
+`description' Package description, as string.
+
+`runtime-dependencies' Package runtime dependencies.
+
+`development-dependencies' Package development dependencies. The
+package does not require these dependencies itself. These are
+dependencies that are required for local development.
+
+`path' Path to project root directory.
+
+`files' List of files specified from expanding arguments to
+files-directive. The list contains absolute paths."
+  name version description runtime-dependencies development-dependencies path files)
+
+(cl-defstruct cask-source-position
+  "Structure for a position in a Cask-file.
+
+Slots:
+
+`line' Line number in the file.
+
+`column' Column number on the `line'."
+  line column)
 
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
