@@ -20,7 +20,7 @@
           (dependency (car dependencies)))
      (should (= (length dependencies) 1))
      (should (cask-dependency-p dependency))
-     (should (string= (cask-dependency-name dependency) "bar"))
+     (should (eq (cask-dependency-name dependency) 'bar))
      (should (string= (cask-dependency-version dependency) "0.4.3")))))
 
 (ert-deftest cask-runtime-dependencies-test/config ()
@@ -32,9 +32,9 @@
      (should (= (length dependencies) 2))
      (should (cask-dependency-p dependency-1))
      (should (cask-dependency-p dependency-2))
-     (should (string= (cask-dependency-name dependency-1) "bar"))
+     (should (eq (cask-dependency-name dependency-1) 'bar))
      (should (string= (cask-dependency-version dependency-1) "0.4.3"))
-     (should (string= (cask-dependency-name dependency-2) "baz"))
+     (should (eq (cask-dependency-name dependency-2) 'baz))
      (should (string= (cask-dependency-version dependency-2) "1.2.3")))))
 
 (ert-deftest cask-runtime-dependencies-test/no-cask ()
@@ -54,9 +54,9 @@
      (should (= (length dependencies) 2))
      (should (cask-dependency-p dependency-1))
      (should (cask-dependency-p dependency-2))
-     (should (string= (cask-dependency-name dependency-1) "bar"))
+     (should (eq (cask-dependency-name dependency-1) 'bar))
      (should (string= (cask-dependency-version dependency-1) "0.4.3"))
-     (should (string= (cask-dependency-name dependency-2) "baz"))
+     (should (eq (cask-dependency-name dependency-2) 'baz))
      (should (string= (cask-dependency-version dependency-2) "1.2.3")))))
 
 (ert-deftest cask-dependencies-test/config ()
@@ -68,9 +68,9 @@
      (should (= (length dependencies) 2))
      (should (cask-dependency-p dependency-1))
      (should (cask-dependency-p dependency-2))
-     (should (string= (cask-dependency-name dependency-1) "bar"))
+     (should (eq (cask-dependency-name dependency-1) 'bar))
      (should (string= (cask-dependency-version dependency-1) "0.4.3"))
-     (should (string= (cask-dependency-name dependency-2) "baz"))
+     (should (eq (cask-dependency-name dependency-2) 'baz))
      (should (string= (cask-dependency-version dependency-2) "1.2.3")))))
 
 (ert-deftest cask-dependencies-test/no-cask ()
@@ -88,7 +88,7 @@
           (dependency (car dependencies)))
      (should (= (length dependencies) 1))
      (should (cask-dependency-p dependency))
-     (should (string= (cask-dependency-name dependency) "baz"))
+     (should (eq (cask-dependency-name dependency) 'baz))
      (should (string= (cask-dependency-version dependency) "1.2.3")))))
 
 (ert-deftest cask-development-dependencies-test/config ()
@@ -131,7 +131,7 @@
 
 (ert-deftest cask-package-name-test/package ()
   (let ((bundle (cask-setup cask-test/package-path)))
-    (should (string= (cask-package-name bundle) "foo"))))
+    (should (eq (cask-package-name bundle) 'foo))))
 
 (ert-deftest cask-package-name-test/config ()
   (let ((bundle (cask-setup cask-test/config-path)))

@@ -97,7 +97,6 @@ Defaults to `error'."
 ;; Do not trust the value of these variables externally, they should
 ;; only be used by Cask itself. The same information is externally
 ;; available from the Cask API.
-(defvar cask-package nil)
 (defvar cask-runtime-dependencies nil)
 (defvar cask-development-dependencies nil)
 
@@ -194,16 +193,6 @@ Return all directives in the Cask file as list."
          (dep-list (cask-get-dep-list-for-scope scope)))
     (add-to-list dep-list dependency t)))
 
-(defun cask-parse-epl-package (package)
-  "Parse an EPL PACKAGE."
-  (setq cask-package
-        (list :name (symbol-name (epl-package-name package))
-              :version (epl-package-version-string package)
-              :description (epl-package-summary package)))
-  (cl-dolist (req (epl-package-requirements package))
-    (cask-add-dependency (epl-requirement-name req)
-                         (epl-requirement-version-string req))))
-
 (defun cask-eval (bundle forms &optional scope)
   "Evaluate cask FORMS in SCOPE.
 
@@ -221,14 +210,20 @@ SCOPE may be nil or :development."
          (epl-add-archive name-or-alias url)))
       (package
        (cl-destructuring-bind (_ name version description) form
-         (setq cask-package (list :name name
-                                  :version version
-                                  :description description))))
+         (setf (cask-bundle-name bundle) (intern name))
+         (setf (cask-bundle-version bundle) version)
+         (setf (cask-bundle-description bundle) description)))
       (package-file
        (cl-destructuring-bind (_ filename) form
-         (cask-parse-epl-package
-          (epl-package-from-file
-           (f-expand filename (cask-bundle-path bundle))))))
+         (let ((package (epl-package-from-file
+                         (f-expand filename (cask-bundle-path bundle)))))
+           (setf (cask-bundle-name bundle) (epl-package-name package))
+           (setf (cask-bundle-version bundle) (epl-package-version-string package))
+           (setf (cask-bundle-description bundle) (epl-package-summary package))
+           (-each (epl-package-requirements package)
+                  (lambda (requirement)
+                    (cask-add-dependency (epl-requirement-name requirement)
+                                         (epl-requirement-version-string requirement)))))))
       (depends-on
        (cl-destructuring-bind (_ name &optional version) form
          (cask-add-dependency name version scope)))
@@ -279,7 +274,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
     (when (f-same? (epl-package-dir) (epl-default-package-dir))
       (epl-change-package-dir (cask-elpa-dir bundle)))
     (setq package-archives nil)
-    (let (cask-package cask-runtime-dependencies cask-development-dependencies)
+    (let (cask-runtime-dependencies cask-development-dependencies)
       (when (f-file? (cask-file bundle))
         (condition-case err
             (cask-eval bundle (cask-read (cask-file bundle)))
@@ -289,11 +284,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
            (cask-exit-error bundle err))))
       (setf (cask-bundle-dependencies bundle)
             (list :runtime cask-runtime-dependencies
-                  :development cask-development-dependencies))
-      (when cask-package
-        (setf (cask-bundle-name bundle) (plist-get cask-package :name))
-        (setf (cask-bundle-version bundle) (plist-get cask-package :version))
-        (setf (cask-bundle-description bundle) (plist-get cask-package :description))))
+                  :development cask-development-dependencies)))
     bundle))
 
 (defun cask-elpa-dir (bundle)
@@ -415,7 +406,7 @@ Return value is a list of `cask-dependency' objects."
 (defun cask-define-package-string (bundle)
   "Return `define-package' string for BUNDLE."
   (with-cask-package bundle
-      (let ((name (cask-bundle-name bundle))
+      (let ((name (symbol-name (cask-bundle-name bundle)))
             (version (cask-bundle-version bundle))
             (description (cask-bundle-description bundle))
             (dependencies
@@ -429,7 +420,7 @@ Return value is a list of `cask-dependency' objects."
 (defun cask-define-package-file (bundle)
   "Return path to `define-package' file for BUNDLE."
   (with-cask-package bundle
-      (f-expand (concat (cask-bundle-name bundle) "-pkg.el") (cask-bundle-path bundle))))
+      (f-expand (concat (symbol-name (cask-bundle-name bundle)) "-pkg.el") (cask-bundle-path bundle))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
