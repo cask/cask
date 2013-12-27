@@ -264,3 +264,42 @@
                     (--map
                      (f-expand it cask-test/directive-path)
                      '("directive-core.el" "directive.el" "bin")))))))
+
+
+;;;; cask-add-dependency
+
+(ert-deftest cask-add-dependency-test/runtime ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (let* ((dependencies (cask-bundle-runtime-dependencies bundle))
+            (dependency (car dependencies)))
+       (should (= (length dependencies) 1))
+       (should (eq (cask-dependency-name dependency) 'bar))
+       (should (string= (cask-dependency-version dependency) "0.4.3")))
+     (cask-add-dependency bundle 'qux "3.2.1")
+     (let* ((dependencies (cask-bundle-runtime-dependencies bundle))
+            (dependency-1 (nth 0 dependencies))
+            (dependency-2 (nth 1 dependencies)))
+       (should (= (length dependencies) 2))
+       (should (eq (cask-dependency-name dependency-1) 'qux))
+       (should (string= (cask-dependency-version dependency-1) "3.2.1"))
+       (should (eq (cask-dependency-name dependency-2) 'bar))
+       (should (string= (cask-dependency-version dependency-2) "0.4.3"))))))
+
+(ert-deftest cask-add-dependency-test/development ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (let* ((dependencies (cask-bundle-development-dependencies bundle))
+            (dependency (car dependencies)))
+       (should (= (length dependencies) 1))
+       (should (eq (cask-dependency-name dependency) 'baz))
+       (should (string= (cask-dependency-version dependency) "1.2.3")))
+     (cask-add-dependency bundle 'qux "3.2.1" :development)
+     (let* ((dependencies (cask-bundle-development-dependencies bundle))
+            (dependency-1 (nth 0 dependencies))
+            (dependency-2 (nth 1 dependencies)))
+       (should (= (length dependencies) 2))
+       (should (eq (cask-dependency-name dependency-1) 'qux))
+       (should (string= (cask-dependency-version dependency-1) "3.2.1"))
+       (should (eq (cask-dependency-name dependency-2) 'baz))
+       (should (string= (cask-dependency-version dependency-2) "1.2.3"))))))

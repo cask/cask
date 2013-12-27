@@ -224,15 +224,6 @@ Return all directives in the Cask file as list."
                                  (cdr err)))))
       (nreverse forms))))
 
-(defun cask-add-dependency (bundle name version &optional scope)
-  "Add to BUNDLE the dependency NAME with VERSION in SCOPE."
-  (let* ((name (if (stringp name) (intern name) name))
-         (dependency (make-cask-dependency :name name :version version)))
-    (push dependency
-          (if (eq scope :development)
-              (cask-bundle-development-dependencies bundle)
-            (cask-bundle-runtime-dependencies bundle)))))
-
 (defun cask-eval (bundle forms &optional scope)
   "Evaluate cask FORMS in SCOPE.
 
@@ -474,6 +465,17 @@ Return value is a list of `cask-dependency' objects."
 (defun cask-files (bundle)
   "Return list of BUNDLE files with absolute path."
   (with-cask-file bundle (cask-bundle-files bundle)))
+
+(defun cask-add-dependency (bundle name version &optional scope)
+  "Add to BUNDLE the dependency NAME with VERSION in SCOPE.
+
+SCOPE can be either nil, which means it's a runtime dependency
+or `:development', which means it's a development dependency."
+  (let ((name (if (stringp name) (intern name) name)))
+    (push (make-cask-dependency :name name :version version)
+          (if (eq scope :development)
+              (cask-bundle-development-dependencies bundle)
+            (cask-bundle-runtime-dependencies bundle)))))
 
 (provide 'cask)
 
