@@ -35,7 +35,7 @@
    (locate-user-emacs-file (format ".cask/%s/bootstrap" emacs-version)))
   "Path to Cask bootstrap directory.")
 
-(defconst cask-bootstrap-packages '(s dash f commander git epl shut-up)
+(defconst cask-bootstrap-packages '(s dash f commander git epl shut-up cl-lib)
   "List of bootstrap packages required by this file.")
 
 (unless (require 'package nil :noerror)
