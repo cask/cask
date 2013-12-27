@@ -303,3 +303,22 @@
        (should (string= (cask-dependency-version dependency-1) "3.2.1"))
        (should (eq (cask-dependency-name dependency-2) 'baz))
        (should (string= (cask-dependency-version dependency-2) "1.2.3"))))))
+
+
+;;;; cask-add-source
+
+(ert-deftest cask-add-source-test/name-and-url ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should-not (cask-bundle-sources bundle))
+    (cask-add-source bundle "melpa" "http://melpa.milkbox.net/packages/")
+    (let ((source (car (cask-bundle-sources bundle))))
+      (should (string= (cask-source-name source) "melpa"))
+      (should (string= (cask-source-url source) "http://melpa.milkbox.net/packages/")))))
+
+(ert-deftest cask-add-source-test/alias ()
+  (let ((bundle (cask-setup cask-test/package-path)))
+    (should-not (cask-bundle-sources bundle))
+    (cask-add-source bundle 'melpa)
+    (let ((source (car (cask-bundle-sources bundle))))
+      (should (string= (cask-source-name source) "melpa"))
+      (should (string= (cask-source-url source) "http://melpa.milkbox.net/packages/")))))

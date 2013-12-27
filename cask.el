@@ -128,8 +128,11 @@ dependencies that are required for local development.
 `path' Path to project root directory.
 
 `files' List of files specified from expanding arguments to
-files-directive. The list contains absolute paths."
-  name version description runtime-dependencies development-dependencies path files)
+files-directive. The list contains absolute paths.
+
+`sources' List of `cask-source' objects."
+  name version description runtime-dependencies
+  development-dependencies path files sources)
 
 (cl-defstruct cask-source-position
   "Structure for a position in a Cask-file.
@@ -224,6 +227,26 @@ Return all directives in the Cask file as list."
                                  (cdr err)))))
       (nreverse forms))))
 
+(defun epl-change-package-dir (directory)
+  "Change the directory of packages to DIRECTORY."
+  (setq package-user-dir directory))
+
+(defmacro cask-use-environment (bundle &rest body)
+  "Use environment specified by BUNDLE and yield BODY."
+  (declare (indent 1) (debug t))
+  `(let ((sources (cask-bundle-sources bundle)))
+     (setq package-archives nil)        ; TODO: Should call
+                                        ; `epl-reset' here, but it
+                                        ; does not work as expected.
+     (epl-change-package-dir (cask-elpa-dir bundle))
+     (-each sources
+            (lambda (source)
+              (epl-add-archive (cask-source-name source)
+                               (cask-source-url source))))
+     (epl-refresh)
+     (epl-initialize)
+     ,@body))
+
 (defun cask-eval (bundle forms &optional scope)
   "Evaluate cask FORMS in SCOPE.
 
@@ -232,13 +255,7 @@ SCOPE may be nil or :development."
     (cl-case (car form)
       (source
        (cl-destructuring-bind (_ name-or-alias &optional url) form
-         (unless url
-           (let ((mapping (assq name-or-alias cask-source-mapping)))
-             (unless mapping
-               (error "Unknown package archive: %s" name-or-alias))
-             (setq name-or-alias (symbol-name (car mapping)))
-             (setq url (cdr mapping))))
-         (epl-add-archive name-or-alias url)))
+         (cask-add-source bundle name-or-alias url)))
       (package
        (cl-destructuring-bind (_ name version description) form
          (setf (cask-bundle-name bundle) (intern name))
@@ -303,9 +320,6 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
   (let ((bundle (make-cask-bundle :path project-path)))
-    (when (f-same? (epl-package-dir) (epl-default-package-dir))
-      (epl-change-package-dir (cask-elpa-dir bundle)))
-    (setq package-archives nil)
     (when (f-file? (cask-file bundle))
       (condition-case err
           (cask-eval bundle (cask-read (cask-file bundle)))
@@ -330,15 +344,13 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
   "Update BUNDLE dependencies.
 
 Return list of updated packages."
-  (epl-refresh)
-  (epl-initialize)
-  (epl-upgrade (cask-packages bundle)))
+  (cask-use-environment bundle
+    (epl-upgrade (cask-packages bundle))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
-  (epl-refresh)
-  (epl-initialize)
-  (epl-find-upgrades (cask-packages bundle)))
+  (cask-use-environment bundle
+    (epl-find-upgrades (cask-packages bundle))))
 
 (defun cask-install (bundle)
   "Install BUNDLE dependencies.
@@ -356,17 +368,16 @@ If a dependency failed to install, signal a
 to install, and ERR is the original error data."
   (let (missing-dependencies)
     (-when-let (dependencies (cask-dependencies bundle))
-      (epl-refresh)
-      (epl-initialize)
-      (cl-dolist (dependency dependencies)
-        (let ((name (cask-dependency-name dependency)))
-          (unless (epl-package-installed-p name)
-            (let ((package (car (epl-find-available-packages name))))
-              (if package
-                  (condition-case err
-                      (epl-package-install package)
-                    (error (signal 'cask-failed-installation (cons dependency err))))
-                (push dependency missing-dependencies))))))
+      (cask-use-environment bundle
+        (cl-dolist (dependency dependencies)
+          (let ((name (cask-dependency-name dependency)))
+            (unless (epl-package-installed-p name)
+              (let ((package (car (epl-find-available-packages name))))
+                (if package
+                    (condition-case err
+                        (epl-package-install package)
+                      (error (signal 'cask-failed-installation (cons dependency err))))
+                  (push dependency missing-dependencies)))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
@@ -476,6 +487,23 @@ or `:development', which means it's a development dependency."
           (if (eq scope :development)
               (cask-bundle-development-dependencies bundle)
             (cask-bundle-runtime-dependencies bundle)))))
+
+(defun cask-add-source (bundle name-or-alias &optional url)
+  "Add source to BUNDLE.
+
+NAME-OR-ALIAS is either a string with the name of the source or a
+symbol, which refers to some of the keys in
+`cask-source-mapping'.
+
+Second argument URL is only required unless alias.  If no alias,
+URL is the url to the mirror."
+  (unless url
+    (let ((mapping (assq name-or-alias cask-source-mapping)))
+      (unless mapping
+        (error "Unknown package archive: %s" name-or-alias))
+      (setq name-or-alias (symbol-name (car mapping)))
+      (setq url (cdr mapping))))
+  (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle)))
 
 (provide 'cask)
 
