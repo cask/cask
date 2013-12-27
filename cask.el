@@ -88,7 +88,7 @@ Defaults to `error'."
 
 (cl-defstruct cask-dependency name version)
 (cl-defstruct cask-source name url)
-(cl-defstruct cask-bundle name version description dependencies path)
+(cl-defstruct cask-bundle name version description dependencies path files)
 (cl-defstruct cask-source-position line column)
 
 (defconst cask-filename "Cask"
@@ -232,6 +232,10 @@ SCOPE may be nil or :development."
       (depends-on
        (cl-destructuring-bind (_ name &optional version) form
          (cask-add-dependency name version scope)))
+      (files
+       (cl-destructuring-bind (_ &rest args) form
+         (let ((files (-flatten (--map (f-glob it (cask-bundle-path bundle)) args))))
+           (setf (cask-bundle-files bundle) files))))
       (development
        (cl-destructuring-bind (_ . body) form
          (cask-eval bundle body :development)))
@@ -440,6 +444,10 @@ Return value is a list of `cask-dependency' objects."
 (defun cask-file (bundle)
   "Return path to BUNDLE Cask-file."
   (f-expand "Cask" (cask-path bundle)))
+
+(defun cask-files (bundle)
+  "Return list of BUNDLE files with absolute path."
+  (with-cask-file bundle (cask-bundle-files bundle)))
 
 (provide 'cask)
 

@@ -248,3 +248,19 @@
    (mock (epl-initialize) :times 1)
    (let ((bundle (cask-initialize cask-test/config-path)))
      (should (cask-bundle-p bundle)))))
+
+
+;;;; cask-files
+
+(ert-deftest cask-files-test/no-directive ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (should-not (cask-files bundle)))))
+
+(ert-deftest cask-files-test/with-directive ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/directive-path)))
+     (should (equal (cask-files bundle)
+                    (--map
+                     (f-expand it cask-test/directive-path)
+                     '("directive-core.el" "directive.el" "bin")))))))

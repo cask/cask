@@ -48,6 +48,15 @@
   (lambda (filename content)
     (cask-test/create-project-file filename content)))
 
+
+(When "^I create a file called \"\\([^\"]+\\)\"$"
+  (lambda (filename)
+    (f-touch (f-expand filename cask-current-project))))
+
+(And "^I create a directory called \"\\([^\"]+\\)\"$"
+  (lambda (dirname)
+    (f-mkdir (f-expand dirname cask-current-project))))
+
 (When "^I run cask \"\\([^\"]*\\)\"$"
   (lambda (command)
     ;; Note: Since the Ecukes tests runs with Casks dependencies in
@@ -152,6 +161,11 @@
 (Then "^I should see no cask file error$"
   (lambda ()
     (should (string= cask-error (concat "Cask file does not exist: \"" (f-expand "Cask" cask-current-project) "\"\n")))))
+
+(Then "^I should not see any output$"
+  (lambda ()
+    (should (and (string= cask-output "")
+                 (string= cask-error "")))))
 
 (provide 'cask-steps)
 

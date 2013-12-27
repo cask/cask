@@ -199,6 +199,14 @@ installation."
     (princ "Outdated packages:\n")
     (-each outdated 'cask-cli--print-upgrade)))
 
+(defun cask-cli/files ()
+  "Print list of files specified in the files directive.
+
+If no files directive or no files, do nothing."
+  (-each (cask-files (cask--cli-bundle))
+         (lambda (file)
+           (princ (concat (f-relative file cask-cli--path) "\n")))))
+
 
 ;;;; Options
 
@@ -243,6 +251,7 @@ installation."
  (command "path" cask-cli/exec-path)
  (command "package-directory" cask-cli/package-directory)
  (command "outdated" cask-cli/outdated)
+ (command "files" cask-cli/files)
 
  (option "--version" cask-cli/cask-version)
  (option "-h, --help" cask-cli/help)
