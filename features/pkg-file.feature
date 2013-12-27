@@ -1,21 +1,21 @@
-Feature: Package
+Feature: Pkg file
   In order to quickly create a -pkg.el file
   As a Cask user
   I want to create it automatically
 
   Background:
-    Given I create a project called "package"
-    And I go to the project called "package"
+    Given I create a project called "pkg-file"
+    And I go to the project called "pkg-file"
 
   Scenario: No Cask file
-    When I run cask "package"
+    When I run cask "pkg-file"
     Then I should see no cask file error
 
   Scenario: Empty Cask file
     Given this Cask file:
       """
       """
-    When I run cask "package"
+    When I run cask "pkg-file"
     Then I should see command error:
       """
       Missing `package` or `package-file` directive
@@ -26,7 +26,7 @@ Feature: Package
       """
       (package "super-project" "0.0.1" "Super project.")
       """
-    When I run cask "package"
+    When I run cask "pkg-file"
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1" "Super project." 'nil)
@@ -40,7 +40,7 @@ Feature: Package
       (depends-on "foo" "0.1.2")
       (depends-on "bar" "0.2.1")
       """
-    When I run cask "package"
+    When I run cask "pkg-file"
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1" "Super project."
@@ -98,7 +98,7 @@ Feature: Package
 
       ;;; super-project.el ends here
       """
-    And I run cask "package"
+    And I run cask "pkg-file"
     Then there should exist a file called "super-project-pkg.el" with this content:
       """
       (define-package "super-project" "0.0.1" "Super project."

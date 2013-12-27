@@ -73,7 +73,7 @@
 
 ;;;; Commands
 
-(defun cask-cli/package ()
+(defun cask-cli/pkg-file ()
   "Write a `define-package' file.
 
 The file is written to the Cask project root path with name
@@ -244,7 +244,7 @@ If no files directive or no files, do nothing."
 
  (default "install")
 
- (command "package" cask-cli/package)
+ (command "pkg-file" cask-cli/pkg-file)
  (command "install" cask-cli/install)
  (command "update" cask-cli/update)
  (command "upgrade" cask-cli/upgrade)
