@@ -46,6 +46,19 @@
 (defvar cask-cli--path default-directory
   "Cask commands will execute in this path.")
 
+(defvar cask--cli-bundle-cache nil)
+
+(defun cask--cli-bundle ()
+  "Setup in `cask-cli--path' and return bundle."
+  (or cask--cli-bundle-cache
+      (setq cask--cli-bundle-cache
+            (condition-case err
+                (cask-setup cask-cli--path)
+              (end-of-file
+               (cask-cli--exit-error err))
+              (invalid-read-syntax
+               (cask-cli--exit-error err))))))
+
 (defun cask-cli--find-unbalanced-parenthesis ()
   (with-temp-buffer
     (insert (f-read-text cask-file 'utf-8))
@@ -78,14 +91,6 @@
       (message "%s: %s" cask-file msg)))
   (kill-emacs 1))
 
-(defun cask-cli--setup ()
-  (condition-case err
-      (cask-setup cask-cli--path)
-    (end-of-file
-     (cask-cli--exit-error err))
-    (invalid-read-syntax
-     (cask-cli--exit-error err))))
-
 (defun cask-cli--print-dependency (dependency)
   (let ((name (cask-dependency-name dependency))
         (version (cask-dependency-version dependency)))
@@ -103,11 +108,6 @@
     (epl-package-version-string (epl-upgrade-installed upgrade))
     (epl-package-version-string (epl-upgrade-available upgrade)))))
 
-(defmacro cask-cli--with-setup (&rest body)
-  "Setup Cask and yield BODY with `cask-bundle' object as `it'."
-  `(let ((it (cask-setup cask-cli--path)))
-     ,@body))
-
 
 ;;;; Commands
 
@@ -116,30 +116,28 @@
 
 The file is written to the Cask project root path with name
 {project-name}-pkg.el."
-  (cask-cli--with-setup
-   (f-write-text (cask-define-package-string it) 'utf-8
-                 (cask-define-package-file it))))
+  (f-write-text (cask-define-package-string (cask--cli-bundle)) 'utf-8
+                (cask-define-package-file (cask--cli-bundle))))
 
 (defun cask-cli/install ()
   "Install all packages specified in the Cask-file.
 
 The dependencies to packages are also installed.  If a package
 already is installed, it will not be installed again."
-  (cask-cli--with-setup
-   (condition-case err
-       (cask-install it)
-     (cask-missing-dependencies
-      (let ((missing-dependencies (cdr err)))
-        (error "Some dependencies were not available: %s"
-               (->> missing-dependencies
-                 (-map #'cask-dependency-name)
-                 (-map #'symbol-name)
-                 (s-join ", ")))))
-     (cask-failed-installation
-      (let* ((data (cdr err))
-             (dependency (cask-dependency-name (car data)))
-             (message (error-message-string (cdr data))))
-        (error "Dependency %s failed to install: %s" dependency message))))))
+  (condition-case err
+      (cask-install (cask--cli-bundle))
+    (cask-missing-dependencies
+     (let ((missing-dependencies (cdr err)))
+       (error "Some dependencies were not available: %s"
+              (->> missing-dependencies
+                (-map #'cask-dependency-name)
+                (-map #'symbol-name)
+                (s-join ", ")))))
+    (cask-failed-installation
+     (let* ((data (cdr err))
+            (dependency (cask-dependency-name (car data)))
+            (message (error-message-string (cdr data))))
+       (error "Dependency %s failed to install: %s" dependency message)))))
 
 (defun cask-cli/upgrade ()
   "Upgrade Cask itself and its dependencies.
@@ -169,10 +167,9 @@ Git is available in `exec-path'."
 
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
-  (cask-cli--with-setup
-   (-when-let (upgrades (cask-update it))
-     (princ "Updated packages:\n")
-     (-each upgrades 'cask-cli--print-upgrade))))
+  (-when-let (upgrades (cask-update (cask--cli-bundle)))
+    (princ "Updated packages:\n")
+    (-each upgrades 'cask-cli--print-upgrade)))
 
 (defun cask-cli/init ()
   "Initialize the current directory with a Cask-file.
@@ -184,32 +181,29 @@ will be for an Emacs package."
 
 (defun cask-cli/list ()
   "List this package dependencies."
-  (cask-cli--with-setup
-   (let ((runtime-dependencies (cask-runtime-dependencies it))
-         (development-dependencies (cask-development-dependencies it)))
-     (princ "### Dependencies ###\n\n")
-     (princ (format "Runtime [%s]:\n" (length runtime-dependencies)))
-     (mapc 'cask-cli--print-dependency runtime-dependencies)
-     (if (> (length runtime-dependencies) 0)
-         (princ "\n"))
-     (princ (format "Development [%s]:\n" (length development-dependencies)))
-     (mapc 'cask-cli--print-dependency development-dependencies))))
+  (let ((runtime-dependencies (cask-runtime-dependencies (cask--cli-bundle)))
+        (development-dependencies (cask-development-dependencies (cask--cli-bundle))))
+    (princ "### Dependencies ###\n\n")
+    (princ (format "Runtime [%s]:\n" (length runtime-dependencies)))
+    (mapc 'cask-cli--print-dependency runtime-dependencies)
+    (if (> (length runtime-dependencies) 0)
+        (princ "\n"))
+    (princ (format "Development [%s]:\n" (length development-dependencies)))
+    (mapc 'cask-cli--print-dependency development-dependencies)))
 
 (defun cask-cli/version ()
   "Print version for the current project."
-  (cask-cli--with-setup
-   (princ (concat (cask-package-version it) "\n"))))
+  (princ (concat (cask-package-version (cask--cli-bundle)) "\n")))
 
 (defun cask-cli/info ()
   "Show info about the current package."
-  (cask-cli--with-setup
-   (let ((name (cask-package-name it))
-         (version (cask-package-version it))
-         (description (cask-package-description it)))
-     (princ (format "### %s (%s) ###" name version))
-     (princ "\n\n")
-     (princ description)
-     (princ "\n"))))
+  (let ((name (cask-package-name (cask--cli-bundle)))
+        (version (cask-package-version (cask--cli-bundle)))
+        (description (cask-package-description (cask--cli-bundle))))
+    (princ (format "### %s (%s) ###" name version))
+    (princ "\n\n")
+    (princ description)
+    (princ "\n")))
 
 (defun cask-cli/help ()
   "Display usage information."
@@ -219,8 +213,7 @@ will be for an Emacs package."
   "Print `load-path' for all packages and dependencies.
 
 The output is formatted as a colon path."
-  (cask-cli--with-setup
-   (princ (concat (cask-load-path it) "\n"))))
+  (princ (concat (cask-load-path (cask--cli-bundle)) "\n")))
 
 (defun cask-cli/exec-path ()
   "Print `exec-path' for all packages and dependencies.
@@ -229,23 +222,20 @@ A dependency will be included in this list of the package has a
 directory called bin in the root directory.
 
 The output is formatted as a colon path."
-  (cask-cli--with-setup
-   (princ (concat (cask-exec-path it) "\n"))))
+  (princ (concat (cask-exec-path (cask--cli-bundle)) "\n")))
 
 (defun cask-cli/package-directory ()
   "Print current package installation directory."
-  (cask-cli--with-setup
-   (princ (concat (cask-elpa-dir it) "\n"))))
+  (princ (concat (cask-elpa-dir (cask--cli-bundle)) "\n")))
 
 (defun cask-cli/outdated ()
   "Print list of outdated packages.
 
 That is packages that have a more recent version available for
 installation."
-  (cask-cli--with-setup
-   (-when-let (outdated (cask-outdated it))
-     (princ "Outdated packages:\n")
-     (-each outdated 'cask-cli--print-upgrade))))
+  (-when-let (outdated (cask-outdated (cask--cli-bundle)))
+    (princ "Outdated packages:\n")
+    (-each outdated 'cask-cli--print-upgrade)))
 
 
 ;;;; Options
