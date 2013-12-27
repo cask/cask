@@ -114,12 +114,51 @@ Defaults to `error'."
     (cask-test   . "http://127.0.0.1:9191/packages/"))
   "Mapping of source name and url.")
 
-(defun cask--packages (bundle)
+
+;;;; Internal functions
+
+(defun cask-find-unbalanced-parenthesis ()
+  (with-temp-buffer
+    (insert (f-read-text cask-file 'utf-8))
+    (goto-char (point-min))
+    (condition-case nil
+        (progn
+          (check-parens)
+          nil)
+      (error (cask-current-source-position)))))
+
+(defun cask-exit-error (err)
+  (let ((type (car err))
+        (data (cdr err))
+        pos msg)
+    (if (eq type 'end-of-file)
+        ;; In case of premature end of file, try hard to find the real
+        ;; position, by scanning for unbalanced parenthesis
+        (setq pos (or (cask-find-unbalanced-parenthesis) (cadr err))
+              msg "End of file while reading (possible unbalanced parenthesis)")
+      ;; For other types of error, check whether the error has a position, and
+      ;; print it.  Otherwise just print the error like Emacs would do
+      (when (cask-source-position-p (car data))
+        (setq pos (car data))
+        ;; Strip the position from the error data
+        (setq data (cdr data)))
+      (setq msg (error-message-string (cons type data))))
+    (if pos
+        (message "%s:%s:%s: %s" cask-file (cask-source-position-line pos)
+                 (cask-source-position-column pos) msg)
+      (message "%s: %s" cask-file msg)))
+  (kill-emacs 1))
+
+(defun cask-packages (bundle)
   "Return list of `epl-package' objects for BUNDLE dependencies."
   (-map
    (lambda (dependency)
      (epl-find-installed-package (cask-dependency-name dependency)))
    (cask-dependencies bundle)))
+
+(defun cask-setup-project-variables (project-path)
+  "Setup cask variables for project at PROJECT-PATH."
+  (setq cask-file (f-expand cask-filename project-path)))
 
 (defun cask-current-source-position ()
   "Get the current position in the buffer."
@@ -207,45 +246,36 @@ SCOPE may be nil or :development."
       (t
        (error "Unknown directive: %S" form)))))
 
-(defun cask-elpa-dir (bundle)
-  "Return full path to BUNDLE elpa directory."
-  (f-expand (format ".cask/%s/elpa" emacs-version) (cask-bundle-path bundle)))
+(defun cask-template-get (name)
+  "Return content of template with NAME."
+  (let* ((templates-dir (cask-resource-path "templates"))
+         (template-file (f-expand name templates-dir)))
+    (f-read-text template-file 'utf-8)))
 
-(defun cask-setup-project-variables (project-path)
-  "Setup cask variables for project at PROJECT-PATH."
-  (setq cask-file (f-expand cask-filename project-path)))
+(put 'with-cask-file 'lisp-indent-function 2)
+(defmacro with-cask-file (bundle &rest body)
+  "If BUNDLE path has a Cask-file, yield BODY.
 
-(defun cask--find-unbalanced-parenthesis ()
-  (with-temp-buffer
-    (insert (f-read-text cask-file 'utf-8))
-    (goto-char (point-min))
-    (condition-case nil
-        (progn
-          (check-parens)
-          nil)
-      (error (cask-current-source-position)))))
+If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
+  `(if (f-file? cask-file)
+       (progn ,@body)
+     (signal 'cask-no-cask-file (list cask-file))))
 
-(defun cask--exit-error (err)
-  (let ((type (car err))
-        (data (cdr err))
-        pos msg)
-    (if (eq type 'end-of-file)
-        ;; In case of premature end of file, try hard to find the real
-        ;; position, by scanning for unbalanced parenthesis
-        (setq pos (or (cask--find-unbalanced-parenthesis) (cadr err))
-              msg "End of file while reading (possible unbalanced parenthesis)")
-      ;; For other types of error, check whether the error has a position, and
-      ;; print it.  Otherwise just print the error like Emacs would do
-      (when (cask-source-position-p (car data))
-        (setq pos (car data))
-        ;; Strip the position from the error data
-        (setq data (cdr data)))
-      (setq msg (error-message-string (cons type data))))
-    (if pos
-        (message "%s:%s:%s: %s" cask-file (cask-source-position-line pos)
-                 (cask-source-position-column pos) msg)
-      (message "%s: %s" cask-file msg)))
-  (kill-emacs 1))
+(put 'with-cask-package 'lisp-indent-function 2)
+(defmacro with-cask-package (bundle &rest body)
+  "If BUNDLE is a package, yield BODY.
+
+If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
+  `(with-cask-file bundle
+       (if (and
+            (cask-bundle-name bundle)
+            (cask-bundle-version bundle)
+            (cask-bundle-description bundle))
+           (progn ,@body)
+         (signal 'cask-not-a-package nil))))
+
+
+;;;; Public API
 
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
@@ -259,9 +289,9 @@ SCOPE may be nil or :development."
         (condition-case err
             (cask-eval bundle (cask-read cask-file))
           (end-of-file
-           (cask--exit-error err))
+           (cask-exit-error err))
           (invalid-read-syntax
-           (cask--exit-error err))))
+           (cask-exit-error err))))
       (setf (cask-bundle-dependencies bundle)
             (list :runtime cask-runtime-dependencies
                   :development cask-development-dependencies))
@@ -271,6 +301,10 @@ SCOPE may be nil or :development."
         (setf (cask-bundle-description bundle) (plist-get cask-package :description))))
     bundle))
 
+(defun cask-elpa-dir (bundle)
+  "Return full path to BUNDLE elpa directory."
+  (f-expand (format ".cask/%s/elpa" emacs-version) (cask-bundle-path bundle)))
+
 (defun cask-initialize (&optional project-path)
   "Initialize packages under PROJECT-PATH (defaults to `user-emacs-directory').
 Setup `package-user-dir' appropriately and then call `package-initialize'."
@@ -278,20 +312,13 @@ Setup `package-user-dir' appropriately and then call `package-initialize'."
     (epl-initialize)
     bundle))
 
-(defun cask--template-get (name)
-  "Return content of template with NAME."
-  (let* ((templates-dir (cask-resource-path "templates"))
-         (template-file (f-expand name templates-dir)))
-    (f-read-text template-file 'utf-8)))
-
 (defun cask-update (bundle)
   "Update BUNDLE dependencies.
 
 Return list of updated packages."
   (epl-refresh)
   (epl-initialize)
-  (epl-upgrade
-   (cask--packages bundle)))
+  (epl-upgrade (cask-packages bundle)))
 
 (defun cask-install (bundle)
   "Install BUNDLE dependencies.
@@ -329,33 +356,11 @@ to install, and ERR is the original error data."
 If DEV-MODE is true, the dev template is used, otherwise the
 configuration template is used."
   (let ((init-content
-         (cask--template-get (if dev-mode "init-dev.tpl" "init.tpl")))
+         (cask-template-get (if dev-mode "init-dev.tpl" "init.tpl")))
         (cask-file (f-expand "Cask" path)))
     (if (f-file? cask-file)
         (error "Cask file already exists.")
       (f-write-text init-content 'utf-8 cask-file))))
-
-(put 'with-cask-file 'lisp-indent-function 2)
-(defmacro with-cask-file (bundle &rest body)
-  "If BUNDLE path has a Cask-file, yield BODY.
-
-If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
-  `(if (f-file? cask-file)
-       (progn ,@body)
-     (signal 'cask-no-cask-file (list cask-file))))
-
-(put 'with-cask-package 'lisp-indent-function 2)
-(defmacro with-cask-package (bundle &rest body)
-  "If BUNDLE is a package, yield BODY.
-
-If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  `(with-cask-file bundle
-       (if (and
-            (cask-bundle-name bundle)
-            (cask-bundle-version bundle)
-            (cask-bundle-description bundle))
-           (progn ,@body)
-         (signal 'cask-not-a-package nil))))
 
 (defun cask-package-name (bundle)
   "Return BUNDLE name.
@@ -435,7 +440,7 @@ Return value is a list of `cask-dependency' objects."
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
   (epl-refresh)
   (epl-initialize)
-  (epl-find-upgrades (cask--packages bundle)))
+  (epl-find-upgrades (cask-packages bundle)))
 
 (defun cask-path (bundle)
   "Return BUNDLE root path."
