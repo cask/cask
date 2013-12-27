@@ -3,6 +3,8 @@
 
 (package-file "cask.el")
 
+(files "*.el" "bin" "templates")
+
 (development
  (depends-on "f")
  (depends-on "s")
