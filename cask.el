@@ -247,6 +247,28 @@ Return all directives in the Cask file as list."
      (epl-initialize)
      ,@body))
 
+(defmacro cask-with-file (bundle &rest body)
+  "If BUNDLE path has a Cask-file, yield BODY.
+
+If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
+  (declare (indent 1) (debug t))
+  `(if (f-file? (cask-file bundle))
+       (progn ,@body)
+     (signal 'cask-no-cask-file (list (cask-file bundle)))))
+
+(defmacro cask-with-package (bundle &rest body)
+  "If BUNDLE is a package, yield BODY.
+
+If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
+  (declare (indent 1) (debug t))
+  `(cask-with-file bundle
+     (if (and
+          (cask-bundle-name bundle)
+          (cask-bundle-version bundle)
+          (cask-bundle-description bundle))
+         (progn ,@body)
+       (signal 'cask-not-a-package nil))))
+
 (defun cask-eval (bundle forms &optional scope)
   "Evaluate cask FORMS in SCOPE.
 
@@ -291,28 +313,6 @@ SCOPE may be nil or :development."
   (let* ((templates-dir (cask-resource-path "templates"))
          (template-file (f-expand name templates-dir)))
     (f-read-text template-file 'utf-8)))
-
-(put 'with-cask-file 'lisp-indent-function 2)
-(defmacro with-cask-file (bundle &rest body)
-  "If BUNDLE path has a Cask-file, yield BODY.
-
-If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
-  `(if (f-file? (cask-file bundle))
-       (progn ,@body)
-     (signal 'cask-no-cask-file (list (cask-file bundle)))))
-
-(put 'with-cask-package 'lisp-indent-function 2)
-(defmacro with-cask-package (bundle &rest body)
-  "If BUNDLE is a package, yield BODY.
-
-If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  `(with-cask-file bundle
-       (if (and
-            (cask-bundle-name bundle)
-            (cask-bundle-version bundle)
-            (cask-bundle-description bundle))
-           (progn ,@body)
-         (signal 'cask-not-a-package nil))))
 
 
 ;;;; Public API
@@ -397,19 +397,19 @@ configuration template is used."
   "Return BUNDLE name.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  (with-cask-package bundle (cask-bundle-name bundle)))
+  (cask-with-package bundle (cask-bundle-name bundle)))
 
 (defun cask-package-version (bundle)
   "Return BUNDLE version.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  (with-cask-package bundle (cask-bundle-version bundle)))
+  (cask-with-package bundle (cask-bundle-version bundle)))
 
 (defun cask-package-description (bundle)
   "Return BUNDLE description.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  (with-cask-package bundle (cask-bundle-description bundle)))
+  (cask-with-package bundle (cask-bundle-description bundle)))
 
 (defun cask-version ()
   "Return Cask's version."
@@ -431,13 +431,13 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return BUNDLE's runtime dependencies.
 
 Return value is a list of `cask-dependency' objects."
-  (with-cask-file bundle (cask-bundle-runtime-dependencies bundle)))
+  (cask-with-file bundle (cask-bundle-runtime-dependencies bundle)))
 
 (defun cask-development-dependencies (bundle)
   "Return BUNDLE's development dependencies.
 
 Return value is a list of `cask-dependency' objects."
-  (with-cask-file bundle (cask-bundle-development-dependencies bundle)))
+  (cask-with-file bundle (cask-bundle-development-dependencies bundle)))
 
 (defun cask-dependencies (bundle)
   "Return BUNDLE's runtime and development dependencies.
@@ -448,22 +448,22 @@ Return value is a list of `cask-dependency' objects."
 
 (defun cask-define-package-string (bundle)
   "Return `define-package' string for BUNDLE."
-  (with-cask-package bundle
-      (let ((name (symbol-name (cask-bundle-name bundle)))
-            (version (cask-bundle-version bundle))
-            (description (cask-bundle-description bundle))
-            (dependencies
-             (-map
-              (lambda (dependency)
-                (list (cask-dependency-name dependency)
-                      (cask-dependency-version dependency)))
-              (cask-runtime-dependencies bundle))))
-        (pp-to-string `(define-package ,name ,version ,description ',dependencies)))))
+  (cask-with-package bundle
+    (let ((name (symbol-name (cask-bundle-name bundle)))
+          (version (cask-bundle-version bundle))
+          (description (cask-bundle-description bundle))
+          (dependencies
+           (-map
+            (lambda (dependency)
+              (list (cask-dependency-name dependency)
+                    (cask-dependency-version dependency)))
+            (cask-runtime-dependencies bundle))))
+      (pp-to-string `(define-package ,name ,version ,description ',dependencies)))))
 
 (defun cask-define-package-file (bundle)
   "Return path to `define-package' file for BUNDLE."
-  (with-cask-package bundle
-      (f-expand (concat (symbol-name (cask-bundle-name bundle)) "-pkg.el") (cask-bundle-path bundle))))
+  (cask-with-package bundle
+    (f-expand (concat (symbol-name (cask-bundle-name bundle)) "-pkg.el") (cask-bundle-path bundle))))
 
 (defun cask-path (bundle)
   "Return BUNDLE root path."
@@ -475,7 +475,7 @@ Return value is a list of `cask-dependency' objects."
 
 (defun cask-files (bundle)
   "Return list of BUNDLE files with absolute path."
-  (with-cask-file bundle (cask-bundle-files bundle)))
+  (cask-with-file bundle (cask-bundle-files bundle)))
 
 (defun cask-add-dependency (bundle name version &optional scope)
   "Add to BUNDLE the dependency NAME with VERSION in SCOPE.
