@@ -18,8 +18,11 @@
 (defvar cask-test/no-cask-path
   (f-expand "no-cask" cask-test/sandbox-path))
 
-(defvar cask-test/directive-path
-  (f-expand "directive" cask-test/sandbox-path))
+(defvar cask-test/files-directive-path
+  (f-expand "files-directive" cask-test/sandbox-path))
+
+(defvar cask-test/files-no-directive-path
+  (f-expand "files-no-directive" cask-test/sandbox-path))
 
 (defmacro with-sandbox (&rest body)
   `(let ((default-directory cask-test/sandbox-path))
