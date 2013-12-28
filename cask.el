@@ -53,7 +53,9 @@
 (require 'cl-lib)
 (require 'package-build)
 
-(setq package-build-verbose nil)
+(setq package-build-verbose nil)        ; Make package-build quiet by
+                                        ; not allowing it to print any
+                                        ; messages.
 
 (eval-and-compile
   (defun cask-resource-path (name)
