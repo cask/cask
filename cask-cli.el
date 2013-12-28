@@ -46,12 +46,12 @@
 (defvar cask-cli--path default-directory
   "Cask commands will execute in this path.")
 
-(defvar cask--cli-bundle-cache nil)
+(defvar cask-cli--bundle-cache nil)
 
-(defun cask--cli-bundle ()
+(defun cask-cli--bundle ()
   "Setup in `cask-cli--path' and return bundle."
-  (or cask--cli-bundle-cache
-      (setq cask--cli-bundle-cache (cask-setup cask-cli--path))))
+  (or cask-cli--bundle-cache
+      (setq cask-cli--bundle-cache (cask-setup cask-cli--path))))
 
 (defun cask-cli--print-dependency (dependency)
   (let ((name (cask-dependency-name dependency))
@@ -78,8 +78,8 @@
 
 The file is written to the Cask project root path with name
 {project-name}-pkg.el."
-  (f-write-text (cask-define-package-string (cask--cli-bundle)) 'utf-8
-                (cask-define-package-file (cask--cli-bundle))))
+  (f-write-text (cask-define-package-string (cask-cli--bundle)) 'utf-8
+                (cask-define-package-file (cask-cli--bundle))))
 
 (defun cask-cli/install ()
   "Install all packages specified in the Cask-file.
@@ -87,7 +87,7 @@ The file is written to the Cask project root path with name
 The dependencies to packages are also installed.  If a package
 already is installed, it will not be installed again."
   (condition-case err
-      (cask-install (cask--cli-bundle))
+      (cask-install (cask-cli--bundle))
     (cask-missing-dependencies
      (let ((missing-dependencies (cdr err)))
        (error "Some dependencies were not available: %s"
@@ -129,7 +129,7 @@ Git is available in `exec-path'."
 
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
-  (-when-let (upgrades (cask-update (cask--cli-bundle)))
+  (-when-let (upgrades (cask-update (cask-cli--bundle)))
     (princ "Updated packages:\n")
     (-each upgrades 'cask-cli--print-upgrade)))
 
@@ -143,8 +143,8 @@ will be for an Emacs package."
 
 (defun cask-cli/list ()
   "List this package dependencies."
-  (let ((runtime-dependencies (cask-runtime-dependencies (cask--cli-bundle)))
-        (development-dependencies (cask-development-dependencies (cask--cli-bundle))))
+  (let ((runtime-dependencies (cask-runtime-dependencies (cask-cli--bundle)))
+        (development-dependencies (cask-development-dependencies (cask-cli--bundle))))
     (princ "### Dependencies ###\n\n")
     (princ (format "Runtime [%s]:\n" (length runtime-dependencies)))
     (mapc 'cask-cli--print-dependency runtime-dependencies)
@@ -155,13 +155,13 @@ will be for an Emacs package."
 
 (defun cask-cli/version ()
   "Print version for the current project."
-  (princ (concat (cask-package-version (cask--cli-bundle)) "\n")))
+  (princ (concat (cask-package-version (cask-cli--bundle)) "\n")))
 
 (defun cask-cli/info ()
   "Show info about the current package."
-  (let ((name (cask-package-name (cask--cli-bundle)))
-        (version (cask-package-version (cask--cli-bundle)))
-        (description (cask-package-description (cask--cli-bundle))))
+  (let ((name (cask-package-name (cask-cli--bundle)))
+        (version (cask-package-version (cask-cli--bundle)))
+        (description (cask-package-description (cask-cli--bundle))))
     (princ (format "### %s (%s) ###" name version))
     (princ "\n\n")
     (princ description)
@@ -175,7 +175,7 @@ will be for an Emacs package."
   "Print `load-path' for all packages and dependencies.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-load-path (cask--cli-bundle)) "\n")))
+  (princ (concat (cask-load-path (cask-cli--bundle)) "\n")))
 
 (defun cask-cli/exec-path ()
   "Print `exec-path' for all packages and dependencies.
@@ -184,18 +184,18 @@ A dependency will be included in this list of the package has a
 directory called bin in the root directory.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-exec-path (cask--cli-bundle)) "\n")))
+  (princ (concat (cask-exec-path (cask-cli--bundle)) "\n")))
 
 (defun cask-cli/package-directory ()
   "Print current package installation directory."
-  (princ (concat (cask-elpa-dir (cask--cli-bundle)) "\n")))
+  (princ (concat (cask-elpa-dir (cask-cli--bundle)) "\n")))
 
 (defun cask-cli/outdated ()
   "Print list of outdated packages.
 
 That is packages that have a more recent version available for
 installation."
-  (-when-let (outdated (cask-outdated (cask--cli-bundle)))
+  (-when-let (outdated (cask-outdated (cask-cli--bundle)))
     (princ "Outdated packages:\n")
     (-each outdated 'cask-cli--print-upgrade)))
 
@@ -203,17 +203,17 @@ installation."
   "Print list of files specified in the files directive.
 
 If no files directive or no files, do nothing."
-  (-each (cask-files (cask--cli-bundle))
+  (-each (cask-files (cask-cli--bundle))
          (lambda (file)
            (princ (concat (f-relative file cask-cli--path) "\n")))))
 
 (defun cask-cli/build ()
   "Build all Elisp files in the files directive."
-  (cask-build (cask--cli-bundle)))
+  (cask-build (cask-cli--bundle)))
 
 (defun cask-cli/clean-elc ()
   "Remove all byte compiled Elisp files in the files directive."
-  (cask-clean-elc (cask--cli-bundle)))
+  (cask-clean-elc (cask-cli--bundle)))
 
 
 ;;;; Options
