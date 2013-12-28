@@ -46,13 +46,6 @@
 
 (require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
 
-(require 'f)
-(require 's)
-(require 'dash)
-(require 'epl)
-(require 'cl-lib)
-(require 'package-build)
-
 (setq package-build-verbose nil)        ; Make package-build quiet by
                                         ; not allowing it to print any
                                         ; messages.
