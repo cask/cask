@@ -36,7 +36,7 @@
 (defun cask-test/template (command)
   (let* ((command (s-replace "{{EMACS-VERSION}}" emacs-version command))
          (command (s-replace "{{EMACS}}" (getenv "EMACS") command))
-         (command (s-replace "{{PROJECTS-PATH}}" cask-projects-path command))
+         (command (s-replace "{{PROJECTS-PATH}}" cask-sandbox-path command))
          (command (s-replace "{{PROJECT-PATH}}" cask-current-project command)))
     command))
 
@@ -89,11 +89,11 @@
 
 (Given "^I create a project called \"\\([^\"]+\\)\"$"
   (lambda (project-name)
-    (f-mkdir (f-expand project-name cask-projects-path))))
+    (f-mkdir (f-expand project-name cask-sandbox-path))))
 
 (When "^I go to the project called \"\\([^\"]+\\)\"$"
   (lambda (project-name)
-    (setq cask-current-project (f-expand project-name cask-projects-path))))
+    (setq cask-current-project (f-expand project-name cask-sandbox-path))))
 
 (Then "^I should see command output:$"
   (lambda (output)

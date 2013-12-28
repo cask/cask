@@ -13,8 +13,8 @@
 (defvar cask-root-path
   (f-parent cask-features-path))
 
-(defvar cask-projects-path
-  (f-expand "projects" cask-features-path))
+(defvar cask-sandbox-path
+  (f-expand "sandbox" cask-features-path))
 
 (defvar cask-bin-path
   (f-expand "bin" cask-root-path))
