@@ -38,7 +38,7 @@
 
  (--map
   (f-delete it t)
-  (f-directories cask-projects-path)))
+  (f-directories cask-sandbox-path)))
 
 (Fail
  (unless (s-blank? cask-output)
