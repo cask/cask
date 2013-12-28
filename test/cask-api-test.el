@@ -359,9 +359,9 @@
       (should (string= (cask-source-url source) "http://melpa.milkbox.net/packages/")))))
 
 
-;;; cask-build
+;;;; cask-build
 
 
-;;; cask-clean-elc
+;;;; cask-clean-elc
 
 ;;; cask-api-test.el ends here
