@@ -75,11 +75,13 @@
 
 (defun cask-cli--print-table (table)
   "Print TABLE, which is a list of alist's."
-  (let ((max-length-key (length (-max-by 'string< (-map 'car table)))))
+  (let ((max (length (--max-by (> (length it)
+                                  (length other))
+                               (-map 'car table)))))
     (-each table
            (lambda (row)
              (let ((key (car row)) (value (cadr row)))
-               (princ (s-pad-right (+ max-length-key cask-cli--table-padding) " " key))
+               (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
                (princ (concat value "\n")))))))
 
 
