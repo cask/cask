@@ -8,7 +8,7 @@ Feature: Build
     When I run cask "build"
     Then I should see no cask file error
 
-  Scenario: No files directive
+  Scenario: No files
     Given this Cask file:
       """
       """

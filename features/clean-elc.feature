@@ -8,7 +8,7 @@ Feature: Clean elc
     When I run cask "clean-elc"
     Then I should see no cask file error
 
-  Scenario: No files directive
+  Scenario: No files
     Given this Cask file:
       """
       """

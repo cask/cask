@@ -170,7 +170,8 @@ Slots:
 (defun cask-expand-files (path &optional patterns)
   "Expand absolute files relative to PATH list of PATTERNS."
   (--map (f-expand it path)
-         (pb/expand-source-file-list path `(:files ,patterns))))
+         (ignore-errors
+           (pb/expand-source-file-list path `(:files ,patterns)))))
 
 (defun cask-find-unbalanced-parenthesis (bundle)
   (with-temp-buffer
