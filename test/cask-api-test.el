@@ -413,38 +413,38 @@
 
 (ert-deftest cask-link-test/no-name ()
   (with-sandbox
-   (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
-         (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+   (let ((bundle-1 (cask-setup cask-test/link-1-path))
+         (bundle-2 (cask-setup cask-test/link-2-path)))
      (cask-link bundle-1)
      (cask-link bundle-2)
-     (should (equal (cask-links) '(("bar" "/path/to/bar")
-                                   ("foo" "/path/to/foo")))))))
+     (should (equal (cask-links) `(("link-2" ,cask-test/link-2-path)
+                                   ("link-1" ,cask-test/link-1-path)))))))
 
 (ert-deftest cask-link-test/with-name-has-not-been-linked ()
   (with-sandbox
-   (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
-         (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+   (let ((bundle-1 (cask-setup cask-test/link-1-path))
+         (bundle-2 (cask-setup cask-test/link-2-path)))
      (should-error (cask-link bundle-2 "foo") :type 'cask-no-such-link))))
 
 (ert-deftest cask-link-test/with-name-has-been-linked ()
   (with-sandbox
    (let ((emacs-version "24.3.1"))
      (stub f-delete)
-     (mock (f-symlink "/path/to/foo" "/path/to/bar/.cask/24.3.1/elpa/foo-dev"))
-     (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
-           (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+     (mock (f-symlink) :times 1)
+     (let ((bundle-1 (cask-setup cask-test/link-1-path))
+           (bundle-2 (cask-setup cask-test/link-2-path)))
        (cask-link bundle-1)
-       (cask-link bundle-2 "foo")))))
+       (cask-link bundle-2 "link-1")))))
 
 (ert-deftest cask-link-test/with-name-delete-existing ()
   (with-sandbox
    (mock (f-delete) :times 2)
-   (stub f-symlink)
+   (mock (f-symlink) :times 1)
    (stub f-glob => '("/path/to/foo-1" "/path/to/foo-2"))
-   (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
-         (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+   (let ((bundle-1 (cask-setup cask-test/link-1-path))
+         (bundle-2 (cask-setup cask-test/link-1-path)))
      (cask-link bundle-1)
-     (cask-link bundle-2 "foo"))))
+     (cask-link bundle-2 "link-1"))))
 
 
 ;;;; cask-link-delete
