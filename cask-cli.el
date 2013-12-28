@@ -40,6 +40,9 @@
 (require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
 (require 'cask (expand-file-name "cask" cask-directory))
 
+(defconst cask-cli--table-padding 10
+  "Number of spaces to pad with when printing table.")
+
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
@@ -69,6 +72,15 @@
     (epl-package-name (epl-upgrade-installed upgrade))
     (epl-package-version-string (epl-upgrade-installed upgrade))
     (epl-package-version-string (epl-upgrade-available upgrade)))))
+
+(defun cask-cli--print-table (table)
+  "Print TABLE, which is a list of alist's."
+  (let ((max-length-key (length (-max-by 'string< (-map 'car table)))))
+    (-each table
+           (lambda (row)
+             (let ((key (car row)) (value (cadr row)))
+               (princ (s-pad-right (+ max-length-key cask-cli--table-padding) " " key))
+               (princ (concat value "\n")))))))
 
 
 ;;;; Commands
@@ -215,6 +227,40 @@ If no files directive or no files, do nothing."
   "Remove all byte compiled Elisp files in the files directive."
   (cask-clean-elc (cask-cli--bundle)))
 
+(defun cask-cli/link (&optional command-or-name &rest args)
+  "Manage links.
+
+A link is just that, a symbolic link.  The purpose of the link
+command is that you should be able to work with local
+dependencies.
+
+For example, let's say you are developing an Emacs package that
+depends on f.el. Consider what happens if you need to extend f.el
+with some function that your package requires.
+
+With the link command, you can checkout f.el locally, add it as a
+link and then link it in your local package.  That means that when
+you require f.el, you will require the local package instead of
+the one fetched from the Elpa mirror.  Now you add the desired
+function to f.el and use your library to try it out.
+
+COMMAND-OR-NAME can be one of: delete, list a link name or nothing.
+ARGS are a list of link names, sent to the delete command.
+
+Examples:
+
+ cask link     # Add current project as a link.
+ cask link f   # Add local link to f.
+ cask delete f # Delete link f.
+ cask list     # List all links."
+  (cond ((string= command-or-name "delete")
+         (cask-link-delete args))
+        ((string= command-or-name "list")
+         (cask-cli--print-table (cask-links)))
+        ((null command-or-name)
+         (cask-link (cask-cli--bundle)))
+        (t (cask-link (cask-cli--bundle) command-or-name))))
+
 
 ;;;; Options
 
@@ -262,6 +308,7 @@ If no files directive or no files, do nothing."
  (command "files" cask-cli/files)
  (command "build" cask-cli/build)
  (command "clean-elc" cask-cli/clean-elc)
+ (command "link [*]" cask-cli/link)
 
  (option "--version" cask-cli/cask-version)
  (option "-h, --help" cask-cli/help)

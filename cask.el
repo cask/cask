@@ -88,6 +88,7 @@ Defaults to `error'."
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
 (define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
+(define-error 'cask-no-such-link "No such link" 'cask-error)
 
 (cl-defstruct cask-dependency
   "Structure representing a dependency.
@@ -158,6 +159,10 @@ Slots:
     (org         . "http://orgmode.org/elpa/")
     (cask-test   . "http://127.0.0.1:9191/packages/"))
   "Mapping of source name and url.")
+
+(defvar cask-links-file
+  (f-expand (format ".cask/%s/links" emacs-version) user-emacs-directory)
+  "Path to file where links are stored.")
 
 
 ;;;; Internal functions
@@ -322,12 +327,16 @@ SCOPE may be nil or :development."
          (template-file (f-expand name templates-dir)))
     (f-read-text template-file 'utf-8)))
 
+(defun cask-write-links (links)
+  "Write LINKS to `cask-links-file'."
+  (f-write-text (pp-to-string links) 'utf-8 cask-links-file))
+
 
 ;;;; Public API
 
 (defun cask-setup (project-path)
   "Setup cask for project at PROJECT-PATH."
-  (let ((bundle (make-cask-bundle :path project-path)))
+  (let ((bundle (make-cask-bundle :path (f-long project-path))))
     (when (f-file? (cask-file bundle))
       (condition-case err
           (cask-eval bundle (cask-read (cask-file bundle)))
@@ -532,6 +541,46 @@ URL is the url to the mirror."
              (when (and (f-file? path) (f-ext? path "el"))
                (when (f-file? (concat path "c"))
                  (f-delete (concat path "c"))))))))
+
+(defun cask-links ()
+  "Return all links.
+
+The list is a list of alist's where the key is the name of the
+link, as a string and the value is the absolute path to the link."
+  (when (f-file? cask-links-file)
+    (read (f-read cask-links-file 'utf-8))))
+
+(defun cask-link-p (name)
+  "Return true if link with NAME exists, false otherwise."
+  (-contains? (-map 'car (cask-links)) name))
+
+(defun cask-link (bundle &optional name)
+  "Link BUNDLE or add dev link with NAME.
+
+If NAME is specified, add a local link to that link's path.  If
+NAME is not specified, add the current project as a link."
+  (cask-with-package bundle
+    (if name
+        (-if-let (source (cadr (--first (string= (car it) name) (cask-links))))
+            (progn
+              (-each
+               (f-glob (concat name "-*") (cask-elpa-dir bundle))
+               (lambda (path)
+                 (f-delete path 'force)))
+              (f-symlink source (f-expand (concat name "-dev") (cask-elpa-dir bundle))))
+          (signal 'cask-no-such-link (list name)))
+      (let ((name (cask-bundle-name bundle))
+            (path (cask-bundle-path bundle))
+            (links (cask-links)))
+        (cask-write-links (push (list (symbol-name name) path) links))))))
+
+(defun cask-link-delete (names)
+  "Delete all links in NAMES."
+  (-each names
+         (lambda (name)
+           (if (cask-link-p name)
+               (cask-write-links (--remove (string= name (car it)) (cask-links)))
+             (signal 'cask-no-such-link (list name))))))
 
 (provide 'cask)
 

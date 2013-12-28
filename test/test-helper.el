@@ -25,7 +25,10 @@
   (f-expand "files-no-directive" cask-test/sandbox-path))
 
 (defmacro with-sandbox (&rest body)
-  `(let ((default-directory cask-test/sandbox-path))
+  `(let ((default-directory cask-test/sandbox-path)
+         (cask-links-file (f-expand "links" cask-test/sandbox-path)))
+     (when (f-file? cask-links-file)
+       (f-delete cask-links-file))
      (with-mock ,@body)))
 
 (defun should-be-colon-path (string)

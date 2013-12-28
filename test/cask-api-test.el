@@ -364,4 +364,117 @@
 
 ;;;; cask-clean-elc
 
+
+;;;; cask-links
+
+(ert-deftest cask-links-test/no-file ()
+  (with-sandbox
+   (let ((cask-links-file "/path/to/non/existing/links/file"))
+     (not-called f-read)
+     (should-not (cask-links)))))
+
+(ert-deftest cask-links-test/with-file-no-links ()
+  (with-sandbox
+   (cask-write-links nil)
+   (should-not (cask-links))))
+
+(ert-deftest cask-links-test/with-file-with-links ()
+  (with-sandbox
+   (let ((links '(("foo" . "/path/to/foo")
+                  ("bar" . "/path/to/bar"))))
+     (cask-write-links links)
+     (should (equal (cask-links) links)))))
+
+
+;;;; cask-link-p
+
+(ert-deftest cask-link-p-test/no-file ()
+  (with-sandbox
+   (let ((cask-links-file "/path/to/non/existing/links/file"))
+     (should-not (cask-link-p "foo")))))
+
+(ert-deftest cask-link-p-test/with-file-no-links ()
+  (with-sandbox
+   (cask-write-links nil)
+   (should-not (cask-link-p "foo"))))
+
+(ert-deftest cask-link-p-test/with-file-does-not-exist ()
+  (with-sandbox
+   (cask-write-links '(("bar" . "/path/to/bar")))
+   (should-not (cask-link-p "foo"))))
+
+(ert-deftest cask-link-p-test/with-file-exists ()
+  (with-sandbox
+   (cask-write-links '(("foo" . "/path/to/foo")))
+   (should (cask-link-p "foo"))))
+
+
+;;;; cask-link
+
+(ert-deftest cask-link-test/no-name ()
+  (with-sandbox
+   (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
+         (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+     (cask-link bundle-1)
+     (cask-link bundle-2)
+     (should (equal (cask-links) '(("bar" "/path/to/bar")
+                                   ("foo" "/path/to/foo")))))))
+
+(ert-deftest cask-link-test/with-name-has-not-been-linked ()
+  (with-sandbox
+   (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
+         (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+     (should-error (cask-link bundle-2 "foo") :type 'cask-no-such-link))))
+
+(ert-deftest cask-link-test/with-name-has-been-linked ()
+  (with-sandbox
+   (let ((emacs-version "24.3.1"))
+     (stub f-delete)
+     (mock (f-symlink "/path/to/foo" "/path/to/bar/.cask/24.3.1/elpa/foo-dev"))
+     (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
+           (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+       (cask-link bundle-1)
+       (cask-link bundle-2 "foo")))))
+
+(ert-deftest cask-link-test/with-name-delete-existing ()
+  (with-sandbox
+   (mock (f-delete) :times 2)
+   (stub f-symlink)
+   (stub f-glob => '("/path/to/foo-1" "/path/to/foo-2"))
+   (let ((bundle-1 (make-cask-bundle :name 'foo :path "/path/to/foo"))
+         (bundle-2 (make-cask-bundle :name 'bar :path "/path/to/bar")))
+     (cask-link bundle-1)
+     (cask-link bundle-2 "foo"))))
+
+
+;;;; cask-link-delete
+
+(ert-deftest cask-link-delete-test/no-file ()
+  (with-sandbox
+   (let ((cask-links-file "/path/to/non/existing/links/file"))
+     (should-error (cask-link-delete '("foo")) :type 'cask-no-such-link)
+     (should-not (f-file? cask-links-file)))))
+
+(ert-deftest cask-link-delete-test/with-file-no-link ()
+  (with-sandbox
+   (cask-write-links '(("foo" . "/path/to/foo")))
+   (should-error (cask-link-delete '("bar")) :type 'cask-no-such-link)))
+
+(ert-deftest cask-link-delete-test/with-file-single-link ()
+  (with-sandbox
+   (cask-write-links '(("foo" . "/path/to/foo")))
+   (should (cask-link-p "foo"))
+   (cask-link-delete '("foo"))
+   (should-not (cask-link-p "foo"))))
+
+(ert-deftest cask-link-delete-test/with-file-multiple-links ()
+  (with-sandbox
+   (cask-write-links '(("foo" . "/path/to/foo")
+                       ("bar" . "/path/to/bar")))
+   (should (cask-link-p "foo"))
+   (should (cask-link-p "bar"))
+   (cask-link-delete '("foo" "bar"))
+   (should-not (cask-link-p "foo"))
+   (should-not (cask-link-p "bar"))))
+
 ;;; cask-api-test.el ends here
