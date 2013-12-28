@@ -53,6 +53,8 @@
 (require 'cl-lib)
 (require 'package-build)
 
+(setq package-build-verbose nil)
+
 (eval-and-compile
   (defun cask-resource-path (name)
     "Get the path of a Cask resource with NAME."
