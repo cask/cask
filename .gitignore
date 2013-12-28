@@ -1,4 +1,4 @@
-tmp
-.cask
 *.elc
+/.cask
 /features/sandbox
+/servant/tmp
