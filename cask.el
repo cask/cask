@@ -51,6 +51,7 @@
 (require 'dash)
 (require 'epl)
 (require 'cl-lib)
+(require 'package-build)
 
 (eval-and-compile
   (defun cask-resource-path (name)
@@ -158,6 +159,11 @@ Slots:
 
 
 ;;;; Internal functions
+
+(defun cask-expand-files (path &optional patterns)
+  "Expand absolute files relative to PATH list of PATTERNS."
+  (--map (f-expand it path)
+         (pb/expand-source-file-list path `(:files ,patterns))))
 
 (defun cask-find-unbalanced-parenthesis (bundle)
   (with-temp-buffer
@@ -300,7 +306,7 @@ SCOPE may be nil or :development."
          (cask-add-dependency bundle name version scope)))
       (files
        (cl-destructuring-bind (_ &rest args) form
-         (let ((files (-flatten (--map (f-glob it (cask-bundle-path bundle)) args))))
+         (let ((files (cask-expand-files (cask-bundle-path bundle) args)))
            (setf (cask-bundle-files bundle) files))))
       (development
        (cl-destructuring-bind (_ . body) form
@@ -475,7 +481,9 @@ Return value is a list of `cask-dependency' objects."
 
 (defun cask-files (bundle)
   "Return list of BUNDLE files with absolute path."
-  (cask-with-file bundle (cask-bundle-files bundle)))
+  (cask-with-file bundle
+    (or (cask-bundle-files bundle)
+        (cask-expand-files (cask-bundle-path bundle)))))
 
 (defun cask-add-dependency (bundle name version &optional scope)
   "Add to BUNDLE the dependency NAME with VERSION in SCOPE.

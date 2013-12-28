@@ -12,8 +12,16 @@ Feature: Files
     Given this Cask file:
       """
       """
+    When I create a file called "files.el"
+    And I create a file called "files-core.el"
+    And I create a file called "files-interactive.el"
     When I run cask "files"
-    Then I should not see any output
+    Then I should see command output:
+      """
+      files-core.el
+      files-interactive.el
+      files.el
+      """
 
   Scenario: With files directive
     When I create a file called "files.el"
