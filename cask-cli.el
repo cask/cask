@@ -181,9 +181,11 @@ will be for an Emacs package."
     (princ description)
     (princ "\n")))
 
-(defun cask-cli/help ()
-  "Display usage information."
-  (commander-print-usage-and-exit))
+(defun cask-cli/help (&optional command-name)
+  "Display usage information or documentation for COMMAND-NAME."
+  (if command-name
+      (commander-print-usage-for-and-exit command-name)
+    (commander-print-usage-and-exit)))
 
 (defun cask-cli/load-path ()
   "Print `load-path' for all packages and dependencies.
@@ -312,7 +314,7 @@ Commands:
  (command "version" cask-cli/version)
  (command "list" cask-cli/list)
  (command "info" cask-cli/info)
- (command "help" cask-cli/help)
+ (command "help [command]" cask-cli/help)
  (command "load-path" cask-cli/load-path)
  (command "exec-path" cask-cli/exec-path)
  (command "path" cask-cli/exec-path)
@@ -324,7 +326,7 @@ Commands:
  (command "link [*]" cask-cli/link)
 
  (option "--version" cask-cli/cask-version)
- (option "-h, --help" cask-cli/help)
+ (option "-h [command], --help [command]" cask-cli/help)
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path))
