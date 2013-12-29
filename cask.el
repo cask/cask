@@ -547,7 +547,11 @@ link, as a string and the value is the absolute path to the link."
     (read (f-read cask-links-file 'utf-8))))
 
 (defun cask-link-p (name)
-  "Return true if link with NAME exists, false otherwise."
+  "Return true if link with NAME exists, false otherwise.
+
+NAME can be either a symbol or a string."
+  (if (symbolp name)
+      (setq name (symbol-name name)))
   (-contains? (-map 'car (cask-links)) name))
 
 (defun cask-link (bundle &optional name)

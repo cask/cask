@@ -408,6 +408,11 @@
    (cask-write-links '(("foo" . "/path/to/foo")))
    (should (cask-link-p "foo"))))
 
+(ert-deftest cask-link-p-test/name-as-symbol ()
+  (with-sandbox
+   (cask-write-links '(("foo" . "/path/to/foo")))
+   (should (cask-link-p 'foo))))
+
 
 ;;;; cask-link
 
