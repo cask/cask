@@ -247,16 +247,27 @@ the one fetched from the Elpa mirror.  Now you add the desired
 function to f.el and use your library to try it out.
 
 COMMAND-OR-NAME can be one of: delete, list a link name or nothing.
-ARGS are a list of link names, sent to the delete command.
+ARGS are arguments that are sent to some of the commands.  For
+example, the first element in ARGS is used to delete a local link for
+the delete command.
 
-Examples:
+Commands:
 
- cask link     # Add current project as a link.
- cask link f   # Add local link to f.
- cask delete f # Delete link f.
- cask list     # List all links."
+ $ cask link list
+
+  List all available links.
+
+ $ cask link [name]
+
+  If no NAME, add the current project as a link.  If NAME, add
+  local symlink to the link with NAME.
+
+ $ cask link delete [name]
+
+  If no NAME, delete the current project as a link.  If Name,
+  delete the local symlink to the link with NAME."
   (cond ((string= command-or-name "delete")
-         (cask-link-delete args))
+         (cask-link-delete (cask-cli--bundle) (car args)))
         ((string= command-or-name "list")
          (cask-cli--print-table (cask-links)))
         ((null command-or-name)

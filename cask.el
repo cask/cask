@@ -563,10 +563,7 @@ NAME is not specified, add the current project as a link."
     (if name
         (-if-let (source (cadr (--first (string= (car it) name) (cask-links))))
             (progn
-              (-each
-               (f-glob (concat name "-*") (cask-elpa-dir bundle))
-               (lambda (path)
-                 (f-delete path 'force)))
+              (cask-link-delete bundle name)
               (f-symlink source (f-expand (concat name "-dev") (cask-elpa-dir bundle))))
           (signal 'cask-no-such-link (list name)))
       (let ((name (cask-bundle-name bundle))
@@ -574,13 +571,21 @@ NAME is not specified, add the current project as a link."
             (links (cask-links)))
         (cask-write-links (push (list (symbol-name name) path) links))))))
 
-(defun cask-link-delete (names)
-  "Delete all links in NAMES."
-  (-each names
-         (lambda (name)
-           (if (cask-link-p name)
-               (cask-write-links (--remove (string= name (car it)) (cask-links)))
-             (signal 'cask-no-such-link (list name))))))
+(defun cask-link-delete (bundle &optional name)
+  "Delete BUNDLE as link or BUNDLE link.
+
+If NAME is specified, delete local link with NAME.  If no name,
+delete current project as link."
+  (cask-with-package bundle
+    (if name
+        (-each
+         (f-glob (concat name "-*") (cask-elpa-dir bundle))
+         (lambda (path)
+           (f-delete path 'force)))
+      (let ((name (cask-bundle-name bundle)))
+        (if (cask-link-p name)
+            (cask-write-links (--remove (string= name (car it)) (cask-links)))
+          (signal 'cask-no-such-link (list name)))))))
 
 (provide 'cask)
 
