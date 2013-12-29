@@ -442,7 +442,7 @@
    (mock (f-symlink) :times 1)
    (stub f-glob => '("/path/to/foo-1" "/path/to/foo-2"))
    (let ((bundle-1 (cask-setup cask-test/link-1-path))
-         (bundle-2 (cask-setup cask-test/link-1-path)))
+         (bundle-2 (cask-setup cask-test/link-2-path)))
      (cask-link bundle-1)
      (cask-link bundle-2 "link-1"))))
 
