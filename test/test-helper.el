@@ -35,6 +35,11 @@
          (cask-links-file (f-expand "links" cask-test/sandbox-path)))
      (when (f-file? cask-links-file)
        (f-delete cask-links-file))
+     (-each (f-directories cask-test/sandbox-path)
+            (lambda (path)
+              (let ((cask-path (f-expand ".cask" path)))
+                (when (f-dir? cask-path)
+                  (f-delete cask-path 'force)))))
      (with-mock ,@body)))
 
 (defun should-be-colon-path (string)

@@ -49,6 +49,9 @@
 (defvar cask-cli--path default-directory
   "Cask commands will execute in this path.")
 
+(defvar cask-cli--local nil
+  "True if --local option specified, false otherwise.")
+
 (defvar cask-cli--bundle-cache nil)
 
 (defun cask-cli--bundle ()
@@ -255,9 +258,10 @@ the delete command.
 
 Commands:
 
- $ cask link list
+ $ cask link list [--local]
 
-  List all available links.
+  List all available links.  If --local is specified, list the
+  links for the current project.
 
  $ cask link [name]
 
@@ -271,7 +275,8 @@ Commands:
   (cond ((string= command-or-name "delete")
          (cask-link-delete (cask-cli--bundle) (car args)))
         ((string= command-or-name "list")
-         (cask-cli--print-table (cask-links)))
+         (cask-cli--print-table
+          (cask-links (and cask-cli--local (cask-cli--bundle)))))
         ((null command-or-name)
          (cask-link (cask-cli--bundle)))
         (t (cask-link (cask-cli--bundle) command-or-name))))
@@ -295,6 +300,12 @@ Commands:
 (defun cask-cli/debug ()
   "Turn on debug output."
   (setq debug-on-error t))
+
+(defun cask-cli/local ()
+  "Run in local mode.
+
+For more information see link command."
+  (setq cask-cli--local t))
 
 
 ;;;; Commander schedule
@@ -329,7 +340,8 @@ Commands:
  (option "-h [command], --help [command]" cask-cli/help)
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
- (option "--path <path>" cask-cli/set-path))
+ (option "--path <path>" cask-cli/set-path)
+ (option "--local" cask-cli/local))
 
 (provide 'cask-cli)
 

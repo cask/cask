@@ -367,23 +367,57 @@
 
 ;;;; cask-links
 
-(ert-deftest cask-links-test/no-file ()
+(ert-deftest cask-links-test/no-bundle-no-file ()
   (with-sandbox
    (let ((cask-links-file "/path/to/non/existing/links/file"))
      (not-called f-read)
      (should-not (cask-links)))))
 
-(ert-deftest cask-links-test/with-file-no-links ()
+(ert-deftest cask-links-test/no-bundle-with-file-no-links ()
   (with-sandbox
    (cask-write-links nil)
    (should-not (cask-links))))
 
-(ert-deftest cask-links-test/with-file-with-links ()
+(ert-deftest cask-links-test/no-bundle-with-file-with-links ()
   (with-sandbox
    (let ((links '(("foo" . "/path/to/foo")
                   ("bar" . "/path/to/bar"))))
      (cask-write-links links)
      (should (equal (cask-links) links)))))
+
+(ert-deftest cask-links-test/with-bundle ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (let ((default-directory cask-test/package-path))
+       (f-mkdir ".cask" emacs-version "elpa")
+       (f-symlink cask-test/package-path (f-join ".cask" emacs-version "elpa" "foo-1.2.3"))
+       (f-symlink cask-test/package-path (f-join ".cask" emacs-version "elpa" "bar-dev")))
+     (should (equal (cask-links bundle) `(("bar" ,cask-test/package-path)))))))
+
+(ert-deftest cask-links-test/with-bundle-not-links ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (let ((default-directory cask-test/package-path))
+       (f-mkdir ".cask" emacs-version "elpa" "foo-1.2.3")
+       (f-mkdir ".cask" emacs-version "elpa" "bar-3.2.1"))
+     (should-not (cask-links bundle)))))
+
+(ert-deftest cask-links-test/with-bundle-no-entries ()
+  (with-sandbox
+   (f-mkdir cask-test/package-path ".cask" emacs-version "elpa")
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (should-not (cask-links bundle)))))
+
+(ert-deftest cask-links-test/with-bundle-no-entries ()
+  (with-sandbox
+   (f-mkdir cask-test/package-path ".cask" emacs-version "elpa")
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (should-not (cask-links bundle)))))
+
+(ert-deftest cask-links-test/with-bundle-no-cask-file ()
+  (with-sandbox
+   (let ((bundle (cask-setup cask-test/no-cask-path)))
+     (should-error (cask-links bundle) :type 'cask-no-cask-file))))
 
 
 ;;;; cask-link-p

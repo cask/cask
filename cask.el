@@ -159,6 +159,9 @@ Slots:
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
 
+(defconst cask-link-suffix "-dev"
+  "Append link name with this, to a simulate version.")
+
 
 ;;;; Internal functions
 
@@ -538,13 +541,25 @@ URL is the url to the mirror."
                (when (f-file? (concat path "c"))
                  (f-delete (concat path "c"))))))))
 
-(defun cask-links ()
-  "Return all links.
+(defun cask-links (&optional bundle)
+  "Return all links or BUNDLE links if specified.
+
+If BUNDLE is specified return all links for this project.  If not,
+return a list of all available links.
 
 The list is a list of alist's where the key is the name of the
 link, as a string and the value is the absolute path to the link."
-  (when (f-file? cask-links-file)
-    (read (f-read cask-links-file 'utf-8))))
+  (if bundle
+      (cask-with-file bundle
+        (-map
+         (lambda (file)
+           (list (s-chop-suffix cask-link-suffix (f-filename file))
+                 (f-canonical file)))
+         (f-entries (cask-elpa-dir bundle)
+                    (lambda (path)
+                      (and (f-symlink? path) (s-ends-with? cask-link-suffix path))))))
+    (when (f-file? cask-links-file)
+      (read (f-read cask-links-file 'utf-8)))))
 
 (defun cask-link-p (name)
   "Return true if link with NAME exists, false otherwise.
@@ -564,7 +579,8 @@ NAME is not specified, add the current project as a link."
         (-if-let (source (cadr (--first (string= (car it) name) (cask-links))))
             (progn
               (cask-link-delete bundle name)
-              (f-symlink source (f-expand (concat name "-dev") (cask-elpa-dir bundle))))
+              (let ((target (f-expand (concat name cask-link-suffix) (cask-elpa-dir bundle))))
+                (f-symlink source target)))
           (signal 'cask-no-such-link (list name)))
       (let ((name (cask-bundle-name bundle))
             (path (cask-bundle-path bundle))
