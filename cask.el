@@ -143,9 +143,6 @@ Slots:
 `column' Column number on the `line'."
   line column)
 
-(defconst cask-filename "Cask"
-  "Name of the `Cask` file.")
-
 (defvar cask-source-mapping
   '((gnu         . "http://elpa.gnu.org/packages/")
     (melpa       . "http://melpa.milkbox.net/packages/")
@@ -158,6 +155,9 @@ Slots:
 (defvar cask-links-file
   (f-expand (format ".cask/%s/links" emacs-version) user-emacs-directory)
   "Path to file where links are stored.")
+
+(defconst cask-filename "Cask"
+  "Name of the `Cask` file.")
 
 
 ;;;; Internal functions
