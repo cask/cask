@@ -119,6 +119,10 @@ already is installed, it will not be installed again."
        (error "Dependency %s failed to install: %s" dependency message)))))
 
 (defun cask-cli/upgrade ()
+  "Deprecated in favor of upgrade-cask."
+  (error "The upgrade command is deprecated in favor of upgrade-cask"))
+
+(defun cask-cli/upgrade-cask ()
   "Upgrade Cask itself and its dependencies.
 
 This command requires that Cask is installed using Git and that
@@ -320,6 +324,7 @@ For more information see link command."
  (command "install" cask-cli/install)
  (command "update" cask-cli/update)
  (command "upgrade" cask-cli/upgrade)
+ (command "upgrade-cask" cask-cli/upgrade-cask)
  (command "exec [*]" cask-cli/exec)
  (command "init" cask-cli/init)
  (command "version" cask-cli/version)
