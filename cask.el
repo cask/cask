@@ -246,11 +246,11 @@ Return all directives in the Cask file as list."
 (defmacro cask-use-environment (bundle &rest body)
   "Use environment specified by BUNDLE and yield BODY."
   (declare (indent 1) (debug t))
-  `(let ((sources (cask-bundle-sources bundle)))
+  `(let ((sources (cask-bundle-sources ,bundle)))
      (setq package-archives nil)        ; TODO: Should call
                                         ; `epl-reset' here, but it
                                         ; does not work as expected.
-     (epl-change-package-dir (cask-elpa-dir bundle))
+     (epl-change-package-dir (cask-elpa-dir ,bundle))
      (-each sources
             (lambda (source)
               (epl-add-archive (cask-source-name source)
@@ -264,9 +264,9 @@ Return all directives in the Cask file as list."
 
 If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
   (declare (indent 1) (debug t))
-  `(if (f-file? (cask-file bundle))
+  `(if (f-file? (cask-file ,bundle))
        (progn ,@body)
-     (signal 'cask-no-cask-file (list (cask-file bundle)))))
+     (signal 'cask-no-cask-file (list (cask-file ,bundle)))))
 
 (defmacro cask-with-package (bundle &rest body)
   "If BUNDLE is a package, yield BODY.
@@ -275,9 +275,9 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   (declare (indent 1) (debug t))
   `(cask-with-file bundle
      (if (and
-          (cask-bundle-name bundle)
-          (cask-bundle-version bundle)
-          (cask-bundle-description bundle))
+          (cask-bundle-name ,bundle)
+          (cask-bundle-version ,bundle)
+          (cask-bundle-description ,bundle))
          (progn ,@body)
        (signal 'cask-not-a-package nil))))
 
