@@ -497,7 +497,7 @@ in the list are relative to the path."
   (cask-with-file bundle
     (let ((path (cask-bundle-path bundle))
           (patterns (or (cask-bundle-patterns bundle) package-build-default-files-spec)))
-      (-map 'car (package-build-expand-file-specs path patterns)))))
+      (-map 'car (ignore-errors (package-build-expand-file-specs path patterns))))))
 
 (defun cask-add-dependency (bundle name version &optional scope)
   "Add to BUNDLE the dependency NAME with VERSION in SCOPE.
