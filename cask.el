@@ -344,7 +344,10 @@ This function return a `cask-bundle' object."
 
 (defun cask-initialize (&optional project-path)
   "Initialize packages under PROJECT-PATH (defaults to `user-emacs-directory').
-Setup `package-user-dir' appropriately and then call `package-initialize'."
+
+Setup `package-user-dir' appropriately and then call `package-initialize'.
+
+This function return a `cask-bundle' object."
   (let ((bundle (cask-setup (or project-path user-emacs-directory))))
     (epl-initialize)
     bundle))
