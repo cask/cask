@@ -156,6 +156,9 @@ Slots:
 (defconst cask-link-suffix "-dev"
   "Append link name with this, to a simulate version.")
 
+(defconst cask-dist-path "dist"
+  "Name of default target directory for building packages.")
+
 
 ;;;; Internal functions
 
@@ -589,6 +592,23 @@ TARGET."
       (if (f-symlink? link)
           (f-delete link)
         (error "Package %s not linked" name)))))
+
+(defun cask-package (bundle &optional target-dir)
+  "Build an Elpa package of BUNDLE.
+
+Put package in TARGET-DIR if specified.  If not specified, put in
+a directory specified by `cask-dist-path' in the BUNDLE path."
+  (cask-with-package bundle
+    (let ((name (symbol-name (cask-bundle-name bundle)))
+          (version (cask-bundle-version bundle))
+          (patterns (or (cask-bundle-patterns bundle)
+                        package-build-default-files-spec))
+          (path (cask-bundle-path bundle)))
+      (unless target-dir
+        (setq target-dir (f-expand cask-dist-path path)))
+      (unless (f-dir? target-dir)
+        (f-mkdir target-dir))
+      (package-build-package name version patterns path target-dir))))
 
 (provide 'cask)
 

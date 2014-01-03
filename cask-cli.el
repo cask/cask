@@ -275,6 +275,10 @@ Commands:
           (cask-links (cask-cli--bundle))))
         (t (cask-link (cask-cli--bundle) command-or-name arg))))
 
+(defun cask-cli/package (&optional target-dir)
+  "Build package and put in TARGET-DIR or dist if not specified."
+  (cask-package (cask-cli--bundle) target-dir))
+
 
 ;;;; Options
 
@@ -324,6 +328,7 @@ Commands:
  (command "build" cask-cli/build)
  (command "clean-elc" cask-cli/clean-elc)
  (command "link [*]" cask-cli/link)
+ (command "package [target-dir]" cask-cli/package)
 
  (option "--version" cask-cli/cask-version)
  (option "-h [command], --help [command]" cask-cli/help)

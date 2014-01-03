@@ -428,4 +428,7 @@
    (let ((bundle (cask-setup cask-test/link-1-path)))
      (cask-link-delete bundle "foo"))))
 
+
+;;;; cask-package
+
 ;;; cask-api-test.el ends here
