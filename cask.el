@@ -334,7 +334,9 @@ SCOPE may be nil or :development."
 ;;;; Public API
 
 (defun cask-setup (project-path)
-  "Setup cask for project at PROJECT-PATH."
+  "Setup cask for project at PROJECT-PATH.
+
+This function return a `cask-bundle' object."
   (let ((bundle (make-cask-bundle :path (f-long project-path))))
     (when (f-file? (cask-file bundle))
       (condition-case err
