@@ -288,17 +288,13 @@
   (with-sandbox
    (let ((bundle (cask-setup cask-test/files-no-directive-path)))
      (should (equal (cask-files bundle)
-                    (--map
-                     (f-expand it cask-test/files-no-directive-path)
-                     '("no-directive-core.el" "no-directive.el")))))))
+                    '("no-directive-core.el" "no-directive.el"))))))
 
 (ert-deftest cask-files-test/with-directive ()
   (with-sandbox
    (let ((bundle (cask-setup cask-test/files-directive-path)))
      (should (equal (cask-files bundle)
-                    (--map
-                     (f-expand it cask-test/files-directive-path)
-                     '("directive-core.el" "directive.el" "bin")))))))
+                    '("directive-core.el" "directive.el" "bin"))))))
 
 
 ;;;; cask-add-dependency

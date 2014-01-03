@@ -125,12 +125,11 @@ dependencies that are required for local development.
 
 `path' Path to project root directory.
 
-`files' List of files specified from expanding arguments to
-files-directive. The list contains absolute paths.
+`patterns' List of files patterns.
 
 `sources' List of `cask-source' objects."
   name version description runtime-dependencies
-  development-dependencies path files sources)
+  development-dependencies path patterns sources)
 
 (cl-defstruct cask-source-position
   "Structure for a position in a Cask-file.
@@ -159,12 +158,6 @@ Slots:
 
 
 ;;;; Internal functions
-
-(defun cask-expand-files (path &optional patterns)
-  "Expand absolute files relative to PATH list of PATTERNS."
-  (--map (f-expand it path)
-         (ignore-errors
-           (pb/expand-source-file-list path `(:files ,patterns)))))
 
 (defun cask-find-unbalanced-parenthesis (bundle)
   (with-temp-buffer
@@ -306,9 +299,8 @@ SCOPE may be nil or :development."
        (cl-destructuring-bind (_ name &optional version) form
          (cask-add-dependency bundle name version scope)))
       (files
-       (cl-destructuring-bind (_ &rest args) form
-         (let ((files (cask-expand-files (cask-bundle-path bundle) args)))
-           (setf (cask-bundle-files bundle) files))))
+       (cl-destructuring-bind (_ &rest patterns) form
+         (setf (cask-bundle-patterns bundle) patterns)))
       (development
        (cl-destructuring-bind (_ . body) form
          (cask-eval bundle body :development)))
@@ -495,10 +487,14 @@ Return value is a list of `cask-dependency' objects."
   (f-expand "Cask" (cask-path bundle)))
 
 (defun cask-files (bundle)
-  "Return list of BUNDLE files with absolute path."
+  "Return BUNDLE files list.
+
+This is done by expanding the patterns in the BUNDLE path.  Files
+in the list are relative to the path."
   (cask-with-file bundle
-    (or (cask-bundle-files bundle)
-        (cask-expand-files (cask-bundle-path bundle)))))
+    (let ((path (cask-bundle-path bundle))
+          (patterns (or (cask-bundle-patterns bundle) package-build-default-files-spec)))
+      (-map 'car (package-build-expand-file-specs path patterns)))))
 
 (defun cask-add-dependency (bundle name version &optional scope)
   "Add to BUNDLE the dependency NAME with VERSION in SCOPE.

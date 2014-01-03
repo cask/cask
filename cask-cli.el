@@ -225,7 +225,7 @@ installation."
 If no files directive or no files, do nothing."
   (-each (cask-files (cask-cli--bundle))
          (lambda (file)
-           (princ (concat (f-relative file cask-cli--path) "\n")))))
+           (princ (concat file "\n")))))
 
 (defun cask-cli/build ()
   "Build all Elisp files in the files directive."
