@@ -49,9 +49,6 @@
 (defvar cask-cli--path default-directory
   "Cask commands will execute in this path.")
 
-(defvar cask-cli--local nil
-  "True if --local option specified, false otherwise.")
-
 (defvar cask-cli--bundle-cache nil)
 
 (defun cask-cli--bundle ()
@@ -238,7 +235,7 @@ If no files directive or no files, do nothing."
   "Remove all byte compiled Elisp files in the files directive."
   (cask-clean-elc (cask-cli--bundle)))
 
-(defun cask-cli/link (&optional command-or-name &rest args)
+(defun cask-cli/link (&optional command-or-name arg)
   "Manage links.
 
 A link is just that, a symbolic link.  The purpose of the link
@@ -250,40 +247,33 @@ depends on f.el. Consider what happens if you need to extend f.el
 with some function that your package requires.
 
 With the link command, you can checkout f.el locally, add it as a
-link and then link it in your local package.  That means that when
-you require f.el, you will require the local package instead of
-the one fetched from the Elpa mirror.  Now you add the desired
-function to f.el and use your library to try it out.
+link in your local package.  That means that when you require
+f.el, you will require the local package instead of the one
+fetched from the Elpa mirror.  Now you add the desired function
+to f.el and use your library to try it out.
 
-COMMAND-OR-NAME can be one of: delete, list a link name or nothing.
-ARGS are arguments that are sent to some of the commands.  For
-example, the first element in ARGS is used to delete a local link for
-the delete command.
+COMMAND-OR-NAME can be one of: delete, list a link name.
+ARG is sent to some of the commands.
 
 Commands:
 
- $ cask link list [--local]
+ $ cask link list
 
-  List all available links.  If --local is specified, list the
-  links for the current project.
+  List all project links.
 
- $ cask link [name]
+ $ cask link name path
 
-  If no NAME, add the current project as a link.  If NAME, add
-  local symlink to the link with NAME.
+  Add local link with NAME to PATH.
 
- $ cask link delete [name]
+ $ cask link delete name
 
-  If no NAME, delete the current project as a link.  If Name,
-  delete the local symlink to the link with NAME."
+  Delete local link with NAME."
   (cond ((string= command-or-name "delete")
-         (cask-link-delete (cask-cli--bundle) (car args)))
+         (cask-link-delete (cask-cli--bundle) arg))
         ((string= command-or-name "list")
          (cask-cli--print-table
-          (cask-links (and cask-cli--local (cask-cli--bundle)))))
-        ((null command-or-name)
-         (cask-link (cask-cli--bundle)))
-        (t (cask-link (cask-cli--bundle) command-or-name))))
+          (cask-links (cask-cli--bundle))))
+        (t (cask-link (cask-cli--bundle) command-or-name arg))))
 
 
 ;;;; Options
@@ -304,12 +294,6 @@ Commands:
 (defun cask-cli/debug ()
   "Turn on debug output."
   (setq debug-on-error t))
-
-(defun cask-cli/local ()
-  "Run in local mode.
-
-For more information see link command."
-  (setq cask-cli--local t))
 
 
 ;;;; Commander schedule
@@ -345,8 +329,7 @@ For more information see link command."
  (option "-h [command], --help [command]" cask-cli/help)
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
- (option "--path <path>" cask-cli/set-path)
- (option "--local" cask-cli/local))
+ (option "--path <path>" cask-cli/set-path))
 
 (provide 'cask-cli)
 

@@ -367,25 +367,7 @@
 
 ;;;; cask-links
 
-(ert-deftest cask-links-test/no-bundle-no-file ()
-  (with-sandbox
-   (let ((cask-links-file "/path/to/non/existing/links/file"))
-     (not-called f-read)
-     (should-not (cask-links)))))
-
-(ert-deftest cask-links-test/no-bundle-with-file-no-links ()
-  (with-sandbox
-   (cask-write-links nil)
-   (should-not (cask-links))))
-
-(ert-deftest cask-links-test/no-bundle-with-file-with-links ()
-  (with-sandbox
-   (let ((links '(("foo" . "/path/to/foo")
-                  ("bar" . "/path/to/bar"))))
-     (cask-write-links links)
-     (should (equal (cask-links) links)))))
-
-(ert-deftest cask-links-test/with-bundle ()
+(ert-deftest cask-links-test/with-links ()
   (with-sandbox
    (let ((bundle (cask-setup cask-test/package-path)))
      (let ((default-directory cask-test/package-path))
@@ -394,7 +376,7 @@
        (f-symlink cask-test/package-path (f-join ".cask" emacs-version "elpa" "bar-dev")))
      (should (equal (cask-links bundle) `(("bar" ,cask-test/package-path)))))))
 
-(ert-deftest cask-links-test/with-bundle-not-links ()
+(ert-deftest cask-links-test/no-links ()
   (with-sandbox
    (let ((bundle (cask-setup cask-test/package-path)))
      (let ((default-directory cask-test/package-path))
@@ -402,111 +384,52 @@
        (f-mkdir ".cask" emacs-version "elpa" "bar-3.2.1"))
      (should-not (cask-links bundle)))))
 
-(ert-deftest cask-links-test/with-bundle-no-entries ()
+(ert-deftest cask-links-test/no-entries ()
   (with-sandbox
    (f-mkdir cask-test/package-path ".cask" emacs-version "elpa")
    (let ((bundle (cask-setup cask-test/package-path)))
      (should-not (cask-links bundle)))))
-
-(ert-deftest cask-links-test/with-bundle-no-entries ()
-  (with-sandbox
-   (f-mkdir cask-test/package-path ".cask" emacs-version "elpa")
-   (let ((bundle (cask-setup cask-test/package-path)))
-     (should-not (cask-links bundle)))))
-
-(ert-deftest cask-links-test/with-bundle-no-cask-file ()
-  (with-sandbox
-   (let ((bundle (cask-setup cask-test/no-cask-path)))
-     (should-error (cask-links bundle) :type 'cask-no-cask-file))))
 
 
-;;;; cask-link-p
+;;;; cask-link-path
 
-(ert-deftest cask-link-p-test/no-file ()
+(ert-deftest cask-link-path-test ()
   (with-sandbox
-   (let ((cask-links-file "/path/to/non/existing/links/file"))
-     (should-not (cask-link-p "foo")))))
-
-(ert-deftest cask-link-p-test/with-file-no-links ()
-  (with-sandbox
-   (cask-write-links nil)
-   (should-not (cask-link-p "foo"))))
-
-(ert-deftest cask-link-p-test/with-file-does-not-exist ()
-  (with-sandbox
-   (cask-write-links '(("bar" . "/path/to/bar")))
-   (should-not (cask-link-p "foo"))))
-
-(ert-deftest cask-link-p-test/with-file-exists ()
-  (with-sandbox
-   (cask-write-links '(("foo" . "/path/to/foo")))
-   (should (cask-link-p "foo"))))
-
-(ert-deftest cask-link-p-test/name-as-symbol ()
-  (with-sandbox
-   (cask-write-links '(("foo" . "/path/to/foo")))
-   (should (cask-link-p 'foo))))
+   (let ((bundle (cask-setup cask-test/package-path)))
+     (should (string= (cask-link-path bundle "foo")
+                      (f-join cask-test/package-path ".cask" emacs-version "elpa" "foo-dev"))))))
 
 
 ;;;; cask-link
 
-(ert-deftest cask-link-test/no-name ()
+(ert-deftest cask-link-test/create-link ()
   (with-sandbox
-   (let ((bundle-1 (cask-setup cask-test/link-1-path))
-         (bundle-2 (cask-setup cask-test/link-2-path)))
-     (cask-link bundle-1)
-     (cask-link bundle-2)
-     (should (equal (cask-links) `(("link-2" ,cask-test/link-2-path)
-                                   ("link-1" ,cask-test/link-1-path)))))))
-
-(ert-deftest cask-link-test/with-name-has-not-been-linked ()
-  (with-sandbox
-   (let ((bundle-1 (cask-setup cask-test/link-1-path))
-         (bundle-2 (cask-setup cask-test/link-2-path)))
-     (should-error (cask-link bundle-2 "foo") :type 'cask-no-such-link))))
-
-(ert-deftest cask-link-test/with-name-has-been-linked ()
-  (with-sandbox
-   (let ((emacs-version "24.3.1"))
-     (stub f-delete)
-     (mock (f-symlink) :times 1)
-     (let ((bundle-1 (cask-setup cask-test/link-1-path))
-           (bundle-2 (cask-setup cask-test/link-2-path)))
-       (cask-link bundle-1)
-       (cask-link bundle-2 "link-1")))))
-
-(ert-deftest cask-link-test/with-name-delete-existing ()
-  (with-sandbox
-   (mock (f-delete) :times 2)
+   (stub cask-has-dependency => t)
+   (stub f-dir? => t)
+   (stub f-symlink?)
    (mock (f-symlink) :times 1)
-   (stub f-glob => '("/path/to/foo-1" "/path/to/foo-2"))
-   (let ((bundle-1 (cask-setup cask-test/link-1-path))
-         (bundle-2 (cask-setup cask-test/link-2-path)))
-     (cask-link bundle-1)
-     (cask-link bundle-2 "link-1"))))
+   (let ((bundle (cask-setup cask-test/link-1-path)))
+     (cask-link bundle "foo" "/path/to/foo"))))
+
+(ert-deftest cask-link-test/delete-existing-link ()
+  (with-sandbox
+   (stub cask-has-dependency => t)
+   (stub f-dir? => t)
+   (stub f-symlink)
+   (stub f-symlink? => t)
+   (mock (f-delete) :times 1)
+   (let ((bundle (cask-setup cask-test/link-1-path)))
+     (cask-link bundle "foo" "/path/to/foo"))))
 
 
 ;;;; cask-link-delete
 
-(ert-deftest cask-link-delete-test/with-name ()
+(ert-deftest cask-link-delete-test ()
   (with-sandbox
-   (stub f-glob => '("/path/to/link-1" "/path/to/link-2"))
-   (mock (f-delete) :times 2)
+   (stub cask-has-dependency => t)
+   (stub f-symlink? => t)
+   (mock (f-delete) :times 1)
    (let ((bundle (cask-setup cask-test/link-1-path)))
      (cask-link-delete bundle "foo"))))
-
-(ert-deftest cask-link-delete-test/no-name-link-exists ()
-  (with-sandbox
-   (let ((bundle (cask-setup cask-test/link-1-path)))
-     (cask-link bundle)
-     (should (cask-link-p "link-1"))
-     (cask-link-delete bundle)
-     (should-not (cask-link-p "link-1")))))
-
-(ert-deftest cask-link-delete-test/no-name-link-does-not-exist ()
-  (with-sandbox
-   (let ((bundle (cask-setup cask-test/link-1-path)))
-     (should-not (cask-link-p "link-1"))
-     (should-error (cask-link-delete bundle) :type 'cask-no-such-link))))
 
 ;;; cask-api-test.el ends here

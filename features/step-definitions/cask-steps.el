@@ -38,7 +38,10 @@
     (s-replace "{{EMACS-VERSION}}" emacs-version)
     (s-replace "{{EMACS}}" (getenv "EMACS"))
     (s-replace "{{PROJECTS-PATH}}" cask-sandbox-path)
-    (s-replace "{{PROJECT-PATH}}" cask-current-project)))
+    (s-replace "{{PROJECT-PATH}}" cask-current-project)
+    (s-replace "{{LINK-FOO}}" cask-link-foo-path)
+    (s-replace "{{LINK-NEW-FOO}}" cask-link-new-foo-path)
+    (s-replace "{{LINK-BAR}}" cask-link-bar-path)))
 
 (Given "^this Cask file:$"
   (lambda (content)
@@ -173,6 +176,27 @@
   (lambda ()
     (should (and (string= cask-output "")
                  (string= cask-error "")))))
+
+(Then "^package \"\\([^\"]+\\)\" should be linked to \"\\([^\"]+\\)\"$"
+  (lambda (name path)
+    (should (f-same? (cask-test/template path)
+                     (f-expand (concat name "-dev") (cask-test/elpa-dir))))))
+
+
+(Then "^package \"\\([^\"]+\\)\" should not be linked$"
+  (lambda (name)
+    (should-not (f-symlink? (f-expand (concat name "-dev") (cask-test/elpa-dir))))))
+
+(Then "^I should see links:$"
+  (lambda (table)
+    (let ((head (car table))
+          (rows (cdr table))
+          (lines (-reject 's-blank? (s-lines cask-output))))
+      (-map-indexed
+       (lambda (index line)
+         (let ((row (nth index rows)))
+           (s-matches? (concat (nth 0 row) "\\s-*" (cask-test/template (nth 1 row))) line)))
+       lines))))
 
 (provide 'cask-steps)
 

@@ -22,6 +22,15 @@
 (defvar cask-bin-command
   (f-expand "cask" cask-bin-path))
 
+(defvar cask-link-foo-path
+  (f-expand "link-foo" cask-sandbox-path))
+
+(defvar cask-link-new-foo-path
+  (f-expand "link-new-foo" cask-sandbox-path))
+
+(defvar cask-link-bar-path
+  (f-expand "link-bar" cask-sandbox-path))
+
 (defvar cask-error nil)
 (defvar cask-output nil)
 (defvar cask-current-project nil)
@@ -38,7 +47,11 @@
 
  (--map
   (f-delete it t)
-  (f-directories cask-sandbox-path)))
+  (f-directories cask-sandbox-path))
+
+ (f-mkdir cask-link-foo-path)
+ (f-mkdir cask-link-new-foo-path)
+ (f-mkdir cask-link-bar-path))
 
 (Fail
  (unless (s-blank? cask-output)
