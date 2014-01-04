@@ -153,7 +153,7 @@ Slots:
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
 
-(defconst cask-link-suffix "-dev"
+(defconst cask-link-suffix "dev"
   "Append link name with this, to a simulate version.")
 
 (defconst cask-dist-path "dist"
@@ -553,17 +553,20 @@ link, as a string and the value is the absolute path to the link."
   (cask-with-file bundle
     (-map
      (lambda (file)
-       (list (s-chop-suffix cask-link-suffix (f-filename file))
-             (f-canonical file)))
-     (f-entries (cask-elpa-dir bundle)
-                (lambda (path)
-                  (and (f-symlink? path) (s-ends-with? cask-link-suffix path)))))))
+       (list (f-filename file) (f-canonical file)))
+     (f-entries (cask-elpa-dir bundle) 'f-symlink?))))
+
+(defun cask-links-path (bundle)
+  "Return path to BUNDLE links path.
+
+That is the path where the links are stored."
+  (f-expand (format ".cask/%s/links" emacs-version) (cask-bundle-path bundle)))
 
 (defun cask-link-path (bundle name)
   "Return path to link in BUNDLE with NAME.
 
 This function always return the path, even if it does not exist."
-  (f-expand (concat name cask-link-suffix) (cask-elpa-dir bundle)))
+  (f-expand (concat name "-" cask-link-suffix) (cask-links-path bundle)))
 
 (defun cask-link (bundle name source)
   "Add BUNDLE link with NAME to SOURCE.
@@ -578,6 +581,8 @@ TARGET."
       (error "Cannot link package %s, is not a dependency" name))
     (unless (f-dir? source)
       (error "Cannot create link %s to non existing path: %s" name source))
+    (unless (f-dir? (cask-links-path bundle))
+      (f-mkdir (cask-links-path bundle)))
     (let ((target (cask-link-path bundle name)))
       (when (f-symlink? target)
         (f-delete target))

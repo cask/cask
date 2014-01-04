@@ -30,6 +30,9 @@
 (defun cask-test/elpa-dir ()
   (f-expand (format ".cask/%s/elpa" emacs-version) cask-current-project))
 
+(defun cask-test/links-dir ()
+  (f-expand (format ".cask/%s/links" emacs-version) cask-current-project))
+
 (defun cask-test/create-project-file (filename content)
   (f-write content 'utf-8 (f-expand filename cask-current-project)))
 
@@ -180,8 +183,7 @@
 (Then "^package \"\\([^\"]+\\)\" should be linked to \"\\([^\"]+\\)\"$"
   (lambda (name path)
     (should (f-same? (cask-test/template path)
-                     (f-expand (concat name "-dev") (cask-test/elpa-dir))))))
-
+                     (f-expand (concat name "-dev") (cask-test/links-dir))))))
 
 (Then "^package \"\\([^\"]+\\)\" should not be linked$"
   (lambda (name)
