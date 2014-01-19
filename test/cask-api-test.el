@@ -30,6 +30,7 @@
 
 ;;; Code:
 
+
 ;;;; cask-setup
 
 (ert-deftest cask-setup-test/package ()
