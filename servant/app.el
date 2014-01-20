@@ -39,14 +39,6 @@
                       (servant-make-elnode-handler (f-join directory it)))
                 '("packages" "new-packages"))))
 
-  (global-set-key (kbd "q") (lambda ()
-                              (interactive)
-                              (elnode-stop port)
-                              (kill-emacs 0)))
-
-  (insert
-   (format "Running (fake) ELPA server on port %d... Press `q' to quit." port))
-
   (elnode-start (lambda (httpcon) (elnode-hostpath-dispatcher httpcon routes))
                 :port port :host host)
 
