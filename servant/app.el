@@ -1,4 +1,4 @@
-;;; app.el --- Cask: Stub ELPA server for integration tests  -*- lexical-binding: t; -*-
+;;; app.el --- Cask: Stub ELPA server for tests  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012, 2013 Johan Andersson
 
@@ -23,7 +23,7 @@
 
 ;;; Commentary:
 
-;; A simple stub ELPA server for Cask's integration tests.
+;; A simple stub ELPA server for Cask's tests.
 
 ;;; Code:
 
