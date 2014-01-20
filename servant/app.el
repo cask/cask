@@ -39,8 +39,11 @@
                       (servant-make-elnode-handler (f-join directory it)))
                 '("packages" "new-packages"))))
 
-  (elnode-start (lambda (httpcon) (elnode-hostpath-dispatcher httpcon routes))
-                :port port :host host)
+  (elnode-start
+   (lambda (httpcon)
+     (elnode-hostpath-dispatcher httpcon routes))
+   :port port
+   :host host)
 
   (when noninteractive
     (f-mkdir tmp-directory)
