@@ -29,7 +29,6 @@
 
 (require 'f)
 (require 'servant)
-(require 'rx)
 
 (let* ((port 9191)
        (host "127.0.0.1")
