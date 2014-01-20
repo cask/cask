@@ -1,6 +1,6 @@
 ;;; cask-cli.el --- Cask: CLI interface  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2012-2014 Johan Andersson
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
@@ -157,7 +157,7 @@ including their dependencies."
 By default, the created Cask-file will be for an Emacs
 configuration.  If the --dev option is specified, the Cask-file
 will be for an Emacs package."
-  (cask-caskify cask-cli--path cask-cli--dev-mode))
+  (cask-caskify (cask-cli--bundle) cask-cli--dev-mode))
 
 (defun cask-cli/list ()
   "List this package dependencies."

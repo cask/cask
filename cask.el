@@ -1,6 +1,6 @@
 ;;; cask.el --- Cask: Emacs dependency management made easy  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2012-2014 Johan Andersson
 ;; Copyright (C) 2013 Sebastian Wiesner
 ;; Copyright (C) 2013 Takafumi Arakaki
 
@@ -146,14 +146,13 @@ Slots:
     (melpa       . "http://melpa.milkbox.net/packages/")
     (marmalade   . "http://marmalade-repo.org/packages/")
     (SC          . "http://joseito.republika.pl/sunrise-commander/")
-    (org         . "http://orgmode.org/elpa/")
-    (cask-test   . "http://127.0.0.1:9191/packages/"))
+    (org         . "http://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
 (defconst cask-filename "Cask"
   "Name of the `Cask` file.")
 
-(defconst cask-link-suffix "dev"
+(defconst cask-link-suffix "casklink"
   "Append link name with this, to a simulate version.")
 
 (defconst cask-dist-path "dist"
@@ -241,7 +240,7 @@ Return all directives in the Cask file as list."
      (setq package-archives nil)        ; TODO: Should call
                                         ; `epl-reset' here, but it
                                         ; does not work as expected.
-     (epl-change-package-dir (cask-elpa-dir ,bundle))
+     (epl-change-package-dir (cask-elpa-path ,bundle))
      (-each sources
             (lambda (source)
               (epl-add-archive (cask-source-name source)
@@ -316,6 +315,12 @@ SCOPE may be nil or :development."
          (template-file (f-expand name templates-dir)))
     (f-read-text template-file 'utf-8)))
 
+(defun cask-initialized-p (bundle)
+  "Return true if BUNDLE is initialized.
+
+The BUNDLE is initialized when the elpa directory exists."
+  (f-dir? (cask-elpa-path bundle)))
+
 
 ;;;; Public API
 
@@ -333,7 +338,7 @@ This function return a `cask-bundle' object."
          (cask-exit-error bundle err))))
     bundle))
 
-(defun cask-elpa-dir (bundle)
+(defun cask-elpa-path (bundle)
   "Return full path to BUNDLE elpa directory."
   (f-expand (format ".cask/%s/elpa" emacs-version) (cask-bundle-path bundle)))
 
@@ -388,14 +393,14 @@ to install, and ERR is the original error data."
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
-(defun cask-caskify (path &optional dev-mode)
-  "Create Cask-file in PATH.
+(defun cask-caskify (bundle &optional dev-mode)
+  "Create Cask-file for BUNDLE path.
 
 If DEV-MODE is true, the dev template is used, otherwise the
 configuration template is used."
-  (let ((init-content
-         (cask-template-get (if dev-mode "init-dev.tpl" "init.tpl")))
-        (cask-file (f-expand cask-filename path)))
+  (let ((cask-file (cask-file bundle))
+        (init-content
+         (cask-template-get (if dev-mode "init-dev.tpl" "init.tpl"))))
     (if (f-file? cask-file)
         (error "Cask-file already exists")
       (f-write-text init-content 'utf-8 cask-file))))
@@ -426,13 +431,13 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 
 (defun cask-load-path (bundle)
   "Return Emacs `load-path' (including BUNDLE dependencies)."
-  (let ((dirs (when (f-dir? (cask-elpa-dir bundle))
-                (f-directories (cask-elpa-dir bundle)))))
+  (let ((dirs (when (cask-initialized-p bundle)
+                (f-directories (cask-elpa-path bundle)))))
     (s-join path-separator (append dirs load-path))))
 
 (defun cask-exec-path (bundle)
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
-  (s-join path-separator (append (f-glob "*/bin" (cask-elpa-dir bundle)) exec-path)))
+  (s-join path-separator (append (f-glob "*/bin" (cask-elpa-path bundle)) exec-path)))
 
 (defun cask-runtime-dependencies (bundle)
   "Return BUNDLE's runtime dependencies.
@@ -519,13 +524,14 @@ symbol, which refers to some of the keys in
 
 Second argument URL is only required unless alias.  If no alias,
 URL is the url to the mirror."
-  (unless url
-    (let ((mapping (assq name-or-alias cask-source-mapping)))
-      (unless mapping
-        (error "Unknown package archive: %s" name-or-alias))
-      (setq name-or-alias (symbol-name (car mapping)))
-      (setq url (cdr mapping))))
-  (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle)))
+  (cask-with-file bundle
+    (unless url
+      (let ((mapping (assq name-or-alias cask-source-mapping)))
+        (unless mapping
+          (error "Unknown package archive: %s" name-or-alias))
+        (setq name-or-alias (symbol-name (car mapping)))
+        (setq url (cdr mapping))))
+    (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle))))
 
 (defun cask-build (bundle)
   "Build BUNDLE Elisp files."
@@ -551,42 +557,39 @@ URL is the url to the mirror."
 The list is a list of alist's where the key is the name of the
 link, as a string and the value is the absolute path to the link."
   (cask-with-file bundle
-    (-map
-     (lambda (file)
-       (list (f-filename file) (f-canonical file)))
-     (f-entries (cask-elpa-dir bundle) 'f-symlink?))))
-
-(defun cask-links-path (bundle)
-  "Return path to BUNDLE links path.
-
-That is the path where the links are stored."
-  (f-expand (format ".cask/%s/links" emacs-version) (cask-bundle-path bundle)))
+    (when (cask-initialized-p bundle)
+      (-map
+       (lambda (file)
+         (list (f-filename file) (f-canonical file)))
+       (f-entries
+        (cask-elpa-path bundle)
+        (lambda (file)
+          (and (f-symlink? file) (s-ends-with? cask-link-suffix file))))))))
 
 (defun cask-link-path (bundle name)
   "Return path to link in BUNDLE with NAME.
 
 This function always return the path, even if it does not exist."
-  (f-expand (concat name "-" cask-link-suffix) (cask-links-path bundle)))
+  (f-expand (concat name "-" cask-link-suffix) (cask-elpa-path bundle)))
 
 (defun cask-link (bundle name source)
   "Add BUNDLE link with NAME to SOURCE.
 
-NAME is the name of the package to link.  SOURCE is the path to
-the directory to link to.
+NAME is the name of the package to link as a string.  SOURCE is
+the path to the directory to link to.
 
-This will create the link `cask-elpa-dir'/NAME-dev pointing to
+This will create the link `cask-elpa-path'/NAME-dev pointing to
 TARGET."
   (cask-with-file bundle
     (unless (cask-has-dependency bundle name)
       (error "Cannot link package %s, is not a dependency" name))
     (unless (f-dir? source)
       (error "Cannot create link %s to non existing path: %s" name source))
-    (unless (f-dir? (cask-links-path bundle))
-      (f-mkdir (cask-links-path bundle)))
-    (let ((target (cask-link-path bundle name)))
-      (when (f-symlink? target)
-        (f-delete target))
-      (f-symlink source target))))
+    (when (cask-initialized-p bundle)
+      (let ((target (cask-link-path bundle name)))
+        (when (f-symlink? target)
+          (f-delete target))
+        (f-symlink source target)))))
 
 (defun cask-link-delete (bundle name)
   "Delete BUNDLE link with NAME."

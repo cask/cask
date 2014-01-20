@@ -1,6 +1,6 @@
-;;; app.el --- Cask: Stub ELPA server for integration tests  -*- lexical-binding: t; -*-
+;;; app.el --- Cask: Stub ELPA server for tests  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2012-2014 Johan Andersson
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
@@ -23,13 +23,12 @@
 
 ;;; Commentary:
 
-;; A simple stub ELPA server for Cask's integration tests.
+;; A simple stub ELPA server for Cask's tests.
 
 ;;; Code:
 
 (require 'f)
 (require 'servant)
-(require 'rx)
 
 (let* ((port 9191)
        (host "127.0.0.1")
@@ -40,16 +39,11 @@
                       (servant-make-elnode-handler (f-join directory it)))
                 '("packages" "new-packages"))))
 
-  (global-set-key (kbd "q") (lambda ()
-                              (interactive)
-                              (elnode-stop port)
-                              (kill-emacs 0)))
-
-  (insert
-   (format "Running (fake) ELPA server on port %d... Press `q' to quit." port))
-
-  (elnode-start (lambda (httpcon) (elnode-hostpath-dispatcher httpcon routes))
-                :port port :host host)
+  (elnode-start
+   (lambda (httpcon)
+     (elnode-hostpath-dispatcher httpcon routes))
+   :port port
+   :host host)
 
   (when noninteractive
     (f-mkdir tmp-directory)

@@ -1,11 +1,5 @@
 Feature: Help
-  In order to quickly get help
-  As a Cask user
-  I want to get usage infomartion
-
-  Background:
-    Given I create a project called "help"
-    And I go to the project called "help"
+  Show usage information
 
   Scenario Outline: No Cask file
     When I run cask "<command>"

@@ -1,40 +1,25 @@
-EMACS ?= emacs
-TAGS ?=
 CASK ?= cask
-ECUKES = ecukes
-ECUKES_ARGS = --script features ${TAGS}
-SERVER = ${CASK} exec ${EMACS} -Q --load servant/app.el
+EMACS ?= emacs
 
-PKG_DIR := $(shell ${CASK} package-directory)
-
-export EMACS
-export CASK
+SERVANT_DIR = 'servant/tmp'
 
 all: test
 
-test: elpa unit ecukes
-
-ecukes:
-	${CASK} exec ${ECUKES} ${ECUKES_ARGS}
-
-start-server: elpa
-	mkdir -p servant/tmp
-	${SERVER} --batch > servant/tmp/servant.log 2>&1 &
-
-stop-server:
-	kill $$(cat servant/tmp/servant.pid)
-
-elpa: ${PKG_DIR}
-${PKG_DIR}: Cask
-	${CASK} install
-	touch $@
-# NOTE: `touch` is called here since `cask install` does not update
-# timestamp of ${PKG_DIR} directory.
-
-clean:
-	rm -rf ${PKG_DIR}
+test: unit ecukes
 
 unit:
 	${CASK} exec ert-runner
 
-.PHONY: elpa server ecukes all unit
+ecukes:
+	${CASK} exec ecukes
+
+start-server: $(SERVANT_DIR)
+	${CASK} exec ${EMACS} -Q --load servant/app.el --batch > servant/tmp/servant.log 2>&1 &
+
+stop-server:
+	kill $$(cat $(SERVANT_DIR)/servant.pid)
+
+$(SERVANT_DIR):
+	@mkdir -p $(SERVANT_DIR)
+
+.PHONY: start-server stop-server unit ecukes test all
