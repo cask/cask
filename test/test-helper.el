@@ -1,4 +1,34 @@
+;;; test-helper.el --- Cask: Test helper  -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2013 Johan Andersson
+
+;; Author: Johan Andersson <johan.rejeep@gmail.com>
+;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
+;; URL: http://github.com/cask/cask
+
+;; This file is NOT part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; Code:
+
 (require 'f)
+(require 's)
+(require 'dash)
+(require 'rx)
 
 (defvar cask-test/test-path
   (f-parent (f-this-file)))
@@ -9,53 +39,63 @@
 (defvar cask-test/sandbox-path
   (f-expand "sandbox" cask-test/test-path))
 
-(defvar cask-test/package-path
-  (f-expand "package" cask-test/sandbox-path))
+(defvar cask-test/sandbox-cask-file-path
+  (f-expand "Cask" cask-test/sandbox-path))
 
-(defvar cask-test/config-path
-  (f-expand "config" cask-test/sandbox-path))
+(add-to-list 'load-path cask-test/root-path)
 
-(defvar cask-test/no-cask-path
-  (f-expand "no-cask" cask-test/sandbox-path))
+(defun cask-test/package-path (bundle package)
+  "Return path in BUNDLE to PACKAGE."
+  (let ((package-name (apply 'format "%s-%s" package)))
+    (f-expand package-name (cask-elpa-path bundle))(f-dir? package-path)))
 
-(defvar cask-test/files-directive-path
-  (f-expand "files-directive" cask-test/sandbox-path))
+(defun cask-test/package-installed-p (bundle package)
+  "Return true if in BUNDLE, PACKAGE is installed.
 
-(defvar cask-test/files-no-directive-path
-  (f-expand "files-no-directive" cask-test/sandbox-path))
+To be more specific, this function return true if the PACKAGE
+directory exists."
+  (f-dir? (cask-test/package-path bundle package)))
 
-(defvar cask-test/link-1-path
-  (f-expand "link-1" cask-test/sandbox-path))
+(defun cask-test/installed-packages (bundle)
+  "Return list of all of BUNDLE's installed packages.
 
-(defvar cask-test/link-2-path
-  (f-expand "link-2" cask-test/sandbox-path))
+The items in the list are on the form (package version)."
+  (let ((elpa-dir (cask-elpa-path bundle)))
+    (when (f-dir? elpa-dir)
+      (let ((directories (f--directories elpa-dir (s-matches? "[^/]+-[^/]+$" it))))
+        (-map
+         (lambda (filename)
+           (s-split "-" filename))
+         (-map 'f-filename directories))))))
 
-(defmacro with-sandbox (&rest body)
-  `(let ((default-directory cask-test/sandbox-path)
-         (cask-links-file (f-expand "links" cask-test/sandbox-path)))
-     (when (f-file? cask-links-file)
-       (f-delete cask-links-file))
-     (-each (f-directories cask-test/sandbox-path)
-            (lambda (path)
-              (let ((cask-path (f-expand ".cask" path)))
-                (when (f-dir? cask-path)
-                  (f-delete cask-path 'force)))))
-     (with-mock ,@body)))
+(defun cask-test/write-forms (forms)
+  "Write FORMS to sandbox Cask-file."
+  (if (eq forms 'empty)
+      (f-touch cask-test/sandbox-cask-file-path)
+    (let ((cask-file-content (s-join "\n" (-map 'pp-to-string forms))))
+      (f-write-text cask-file-content 'utf-8 cask-test/sandbox-cask-file-path))))
 
-(defun should-be-colon-path (string)
-  (should (s-matches? ".:." string)))
+(defmacro cask-test/with-bundle (&optional forms &rest body)
+  "Write FORMS to sandbox Cask-file and yield BODY.
 
-;; Do not pollute the Cask environment.
-(unload-feature 'f 'force)
+In BODY, the :packages property has special meaning.  If the
+property...
 
-(require 'el-mock)
-(eval-when-compile (require 'cl))       ; for el-mock
+ - is not present, nothing is done
+ - is nil, it's asserted that no package is installed
+ - is a list of lists of the form (package version), it's
+asserted that only those packages are installed"
+  (declare (indent 1))
+  `(let ((default-directory cask-test/sandbox-path))
+     (when (f-dir? cask-test/sandbox-path)
+       (f-delete cask-test/sandbox-path 'force))
+     (f-mkdir cask-test/sandbox-path)
+     (when ',forms
+       (cask-test/write-forms ',forms))
+     (let ((bundle (cask-setup cask-test/sandbox-path)))
+       (progn
+         ,@body
+         (-when-let (packages ,(plist-get body :packages))
+           (should (-same-items? packages (cask-test/installed-packages bundle))))))))
 
-;; Since ert-runner is executed with `cask exec` all Cask dependencies
-;; will be in `load-path'. This cleans up the environment.
-(let (clean-load-path)
-  (dolist (path load-path)
-    (unless (string-prefix-p cask-test/root-path path)
-      (add-to-list 'clean-load-path path)))
-  (let ((load-path clean-load-path))
-    (require 'cask (expand-file-name "cask.el" cask-test/root-path))))
+;;; test-helper.el ends here

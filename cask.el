@@ -146,8 +146,7 @@ Slots:
     (melpa       . "http://melpa.milkbox.net/packages/")
     (marmalade   . "http://marmalade-repo.org/packages/")
     (SC          . "http://joseito.republika.pl/sunrise-commander/")
-    (org         . "http://orgmode.org/elpa/")
-    (cask-test   . "http://127.0.0.1:9191/packages/"))
+    (org         . "http://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
 (defconst cask-filename "Cask"
