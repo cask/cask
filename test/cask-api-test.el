@@ -1,6 +1,6 @@
 ;;; cask-api-test.el --- Cask: Api tests  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013 Johan Andersson
+;; Copyright (C) 2013-2014 Johan Andersson
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>

@@ -1,6 +1,6 @@
 ;;; cask.el --- Cask: Emacs dependency management made easy  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2012-2014 Johan Andersson
 ;; Copyright (C) 2013 Sebastian Wiesner
 ;; Copyright (C) 2013 Takafumi Arakaki
 

@@ -1,6 +1,6 @@
 ;;; cask-cli.el --- Cask: CLI interface  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2012-2014 Johan Andersson
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
