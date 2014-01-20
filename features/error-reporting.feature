@@ -1,10 +1,6 @@
 Feature: Error Reporting
   Report good errors about invalid Cask files
 
-  Background:
-    Given I create a project called "error-reporting"
-    And I go to the project called "error-reporting"
-
   Scenario: Unbalanced Parenthesis
     Given this Cask file:
       """

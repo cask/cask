@@ -1,11 +1,5 @@
 Feature: Exec
-  In order to run with correct dependencies
-  As a Cask user
-  I want to setup the correct load path
-
-  Background:
-    Given I create a project called "exec"
-    And I go to the project called "exec"
+  Execute command with environment set up
 
   Scenario: No Cask file
     When I run cask "exec echo foo"
