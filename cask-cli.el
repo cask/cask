@@ -79,10 +79,10 @@
                                   (length other))
                                (-map 'car table)))))
     (-each table
-           (lambda (row)
-             (let ((key (car row)) (value (cadr row)))
-               (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
-               (princ (concat value "\n")))))))
+      (lambda (row)
+        (let ((key (car row)) (value (cadr row)))
+          (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
+          (princ (concat value "\n")))))))
 
 
 ;;;; Commands
@@ -224,8 +224,8 @@ installation."
 
 If no files directive or no files, do nothing."
   (-each (cask-files (cask-cli--bundle))
-         (lambda (file)
-           (princ (concat file "\n")))))
+    (lambda (file)
+      (princ (concat file "\n")))))
 
 (defun cask-cli/build ()
   "Build all Elisp files in the files directive."

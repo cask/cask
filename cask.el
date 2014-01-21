@@ -242,9 +242,9 @@ Return all directives in the Cask file as list."
                                         ; does not work as expected.
      (epl-change-package-dir (cask-elpa-path ,bundle))
      (-each sources
-            (lambda (source)
-              (epl-add-archive (cask-source-name source)
-                               (cask-source-url source))))
+       (lambda (source)
+         (epl-add-archive (cask-source-name source)
+                          (cask-source-url source))))
      (epl-refresh)
      (epl-initialize)
      ,@body))
@@ -293,10 +293,10 @@ SCOPE may be nil or :development."
            (setf (cask-bundle-version bundle) (epl-package-version-string package))
            (setf (cask-bundle-description bundle) (epl-package-summary package))
            (-each (epl-package-requirements package)
-                  (lambda (requirement)
-                    (cask-add-dependency bundle
-                                         (epl-requirement-name requirement)
-                                         (epl-requirement-version-string requirement)))))))
+             (lambda (requirement)
+               (cask-add-dependency bundle
+                                    (epl-requirement-name requirement)
+                                    (epl-requirement-version-string requirement)))))))
       (depends-on
        (cl-destructuring-bind (_ name &optional version) form
          (cask-add-dependency bundle name version scope)))
@@ -538,18 +538,18 @@ URL is the url to the mirror."
   (cask-with-file bundle
     (require 'bytecomp)
     (-each (cask-files bundle)
-           (lambda (path)
-             (when (and (f-file? path) (f-ext? path "el"))
-               (byte-recompile-file path 'force 0))))))
+      (lambda (path)
+        (when (and (f-file? path) (f-ext? path "el"))
+          (byte-recompile-file path 'force 0))))))
 
 (defun cask-clean-elc (bundle)
   "Remove BUNDLE Elisp byte compiled files."
   (cask-with-file bundle
     (-each (cask-files bundle)
-           (lambda (path)
-             (when (and (f-file? path) (f-ext? path "el"))
-               (when (f-file? (concat path "c"))
-                 (f-delete (concat path "c"))))))))
+      (lambda (path)
+        (when (and (f-file? path) (f-ext? path "el"))
+          (when (f-file? (concat path "c"))
+            (f-delete (concat path "c"))))))))
 
 (defun cask-links (bundle)
   "Return a list of all links for BUNDLE.
