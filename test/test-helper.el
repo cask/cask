@@ -90,8 +90,8 @@ asserted that only those packages are installed"
      (when (f-dir? cask-test/sandbox-path)
        (f-delete cask-test/sandbox-path 'force))
      (f-mkdir cask-test/sandbox-path)
-     (when ',forms
-       (cask-test/write-forms ',forms))
+     (when ,forms
+       (cask-test/write-forms ,forms))
      (let ((bundle (cask-setup cask-test/sandbox-path)))
        (progn
          ,@body
