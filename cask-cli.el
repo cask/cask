@@ -40,6 +40,9 @@
 (require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
 (require 'cask (expand-file-name "cask" cask-directory))
 
+(when noninteractive
+  (shut-up-silence-emacs))
+
 (defconst cask-cli--table-padding 10
   "Number of spaces to pad with when printing table.")
 
