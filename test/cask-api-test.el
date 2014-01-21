@@ -237,7 +237,7 @@
 
 (ert-deftest cask-exec-path-test ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "hey" "0.0.5"))
     (cask-install bundle)
     (let ((path (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" "hey-0.0.5" "bin"))
@@ -249,7 +249,7 @@
 
 (ert-deftest cask-load-path-test ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1")
         (depends-on "bar" "0.0.2"))
     (cask-install bundle)
@@ -293,7 +293,7 @@
 
 (ert-deftest cask-update-test/no-update ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1"))
     :packages '(("foo" "0.0.1"))
     (cask-install bundle)
@@ -301,7 +301,7 @@
 
 (ert-deftest cask-update-test/with-updates ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1"))
     :packages '(("foo" "0.0.2"))
     (cask-install bundle)
@@ -325,14 +325,14 @@
 
 (ert-deftest cask-install-test/single-dependency ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1"))
     :packages '(("foo" "0.0.1"))
     (cask-install bundle)))
 
 (ert-deftest cask-install-test/multiple-dependencies ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1")
         (depends-on "bar" "0.0.2"))
     :packages '(("foo" "0.0.1")
@@ -341,7 +341,7 @@
 
 (ert-deftest cask-install-test/missing-dependencies ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "missing-a" "0.0.1")
         (depends-on "missing-b" "0.0.2"))
     :packages nil
@@ -364,7 +364,7 @@
 
 (ert-deftest cask-outdated-test/no-outdated ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1"))
     :packages '(("foo" "0.0.1"))
     (cask-install bundle)
@@ -372,7 +372,7 @@
 
 (ert-deftest cask-outdated-test/with-outdateds ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1"))
     :packages '(("foo" "0.0.1"))
     (cask-install bundle)
@@ -424,7 +424,7 @@
 
 (ert-deftest cask-add-dependency-test/runtime ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/"))
+      '((source localhost))
     :packages '(("foo" "0.0.1")
                 ("bar" "0.0.2"))
     (cask-add-dependency bundle 'foo "0.0.1")
@@ -433,7 +433,7 @@
 
 (ert-deftest cask-add-dependency-test/development ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/"))
+      '((source localhost))
     :packages '(("foo" "0.0.1")
                 ("bar" "0.0.2"))
     (cask-add-dependency bundle 'foo "0.0.1" :development)
@@ -547,7 +547,7 @@
 
 (ert-deftest cask-links-test/with-links ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1")
         (depends-on "bar" "0.0.2"))
     (cask-install bundle)
@@ -577,7 +577,7 @@
 
 (ert-deftest cask-link-test/valid-links ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1")
         (depends-on "bar" "0.0.2"))
     (cask-install bundle)
@@ -592,7 +592,7 @@
 
 (ert-deftest cask-link-test/non-existing-path ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1"))
     (should-error
      (cask-link bundle "foo" "/path/to/non-existing-directory"))))
@@ -607,7 +607,7 @@
 
 (ert-deftest cask-link-delete-test/valid-links ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1")
         (depends-on "bar" "0.0.2"))
     (cask-install bundle)
@@ -626,7 +626,7 @@
 
 (ert-deftest cask-link-delete-test/not-linked ()
   (cask-test/with-bundle
-      '((source "localhost" "http://127.0.0.1:9191/packages/")
+      '((source localhost)
         (depends-on "foo" "0.0.1"))
     (should-error
      (cask-link-delete bundle "foo"))))
