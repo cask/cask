@@ -38,7 +38,7 @@
   "Return COMMAND with placeholders replaced with values."
   (->> command
     (s-replace "{{EMACS-VERSION}}" emacs-version)
-    (s-replace "{{EMACS}}" (getenv "EMACS"))))
+    (s-replace "{{EMACS}}" (executable-find (or (getenv "EMACS") "emacs")))))
 
 (Given "^this Cask file:$"
   (lambda (content)
