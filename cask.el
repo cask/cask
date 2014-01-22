@@ -367,13 +367,14 @@ This function return a `cask-bundle' object."
   "Update BUNDLE dependencies.
 
 Return list of updated packages."
-  (cask-use-environment bundle
-    (shut-up
-      (condition-case err
-          (epl-upgrade (cask-packages bundle))
-        (error
-         (signal 'cask-failed-installation
-                 (list nil err (shut-up-current-output))))))))
+  (cask-with-file bundle
+    (cask-use-environment bundle
+      (shut-up
+        (condition-case err
+            (epl-upgrade (cask-packages bundle))
+          (error
+           (signal 'cask-failed-installation
+                   (list nil err (shut-up-current-output)))))))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
