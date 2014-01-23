@@ -81,6 +81,7 @@ Defaults to `error'."
 (define-error 'cask-error "Cask error")
 (define-error 'cask-missing-dependencies "Missing dependencies" 'cask-error)
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
+(define-error 'cask-failed-initialization "Failed initialization" 'cask-error)
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
 (define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
 
@@ -233,20 +234,30 @@ Return all directives in the Cask file as list."
   "Change the directory of packages to DIRECTORY."
   (setq package-user-dir directory))
 
+(defun cask-use-bundle (bundle)
+  "Use the given BUNDLE."
+  (setq package-archives nil)        ; TODO: Should call
+                                        ; `epl-reset' here, but it
+                                        ; does not work as expected.
+  (epl-change-package-dir (cask-elpa-path bundle))
+  (-each (cask-bundle-sources bundle)
+         (lambda (source)
+           (epl-add-archive (cask-source-name source)
+                            (cask-source-url source))))
+  (shut-up
+    (condition-case err
+        (progn
+          (epl-refresh)
+          (epl-initialize))
+      (error
+       (signal 'cask-failed-initialization
+               (list err (shut-up-current-output)))))))
+
 (defmacro cask-use-environment (bundle &rest body)
   "Use environment specified by BUNDLE and yield BODY."
   (declare (indent 1) (debug t))
-  `(let ((sources (cask-bundle-sources ,bundle)))
-     (setq package-archives nil)        ; TODO: Should call
-                                        ; `epl-reset' here, but it
-                                        ; does not work as expected.
-     (epl-change-package-dir (cask-elpa-path ,bundle))
-     (-each sources
-       (lambda (source)
-         (epl-add-archive (cask-source-name source)
-                          (cask-source-url source))))
-     (epl-refresh)
-     (epl-initialize)
+  `(progn
+     (cask-use-bundle ,bundle)
      ,@body))
 
 (defmacro cask-with-file (bundle &rest body)
@@ -356,8 +367,14 @@ This function return a `cask-bundle' object."
   "Update BUNDLE dependencies.
 
 Return list of updated packages."
-  (cask-use-environment bundle
-    (epl-upgrade (cask-packages bundle))))
+  (cask-with-file bundle
+    (cask-use-environment bundle
+      (shut-up
+        (condition-case err
+            (epl-upgrade (cask-packages bundle))
+          (error
+           (signal 'cask-failed-installation
+                   (list nil err (shut-up-current-output)))))))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
@@ -386,9 +403,12 @@ to install, and ERR is the original error data."
             (unless (epl-package-installed-p name)
               (let ((package (car (epl-find-available-packages name))))
                 (if package
-                    (condition-case err
-                        (epl-package-install package)
-                      (error (signal 'cask-failed-installation (cons dependency err))))
+                    (shut-up
+                      (condition-case err
+                          (epl-package-install package)
+                        (error
+                         (signal 'cask-failed-installation
+                                 (list dependency err (shut-up-current-output))))))
                   (push dependency missing-dependencies)))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))

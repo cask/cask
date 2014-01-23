@@ -40,6 +40,9 @@
 (require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
 (require 'cask (expand-file-name "cask" cask-directory))
 
+(when noninteractive
+  (shut-up-silence-emacs))
+
 (defconst cask-cli--table-padding 10
   "Number of spaces to pad with when printing table.")
 
@@ -87,6 +90,35 @@
 
 ;;;; Commands
 
+(defmacro cask-cli/with-handled-errors (&rest body)
+  "Evaluate BODY and handle errors accordingly."
+  (declare (indent 0))
+  `(condition-case err
+       (progn ,@body)
+     (cask-missing-dependencies
+      (let ((missing-dependencies (cdr err)))
+        (error "Some dependencies were not available: %s"
+               (->> missing-dependencies
+                 (-map #'cask-dependency-name)
+                 (-map #'symbol-name)
+                 (s-join ", ")))))
+     (cask-failed-initialization
+      (let* ((data (cdr err))
+             (message (error-message-string (nth 0 data)))
+             (output (nth 1 data)))
+        (error "Package initialization failed: %s\nOutput:\n%s"
+               message output)))
+     (cask-failed-installation
+      (let* ((data (cdr err))
+             (dependency (cask-dependency-name (nth 0 data)))
+             (message (error-message-string (nth 1 data)))
+             (output (nth 2 data)))
+        (if dependency
+            (error "Dependency %s failed to install: %s\nOutput:\n%s"
+                   dependency message output)
+          (error "Package installation failed: %s\nOutput:\n%s"
+                 message output))))))
+
 (defun cask-cli/pkg-file ()
   "Write a `define-package' file.
 
@@ -100,20 +132,8 @@ The file is written to the Cask project root path with name
 
 The dependencies to packages are also installed.  If a package
 already is installed, it will not be installed again."
-  (condition-case err
-      (cask-install (cask-cli--bundle))
-    (cask-missing-dependencies
-     (let ((missing-dependencies (cdr err)))
-       (error "Some dependencies were not available: %s"
-              (->> missing-dependencies
-                (-map #'cask-dependency-name)
-                (-map #'symbol-name)
-                (s-join ", ")))))
-    (cask-failed-installation
-     (let* ((data (cdr err))
-            (dependency (cask-dependency-name (car data)))
-            (message (error-message-string (cdr data))))
-       (error "Dependency %s failed to install: %s" dependency message)))))
+  (cask-cli/with-handled-errors
+    (cask-install (cask-cli--bundle))))
 
 (defun cask-cli/upgrade ()
   "Deprecated in favor of upgrade-cask."
@@ -147,9 +167,10 @@ Git is available in `exec-path'."
 
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
-  (-when-let (upgrades (cask-update (cask-cli--bundle)))
-    (princ "Updated packages:\n")
-    (-each upgrades 'cask-cli--print-upgrade)))
+  (cask-cli/with-handled-errors
+    (-when-let (upgrades (cask-update (cask-cli--bundle)))
+      (princ "Updated packages:\n")
+      (-each upgrades 'cask-cli--print-upgrade))))
 
 (defun cask-cli/init ()
   "Initialize the current directory with a Cask-file.
