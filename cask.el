@@ -241,9 +241,9 @@ Return all directives in the Cask file as list."
                                         ; does not work as expected.
   (epl-change-package-dir (cask-elpa-path bundle))
   (-each (cask-bundle-sources bundle)
-         (lambda (source)
-           (epl-add-archive (cask-source-name source)
-                            (cask-source-url source))))
+    (lambda (source)
+      (epl-add-archive (cask-source-name source)
+                       (cask-source-url source))))
   (shut-up
     (condition-case err
         (progn
