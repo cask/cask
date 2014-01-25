@@ -416,9 +416,21 @@
 
 ;;;; cask-initialize
 
-(ert-deftest cask-initialize-test/returns-bundle ()
-  (let ((bundle (cask-initialize cask-test/sandbox-path)))
-    (should (cask-bundle-p bundle))))
+(ert-deftest cask-initialize-test ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+    (cask-install bundle)
+    (let ((bar-path (f-expand "bar-0.0.2" (cask-elpa-path bundle))))
+      (f-mkdir bar-path)
+      (f-touch (f-expand "bar.el" bar-path))
+      (f-touch (f-expand "bar-autoloads.el" bar-path))
+      (f-write
+       (pp-to-string '(define-package "bar" "0.0.2" "Bar" (quote nil)))
+       'utf-8
+       (f-expand "bar-pkg.el" bar-path)))
+    (should (cask-bundle-p (cask-initialize (cask-path bundle))))
+    (should (equal (-map 'car package-alist) '(foo)))))
 
 
 ;;;; cask-files

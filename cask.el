@@ -382,8 +382,15 @@ This function return a `cask-bundle' object."
 Setup `package-user-dir' appropriately and then call `package-initialize'.
 
 This function return a `cask-bundle' object."
-  (let ((bundle (cask-setup (or project-path user-emacs-directory))))
-    (epl-initialize)
+  (let* ((bundle (cask-setup (or project-path user-emacs-directory)))
+         (package-load-list
+          (-map
+           (lambda (dependency)
+             (list (cask-dependency-name dependency)
+                   (cask-dependency-version dependency)))
+           (cask-installed-dependencies bundle 'deep))))
+    (when (f-same? (epl-package-dir) (epl-default-package-dir))
+      (epl-change-package-dir (cask-elpa-path bundle)))
     bundle))
 
 (defun cask-update (bundle)
