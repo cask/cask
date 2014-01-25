@@ -230,10 +230,6 @@ Return all directives in the Cask file as list."
                                  (cdr err)))))
       (nreverse forms))))
 
-(defun epl-change-package-dir (directory)
-  "Change the directory of packages to DIRECTORY."
-  (setq package-user-dir directory))
-
 (defun cask-use-bundle (bundle)
   "Use the given BUNDLE."
   (setq package-archives nil)        ; TODO: Should call
