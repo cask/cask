@@ -86,18 +86,19 @@ property...
  - is a list of lists of the form (package version), it's
 asserted that only those packages are installed"
   (declare (indent 1))
-  `(let ((cask-source-mapping
-          (cons (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping))
-         (default-directory cask-test/sandbox-path))
-     (when (f-dir? cask-test/sandbox-path)
-       (f-delete cask-test/sandbox-path 'force))
-     (f-mkdir cask-test/sandbox-path)
-     (when ,forms
-       (cask-test/write-forms ,forms))
-     (let ((bundle (cask-setup cask-test/sandbox-path)))
-       (progn
-         ,@body
-         (-when-let (packages ,(plist-get body :packages))
-           (should (-same-items? packages (cask-test/installed-packages bundle))))))))
+  `(f-with-sandbox cask-test/sandbox-path
+     (let ((cask-source-mapping
+            (cons (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping))
+           (default-directory cask-test/sandbox-path))
+       (when (f-dir? cask-test/sandbox-path)
+         (f-delete cask-test/sandbox-path 'force))
+       (f-mkdir cask-test/sandbox-path)
+       (when ,forms
+         (cask-test/write-forms ,forms))
+       (let ((bundle (cask-setup cask-test/sandbox-path)))
+         (progn
+           ,@body
+           (-when-let (packages ,(plist-get body :packages))
+             (should (-same-items? packages (cask-test/installed-packages bundle)))))))))
 
 ;;; test-helper.el ends here
