@@ -328,6 +328,33 @@ SCOPE may be nil or :development."
 The BUNDLE is initialized when the elpa directory exists."
   (f-dir? (cask-elpa-path bundle)))
 
+(defun cask-dependency-to-string (dependency)
+  "Return string representatation of DEPENDENCY."
+  (let ((name (symbol-name (cask-dependency-name dependency)))
+        (version (cask-dependency-version dependency)))
+    (s-join "-" (list name version))))
+
+(defun cask-installed-dependencies-paths (bundle)
+  "Return list of paths for all installed BUNDLE dependencies."
+  (--map
+   (cask-dependency-path bundle it)
+   (cask-installed-dependencies bundle 'deep)))
+
+(defun cask-package-dependencies (name)
+  "Return list of all dependencies for package with NAME.
+
+Return value is a list of `cask-dependency' objects."
+  (-when-let (package (epl-find-installed-package name))
+    (cons
+     (make-cask-dependency
+      :name (epl-package-name package)
+      :version (epl-package-version-string package))
+     (-flatten
+      (-map
+       (lambda (requirement)
+         (cask-package-dependencies (epl-requirement-name requirement)))
+       (epl-package-requirements package))))))
+
 
 ;;;; Public API
 
@@ -447,13 +474,16 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 
 (defun cask-load-path (bundle)
   "Return Emacs `load-path' (including BUNDLE dependencies)."
-  (let ((dirs (when (cask-initialized-p bundle)
-                (f-directories (cask-elpa-path bundle)))))
-    (s-join path-separator (append dirs load-path))))
+  (append (cask-installed-dependencies-paths bundle) load-path))
 
 (defun cask-exec-path (bundle)
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
-  (s-join path-separator (append (f-glob "*/bin" (cask-elpa-path bundle)) exec-path)))
+  (append
+   (-select
+    'f-dir?
+    (--map (f-expand "bin" it)
+           (cask-installed-dependencies-paths bundle)))
+   exec-path))
 
 (defun cask-runtime-dependencies (bundle)
   "Return BUNDLE's runtime dependencies.
@@ -473,6 +503,30 @@ Return value is a list of `cask-dependency' objects."
 Return value is a list of `cask-dependency' objects."
   (append (cask-runtime-dependencies bundle)
           (cask-development-dependencies bundle)))
+
+(defun cask-installed-dependencies (bundle &optional deep)
+  "Return list of BUNDLE's installed dependencies.
+
+If DEEP is t, all dependencies recursively will be returned."
+  (unwind-protect
+      (progn
+        (epl-change-package-dir (cask-elpa-path bundle))
+        (if deep
+            (-uniq
+             (-flatten
+              (-map
+               (lambda (dependency)
+                 (cask-package-dependencies (cask-dependency-name dependency)))
+               (cask-dependencies bundle))))
+          (let ((installed-packages (epl-installed-packages)))
+            (-select
+             (lambda (dependency)
+               (-any?
+                (lambda (package)
+                  (eq (cask-dependency-name dependency) (epl-package-name package)))
+                installed-packages))
+             (cask-dependencies bundle)))))
+    (epl-reset)))
 
 (defun cask-has-dependency (bundle name)
   "Return true if BUNDLE contain link with NAME, false otherwise."
@@ -501,6 +555,11 @@ Return value is a list of `cask-dependency' objects."
   "Return path to `define-package' file for BUNDLE."
   (cask-with-package bundle
     (f-expand (concat (symbol-name (cask-bundle-name bundle)) "-pkg.el") (cask-bundle-path bundle))))
+
+(defun cask-dependency-path (bundle dependency)
+  "Return PATH to BUNDLE DEPENDENCY."
+  (f-expand (cask-dependency-to-string dependency)
+            (cask-elpa-path bundle)))
 
 (defun cask-path (bundle)
   "Return BUNDLE root path."

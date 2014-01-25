@@ -136,6 +136,33 @@
       (should (-same-items? actual expected)))))
 
 
+;;;; cask-installed-dependencies
+
+(ert-deftest cask-installed-dependencies-test/not-installed ()
+  (cask-test/with-bundle 'empty
+    (should-not (cask-installed-dependencies bundle))))
+
+(ert-deftest cask-installed-dependencies-test/installed ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "baz" "0.0.3"))
+    (cask-install bundle)
+    (let ((actual (cask-installed-dependencies bundle))
+          (expected (list (make-cask-dependency :name 'baz :version "0.0.3"))))
+      (should (-same-items? actual expected)))))
+
+(ert-deftest cask-installed-dependencies-test/installed-deep ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "baz" "0.0.3"))
+    (cask-install bundle)
+    (let ((actual (cask-installed-dependencies bundle 'deep))
+          (expected (list (make-cask-dependency :name 'baz :version "0.0.3")
+                          (make-cask-dependency :name 'qux :version "0.0.4")
+                          (make-cask-dependency :name 'fux :version "0.0.6"))))
+      (should (-same-items? actual expected)))))
+
+
 ;;;; cask-define-package-string
 
 (ert-deftest cask-define-package-string-test/no-cask-file ()
@@ -240,9 +267,8 @@
       '((source localhost)
         (depends-on "hey" "0.0.5"))
     (cask-install bundle)
-    (let ((path (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" "hey-0.0.5" "bin"))
-          (paths (parse-colon-path (cask-exec-path bundle))))
-      (should (--first (f-same? path it) paths)))))
+    (let ((path (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" "hey-0.0.5" "bin")))
+      (should (equal (cons path exec-path) (cask-exec-path bundle))))))
 
 
 ;;;; cask-load-path
@@ -254,10 +280,11 @@
         (depends-on "bar" "0.0.2"))
     (cask-install bundle)
     (let* ((path-foo (f-expand "foo-0.0.1" (cask-elpa-path bundle)))
-           (path-bar (f-expand "bar-0.0.2" (cask-elpa-path bundle)))
-           (paths (parse-colon-path (cask-load-path bundle))))
-      (should (--first (f-same? path-foo it) paths))
-      (should (--first (f-same? path-bar it) paths)))))
+           (path-bar (f-expand "bar-0.0.2" (cask-elpa-path bundle))))
+      (should
+       (equal
+        (append (list path-bar path-foo) load-path)
+        (cask-load-path bundle))))))
 
 
 ;;;; cask-path

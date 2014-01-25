@@ -1,13 +1,6 @@
 Feature: Exec
   Execute command with environment set up
 
-  Scenario: No Cask file
-    When I run cask "exec echo foo"
-    Then I should see command output:
-      """
-      foo
-      """
-
   Scenario: No dependencies
     Given this Cask file:
       """
