@@ -515,25 +515,22 @@ Return value is a list of `cask-dependency' objects."
   "Return list of BUNDLE's installed dependencies.
 
 If DEEP is t, all dependencies recursively will be returned."
-  (unwind-protect
-      (progn
-        (epl-change-package-dir (cask-elpa-path bundle))
-        (if deep
-            (-uniq
-             (-flatten
-              (-map
-               (lambda (dependency)
-                 (cask-package-dependencies (cask-dependency-name dependency)))
-               (cask-dependencies bundle))))
-          (let ((installed-packages (epl-installed-packages)))
-            (-select
-             (lambda (dependency)
-               (-any?
-                (lambda (package)
-                  (eq (cask-dependency-name dependency) (epl-package-name package)))
-                installed-packages))
-             (cask-dependencies bundle)))))
-    (epl-reset)))
+  (epl-change-package-dir (cask-elpa-path bundle))
+  (if deep
+      (-uniq
+       (-flatten
+        (-map
+         (lambda (dependency)
+           (cask-package-dependencies (cask-dependency-name dependency)))
+         (cask-dependencies bundle))))
+    (let ((installed-packages (epl-installed-packages)))
+      (-select
+       (lambda (dependency)
+         (-any?
+          (lambda (package)
+            (eq (cask-dependency-name dependency) (epl-package-name package)))
+          installed-packages))
+       (cask-dependencies bundle)))))
 
 (defun cask-has-dependency (bundle name)
   "Return true if BUNDLE contain link with NAME, false otherwise."
