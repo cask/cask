@@ -362,7 +362,7 @@ Return value is a list of `cask-dependency' objects."
   "Setup cask for project at PROJECT-PATH.
 
 This function return a `cask-bundle' object."
-  (let ((bundle (make-cask-bundle :path (f-long project-path))))
+  (let ((bundle (make-cask-bundle :path (f-canonical project-path))))
     (when (f-file? (cask-file bundle))
       (condition-case err
           (cask-eval bundle (cask-read (cask-file bundle)))
