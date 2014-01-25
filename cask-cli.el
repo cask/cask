@@ -216,7 +216,7 @@ will be for an Emacs package."
   "Print `load-path' for all packages and dependencies.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-load-path (cask-cli--bundle)) "\n")))
+  (princ (concat (s-join path-separator (cask-load-path (cask-cli--bundle))) "\n")))
 
 (defun cask-cli/exec-path ()
   "Print `exec-path' for all packages and dependencies.
@@ -225,7 +225,7 @@ A dependency will be included in this list of the package has a
 directory called bin in the root directory.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-exec-path (cask-cli--bundle)) "\n")))
+  (princ (concat (s-join path-separator (cask-exec-path (cask-cli--bundle))) "\n")))
 
 (defun cask-cli/package-directory ()
   "Print current package installation directory."
