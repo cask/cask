@@ -241,13 +241,13 @@ Return all directives in the Cask file as list."
       (epl-add-archive (cask-source-name source)
                        (cask-source-url source))))
   (shut-up
-    (condition-case err
-        (progn
-          (epl-refresh)
-          (epl-initialize))
-      (error
-       (signal 'cask-failed-initialization
-               (list err (shut-up-current-output)))))))
+   (condition-case err
+       (progn
+         (epl-refresh)
+         (epl-initialize))
+     (error
+      (signal 'cask-failed-initialization
+              (list err (shut-up-current-output)))))))
 
 (defmacro cask-use-environment (bundle &rest body)
   "Use environment specified by BUNDLE and yield BODY."
@@ -366,11 +366,11 @@ Return list of updated packages."
   (cask-with-file bundle
     (cask-use-environment bundle
       (shut-up
-        (condition-case err
-            (epl-upgrade (cask-packages bundle))
-          (error
-           (signal 'cask-failed-installation
-                   (list nil err (shut-up-current-output)))))))))
+       (condition-case err
+           (epl-upgrade (cask-packages bundle))
+         (error
+          (signal 'cask-failed-installation
+                  (list nil err (shut-up-current-output)))))))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
@@ -400,11 +400,11 @@ to install, and ERR is the original error data."
               (let ((package (car (epl-find-available-packages name))))
                 (if package
                     (shut-up
-                      (condition-case err
-                          (epl-package-install package)
-                        (error
-                         (signal 'cask-failed-installation
-                                 (list dependency err (shut-up-current-output))))))
+                     (condition-case err
+                         (epl-package-install package)
+                       (error
+                        (signal 'cask-failed-installation
+                                (list dependency err (shut-up-current-output))))))
                   (push dependency missing-dependencies)))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
