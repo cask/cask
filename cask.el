@@ -234,20 +234,21 @@ Return all directives in the Cask file as list."
   "Use the given BUNDLE.
 
 This function will setup the package.el state for the BUNDLE."
-  (setq package-archives nil)
-  (epl-change-package-dir (cask-elpa-path bundle))
-  (-each (cask-bundle-sources bundle)
-    (lambda (source)
-      (epl-add-archive (cask-source-name source)
-                       (cask-source-url source))))
-  (shut-up
-   (condition-case err
-       (progn
-         (epl-refresh)
-         (epl-initialize))
-     (error
-      (signal 'cask-failed-initialization
-              (list err (shut-up-current-output)))))))
+  (cask-with-file bundle
+    (setq package-archives nil)
+    (epl-change-package-dir (cask-elpa-path bundle))
+    (-each (cask-bundle-sources bundle)
+      (lambda (source)
+        (epl-add-archive (cask-source-name source)
+                         (cask-source-url source))))
+    (shut-up
+     (condition-case err
+         (progn
+           (epl-refresh)
+           (epl-initialize))
+       (error
+        (signal 'cask-failed-initialization
+                (list err (shut-up-current-output))))))))
 
 (defmacro cask-use-environment (bundle &rest body)
   "Switch to BUNDLE environment and yield BODY.
