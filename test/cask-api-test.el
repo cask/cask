@@ -336,6 +336,15 @@
     (cask-add-source bundle "localhost" "http://127.0.0.1:9191/new-packages/")
     (cask-update bundle)))
 
+(ert-deftest cask-update-test/intact-load-path ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+    (let ((orig-load-path load-path))
+      (cask-install bundle)
+      (cask-update bundle)
+      (should (equal orig-load-path load-path)))))
+
 
 ;;;; cask-install
 
@@ -380,6 +389,14 @@
              (missing-b (make-cask-dependency :name 'missing-b :version "0.0.2")))
          (should (-same-items? missing-dependencies (list missing-a missing-b))))))))
 
+(ert-deftest cask-install-test/intact-load-path ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+    (let ((orig-load-path load-path))
+      (cask-install bundle)
+      (should (equal orig-load-path load-path)))))
+
 
 ;;;; cask-outdated
 
@@ -412,6 +429,15 @@
       (should (eq (epl-package-name available) 'foo))
       (should (equal (epl-package-version installed) '(0 0 1)))
       (should (equal (epl-package-version available) '(0 0 2))))))
+
+(ert-deftest cask-outdated-test/intact-load-path ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+    (let ((orig-load-path load-path))
+      (cask-install bundle)
+      (cask-outdated bundle)
+      (should (equal orig-load-path load-path)))))
 
 
 ;;;; cask-initialize

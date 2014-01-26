@@ -232,8 +232,8 @@ Return all directives in the Cask file as list."
 
 (defun cask-use-bundle (bundle)
   "Use the given BUNDLE."
-  (epl-change-package-dir (cask-elpa-path bundle))
   (setq package-archives nil)
+  (epl-change-package-dir (cask-elpa-path bundle))
   (-each (cask-bundle-sources bundle)
     (lambda (source)
       (epl-add-archive (cask-source-name source)
@@ -248,11 +248,14 @@ Return all directives in the Cask file as list."
               (list err (shut-up-current-output)))))))
 
 (defmacro cask-use-environment (bundle &rest body)
-  "Use environment specified by BUNDLE and yield BODY."
+  "Switch to BUNDLE environment and yield BODY.
+
+When BODY has yielded, this function cleans up side effects
+outside of package.el, for example `load-path'.  Note that this
+function will most likely affect package.el's global state."
   (declare (indent 1) (debug t))
-  `(progn
-     (cask-use-bundle ,bundle)
-     ,@body))
+  `(let ((load-path (-clone load-path)))
+     (cask-use-bundle ,bundle) ,@body))
 
 (defmacro cask-with-file (bundle &rest body)
   "If BUNDLE path has a Cask-file, yield BODY.
