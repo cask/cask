@@ -256,7 +256,7 @@ This function will setup the package.el state for the BUNDLE."
 When BODY has yielded, this function cleans up side effects
 outside of package.el, for example `load-path'.  Note that this
 function will most likely affect package.el's global state."
-  (declare (indent 1) (debug t))
+  (declare (indent 1))
   `(let ((load-path (-clone load-path)))
      (cask-use-bundle ,bundle) ,@body))
 
@@ -264,7 +264,7 @@ function will most likely affect package.el's global state."
   "If BUNDLE path has a Cask-file, yield BODY.
 
 If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
-  (declare (indent 1) (debug t))
+  (declare (indent 1))
   `(if (f-file? (cask-file ,bundle))
        (progn ,@body)
      (signal 'cask-no-cask-file (list (cask-file ,bundle)))))
@@ -273,7 +273,7 @@ If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
   "If BUNDLE is a package, yield BODY.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  (declare (indent 1) (debug t))
+  (declare (indent 1))
   `(cask-with-file bundle
      (if (and
           (cask-bundle-name ,bundle)
