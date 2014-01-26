@@ -231,7 +231,9 @@ Return all directives in the Cask file as list."
       (nreverse forms))))
 
 (defun cask-use-bundle (bundle)
-  "Use the given BUNDLE."
+  "Use the given BUNDLE.
+
+This function will setup the package.el state for the BUNDLE."
   (setq package-archives nil)
   (epl-change-package-dir (cask-elpa-path bundle))
   (-each (cask-bundle-sources bundle)
