@@ -232,10 +232,8 @@ Return all directives in the Cask file as list."
 
 (defun cask-use-bundle (bundle)
   "Use the given BUNDLE."
-  (setq package-archives nil)        ; TODO: Should call
-                                        ; `epl-reset' here, but it
-                                        ; does not work as expected.
   (epl-change-package-dir (cask-elpa-path bundle))
+  (setq package-archives nil)
   (-each (cask-bundle-sources bundle)
     (lambda (source)
       (epl-add-archive (cask-source-name source)
