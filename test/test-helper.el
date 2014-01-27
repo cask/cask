@@ -39,9 +39,6 @@
 (defvar cask-test/sandbox-path
   (f-expand "sandbox" cask-test/test-path))
 
-(defvar cask-test/sandbox-cask-file-path
-  (f-expand "Cask" cask-test/sandbox-path))
-
 (add-to-list 'load-path cask-test/root-path)
 
 (defun cask-test/package-path (bundle package)
@@ -68,12 +65,23 @@ The items in the list are on the form (package version)."
            (s-split "-" filename))
          (-map 'f-filename directories))))))
 
-(defun cask-test/write-forms (forms)
-  "Write FORMS to sandbox Cask-file."
+(defun cask-test/write-forms (forms path)
+  "Write FORMS to PATH."
   (if (eq forms 'empty)
-      (f-touch cask-test/sandbox-cask-file-path)
+      (f-touch path)
     (let ((cask-file-content (s-join "\n" (-map 'pp-to-string forms))))
-      (f-write-text cask-file-content 'utf-8 cask-test/sandbox-cask-file-path))))
+      (f-write-text cask-file-content 'utf-8 path))))
+
+(defmacro cask-test/with-sandbox (&rest body)
+  "Run BODY in a sandboxed environment."
+  `(f-with-sandbox cask-test/sandbox-path
+     (unwind-protect
+         (let ((default-directory cask-test/sandbox-path))
+           (when (f-dir? cask-test/sandbox-path)
+             (f-delete cask-test/sandbox-path 'force))
+           (f-mkdir cask-test/sandbox-path)
+           ,@body)
+       (epl-reset))))
 
 (defmacro cask-test/with-bundle (&optional forms &rest body)
   "Write FORMS to sandbox Cask-file and yield BODY.
@@ -86,19 +94,22 @@ property...
  - is a list of lists of the form (package version), it's
 asserted that only those packages are installed"
   (declare (indent 1))
-  `(f-with-sandbox cask-test/sandbox-path
-     (let ((cask-source-mapping
-            (cons (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping))
-           (default-directory cask-test/sandbox-path))
-       (when (f-dir? cask-test/sandbox-path)
-         (f-delete cask-test/sandbox-path 'force))
-       (f-mkdir cask-test/sandbox-path)
-       (when ,forms
-         (cask-test/write-forms ,forms))
-       (let ((bundle (cask-setup cask-test/sandbox-path)))
-         (progn
-           ,@body
-           (-when-let (packages ,(plist-get body :packages))
-             (should (-same-items? packages (cask-test/installed-packages bundle)))))))))
+  `(cask-test/with-sandbox
+    (let ((cask-source-mapping
+           (cons (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping)))
+      (when ,forms
+        (let ((cask-file (f-expand "Cask" cask-test/sandbox-path)))
+          (cask-test/write-forms ,forms cask-file)))
+      (let (cask-current-bundle (bundle (cask-setup cask-test/sandbox-path)))
+        ,@body
+        (-when-let (packages ,(plist-get body :packages))
+          (should (-same-items? packages (cask-test/installed-packages bundle))))))))
+
+(defun cask-test/install (bundle)
+  "Install BUNDLE and then reset the environment."
+  (unwind-protect
+      (let (cask-current-bundle)
+        (cask-install bundle))
+    (epl-reset)))
 
 ;;; test-helper.el ends here

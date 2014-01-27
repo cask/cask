@@ -290,11 +290,11 @@ Commands:
 
   Delete local link with NAME."
   (cond ((string= command-or-name "delete")
-         (cask-link-delete (cask-cli--bundle) arg))
+         (cask-link-delete (cask-cli--bundle) (intern arg)))
         ((string= command-or-name "list")
          (cask-cli--print-table
           (cask-links (cask-cli--bundle))))
-        (t (cask-link (cask-cli--bundle) command-or-name arg))))
+        (t (cask-link (cask-cli--bundle) (intern command-or-name) arg))))
 
 (defun cask-cli/package (&optional target-dir)
   "Build package and put in TARGET-DIR or dist if not specified."
