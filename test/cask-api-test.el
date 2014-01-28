@@ -700,6 +700,15 @@
 
 ;;;; cask-add-dependency
 
+(ert-deftest cask-add-dependency-test/without-version ()
+  (cask-test/with-bundle
+      '((source localhost))
+    :packages '(("foo" "0.0.1")
+                ("bar" "0.0.2"))
+    (cask-add-dependency bundle 'foo)
+    (cask-add-dependency bundle 'bar)
+    (cask-install bundle)))
+
 (ert-deftest cask-add-dependency-test/runtime ()
   (cask-test/with-bundle
       '((source localhost))
