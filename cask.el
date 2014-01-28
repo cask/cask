@@ -770,9 +770,8 @@ TARGET."
       (error "Package %s has already been linked" name))
     (when (cask--initialized-p bundle)
       (let ((target (cask-dependency-path bundle name)))
-        (if (and target (f-exists? target))
-            (f-delete target 'force)
-          (error "Package %s not installed" name))
+        (when (and target (f-exists? target))
+          (f-delete target 'force))
         (f-symlink source target)))))
 
 (defun cask-link-delete (bundle name)
