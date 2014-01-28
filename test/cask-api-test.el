@@ -922,6 +922,24 @@
      (cask-link-delete bundle 'foo))))
 
 
+;;;; cask-linked-p
+
+(ert-deftest cask-linked-p-test/linked ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+    (cask-install bundle)
+    (cask-link bundle 'foo cask-test/sandbox-path)
+    (should (cask-linked-p bundle 'foo))))
+
+(ert-deftest cask-linked-p-test/not-linked ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+    (cask-install bundle)
+    (should-not (cask-linked-p bundle 'foo))))
+
+
 ;;;; cask-package
 
 (ert-deftest cask-package-test/no-cask-file ()
