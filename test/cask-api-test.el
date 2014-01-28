@@ -714,8 +714,8 @@
       '((source localhost))
     :packages '(("foo" "0.0.1")
                 ("bar" "0.0.2"))
-    (cask-add-dependency bundle 'foo "0.0.1")
-    (cask-add-dependency bundle 'bar "0.0.2")
+    (cask-add-dependency bundle 'foo :version "0.0.1")
+    (cask-add-dependency bundle 'bar :version "0.0.2")
     (cask-install bundle)))
 
 (ert-deftest cask-add-dependency-test/development ()
@@ -723,8 +723,8 @@
       '((source localhost))
     :packages '(("foo" "0.0.1")
                 ("bar" "0.0.2"))
-    (cask-add-dependency bundle 'foo "0.0.1" :development)
-    (cask-add-dependency bundle 'bar "0.0.2" :development)
+    (cask-add-dependency bundle 'foo :version "0.0.1" :scope 'development)
+    (cask-add-dependency bundle 'bar :version "0.0.2" :scope 'development)
     (cask-install bundle)))
 
 

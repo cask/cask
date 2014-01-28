@@ -92,8 +92,13 @@ Slots:
 
 `name' The package name, as symbol.
 
-`version' The version of the dependency package, as version string."
-  name version)
+`version' The version of the dependency package, as version string.
+
+`fetcher' Name of the fetcher. Available fetchers are specified
+by the variable `cask-fetchers'.
+
+`url' Url to the fetcher repository."
+  name version fetcher url)
 
 (cl-defstruct cask-source
   "Structure representing a package source.
@@ -161,6 +166,10 @@ Slots:
 
 This variable should not be modifed.  It is used by
 the function `cask--with-environment'.")
+
+(defconst cask-fetchers
+  '(:git :bzr :hg :darcs :svn :cvs)
+  "List of supported fetchers.")
 
 
 ;;;; Internal functions
@@ -316,7 +325,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 (defun cask--eval (bundle forms &optional scope)
   "Populare BUNDLE by evaluating FORMS in SCOPE.
 
-SCOPE may be nil or :development."
+SCOPE may be nil or 'development."
   (cl-dolist (form forms)
     (cl-case (car form)
       (source
@@ -336,18 +345,21 @@ SCOPE may be nil or :development."
            (setf (cask-bundle-description bundle) (epl-package-summary package))
            (-each (epl-package-requirements package)
              (lambda (requirement)
-               (cask-add-dependency bundle
-                                    (epl-requirement-name requirement)
-                                    (epl-requirement-version-string requirement)))))))
+               (let ((name (epl-requirement-name requirement))
+                     (version (epl-requirement-version-string requirement)))
+                 (cask-add-dependency bundle name :version version)))))))
       (depends-on
-       (cl-destructuring-bind (_ name &optional version) form
-         (cask-add-dependency bundle name version scope)))
+       (cl-destructuring-bind (_ name &rest args) form
+         (when (stringp (car args))
+           (push :version args))
+         (setq args (plist-put args :scope scope))
+         (apply 'cask-add-dependency (append (list bundle (intern name)) args))))
       (files
        (cl-destructuring-bind (_ &rest patterns) form
          (setf (cask-bundle-patterns bundle) patterns)))
       (development
        (cl-destructuring-bind (_ . body) form
-         (cask--eval bundle body :development)))
+         (cask--eval bundle body 'development)))
       (t
        (error "Unknown directive: %S" form)))))
 
@@ -694,14 +706,30 @@ in the list are relative to the path."
           (patterns (or (cask-bundle-patterns bundle) package-build-default-files-spec)))
       (-map 'car (ignore-errors (package-build-expand-file-specs path patterns))))))
 
-(defun cask-add-dependency (bundle name version &optional scope)
-  "Add to BUNDLE the dependency NAME with VERSION in SCOPE.
+(defun cask-add-dependency (bundle name &rest args)
+  "Add dependency to BUNDLE.
 
-SCOPE can be either nil, which means it's a runtime dependency
-or `:development', which means it's a development dependency."
-  (let ((name (if (stringp name) (intern name) name)))
-    (push (make-cask-dependency :name name :version version)
-          (if (eq scope :development)
+NAME is the name of the dependency.
+
+ARGS is a plist with these optional arguments:
+
+ `:version' Depend on at least this version for this dependency.
+
+ `:scope' Add dependency to a certain scope.  Allowed values are
+ 'development and 'runtime.
+
+ARGS can also include any of the items in `cask-fetchers'.  The
+plist key is one of the items in the list and the value is the
+url to the fetcher source."
+  (let ((dependency (make-cask-dependency :name name)))
+    (-when-let (version (plist-get args :version))
+      (setf (cask-dependency-version dependency) version))
+    (-when-let (fetcher (--first (-contains? cask-fetchers it) args))
+      (setf (cask-dependency-fetcher dependency) fetcher)
+      (let ((url (plist-get args fetcher)))
+        (setf (cask-dependency-url dependency) url)))
+    (push dependency
+          (if (eq (plist-get args :scope) 'development)
               (cask-bundle-development-dependencies bundle)
             (cask-bundle-runtime-dependencies bundle)))))
 
