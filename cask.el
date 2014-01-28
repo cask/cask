@@ -766,6 +766,8 @@ TARGET."
       (error "Cannot link package %s, is not a dependency" name))
     (unless (f-dir? source)
       (error "Cannot create link %s to non existing path: %s" name source))
+    (when (cask-linked-p bundle name)
+      (error "Package %s has already been linked" name))
     (when (cask--initialized-p bundle)
       (let ((target (cask-dependency-path bundle name)))
         (if (and target (f-exists? target))

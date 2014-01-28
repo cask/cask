@@ -876,6 +876,15 @@
     (should-error
      (cask-link bundle 'bar cask-test/sandbox-path))))
 
+(ert-deftest cask-link-test/already-linked ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+    (cask-install bundle)
+    (cask-link bundle 'foo cask-test/sandbox-path)
+    (should-error
+     (cask-link bundle 'foo cask-test/sandbox-path))))
+
 
 ;;;; cask-link-delete
 
