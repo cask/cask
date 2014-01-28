@@ -781,7 +781,7 @@ TARGET."
     (unless (cask-has-dependency bundle name)
       (error "Cannot link package %s, is not a dependency" name))
     (let ((link (cask-dependency-path bundle name)))
-      (if (f-symlink? link)
+      (if (and link (f-symlink? link))
           (progn
             (f-delete link)
             (cask--with-environment bundle
