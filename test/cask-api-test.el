@@ -857,24 +857,21 @@
 
 (ert-deftest cask-link-test/no-such-dependency ()
   (cask-test/with-bundle 'empty
-    (should-error (cask-link bundle 'foo cask-test/sandbox-path))))
+    (condition-case err
+        (cask-link bundle 'foo cask-test/sandbox-path)
+      (error
+       (should (string= (error-message-string err)
+                        "Cannot link package foo, is not a dependency"))))))
 
 (ert-deftest cask-link-test/non-existing-path ()
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
-    (should-error
-     (cask-link bundle 'foo "/path/to/non-existing-directory"))))
-
-(ert-deftest cask-link-test/package-not-installed ()
-  (cask-test/with-bundle
-      '((source localhost)
-        (depends-on "foo" "0.0.1")
-        (depends-on "bar" "0.0.2"))
-    (cask-install bundle)
-    (f-delete (f-expand "bar-0.0.2" (cask-elpa-path bundle)) 'force)
-    (should-error
-     (cask-link bundle 'bar cask-test/sandbox-path))))
+    (condition-case err
+        (cask-link bundle 'foo "/path/to/non-existing-directory")
+      (error
+       (should (string= (error-message-string err)
+                        "Cannot create link foo to non existing path: /path/to/non-existing-directory"))))))
 
 (ert-deftest cask-link-test/already-linked ()
   (cask-test/with-bundle
@@ -882,8 +879,11 @@
         (depends-on "foo" "0.0.1"))
     (cask-install bundle)
     (cask-link bundle 'foo cask-test/sandbox-path)
-    (should-error
-     (cask-link bundle 'foo cask-test/sandbox-path))))
+    (condition-case err
+        (cask-link bundle 'foo cask-test/sandbox-path)
+      (error
+       (should (string= (error-message-string err)
+                        "Package foo has already been linked"))))))
 
 
 ;;;; cask-link-delete
@@ -912,14 +912,20 @@
 
 (ert-deftest cask-link-delete-test/no-such-dependency ()
   (cask-test/with-bundle 'empty
-    (should-error (cask-link-delete bundle 'foo))))
+    (condition-case err
+        (cask-link-delete bundle 'foo)
+      (error
+       (should (string= (error-message-string err)
+                        "Cannot link package foo, is not a dependency"))))))
 
 (ert-deftest cask-link-delete-test/not-linked ()
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
-    (should-error
-     (cask-link-delete bundle 'foo))))
+    (condition-case err
+        (cask-link-delete bundle 'foo)
+      (error
+       (should (string= (error-message-string err) "Package foo not linked"))))))
 
 
 ;;;; cask-linked-p
@@ -954,7 +960,11 @@
 (ert-deftest cask-package-test/no-files ()
   (cask-test/with-bundle
       '((package "foo" "0.0.1" "FOO"))
-    (should-error (cask-package bundle))))
+    (condition-case err
+        (cask-package bundle)
+      (error
+       (should (s-matches? (regexp-quote "No matching file(s) found in")
+                           (error-message-string err)))))))
 
 (ert-deftest cask-package-test/without-target-dir ()
   (cask-test/with-bundle
