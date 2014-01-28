@@ -28,7 +28,6 @@
 (require 'f)
 (require 's)
 (require 'dash)
-(require 'rx)
 
 (defvar cask-test/test-path
   (f-parent (f-this-file)))
