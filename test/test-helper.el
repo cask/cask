@@ -29,13 +29,13 @@
 (require 's)
 (require 'dash)
 
-(defvar cask-test/test-path
+(defconst cask-test/test-path
   (f-parent (f-this-file)))
 
-(defvar cask-test/root-path
+(defconst cask-test/root-path
   (f-parent cask-test/test-path))
 
-(defvar cask-test/sandbox-path
+(defconst cask-test/sandbox-path
   (f-expand "sandbox" cask-test/test-path))
 
 (add-to-list 'load-path cask-test/root-path)
