@@ -730,11 +730,6 @@
 
 ;;;; cask-add-source
 
-(ert-deftest cask-add-source-test/no-cask-file ()
-  (cask-test/with-bundle nil
-    (should-error
-     (cask-add-source bundle 'foo) :type 'cask-no-cask-file)))
-
 (ert-deftest cask-add-source-test/name-and-url ()
   (cask-test/with-bundle
       '((package "foo" "0.0.1" "FOO"))

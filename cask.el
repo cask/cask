@@ -742,14 +742,13 @@ symbol, which refers to some of the keys in
 
 Second argument URL is only required unless alias.  If no alias,
 URL is the url to the mirror."
-  (cask--with-file bundle
-    (unless url
-      (let ((mapping (assq name-or-alias cask-source-mapping)))
-        (unless mapping
-          (error "Unknown package archive: %s" name-or-alias))
-        (setq name-or-alias (symbol-name (car mapping)))
-        (setq url (cdr mapping))))
-    (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle))))
+  (unless url
+    (let ((mapping (assq name-or-alias cask-source-mapping)))
+      (unless mapping
+        (error "Unknown package archive: %s" name-or-alias))
+      (setq name-or-alias (symbol-name (car mapping)))
+      (setq url (cdr mapping))))
+  (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle)))
 
 (defun cask-build (bundle)
   "Build BUNDLE Elisp files."
