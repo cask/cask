@@ -749,6 +749,20 @@
       (should (string= (cask-source-url source) "http://melpa.milkbox.net/packages/")))))
 
 
+;;;; cask-remove-source
+
+(ert-deftest cask-remove-source-test/no-sources ()
+  (cask-test/with-bundle nil
+    (cask-remove-source bundle "foo")
+    (should-not (cask-bundle-sources bundle))))
+
+(ert-deftest cask-remove-source-test/with-sources ()
+  (cask-test/with-bundle nil
+    (cask-add-source bundle "foo" "http://elpa.foo.com/packages/")
+    (cask-remove-source bundle "foo")
+    (should-not (cask-bundle-sources bundle))))
+
+
 ;;;; cask-build
 
 (ert-deftest cask-build-test/no-cask-file ()

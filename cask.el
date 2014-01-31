@@ -750,6 +750,12 @@ URL is the url to the mirror."
       (setq url (cdr mapping))))
   (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle)))
 
+(defun cask-remove-source (bundle name)
+  "Remove source from BUNDLE with NAME."
+  (let ((sources (--reject (string= name (cask-source-name it))
+                           (cask-bundle-sources bundle))))
+    (setf (cask-bundle-sources bundle) sources)))
+
 (defun cask-build (bundle)
   "Build BUNDLE Elisp files."
   (cask--with-file bundle
