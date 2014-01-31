@@ -111,4 +111,15 @@ asserted that only those packages are installed"
         (cask-install bundle))
     (epl-reset)))
 
+(defun should-be-same-dependencies (actual expected)
+  "Assert that the dependencies ACTUAL and EXPECTED are same."
+  (should
+   (-same-items?
+    (-map 'cask-dependency-name expected)
+    (-map 'cask-dependency-name actual)))
+  (should
+   (-same-items?
+    (-map 'cask-dependency-version expected)
+    (-map 'cask-dependency-version actual))))
+
 ;;; test-helper.el ends here

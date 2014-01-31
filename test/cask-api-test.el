@@ -62,7 +62,7 @@
          (depends-on "bar" "0.0.2")))
     (let ((actual (cask-runtime-dependencies bundle))
           (expected (list (make-cask-dependency :name 'foo :version "0.0.1"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-runtime-dependencies-test/with-multiple-dependenies ()
   (cask-test/with-bundle
@@ -73,7 +73,7 @@
     (let ((actual (cask-runtime-dependencies bundle))
           (expected (list (make-cask-dependency :name 'foo :version "0.0.1")
                           (make-cask-dependency :name 'bar :version "0.0.2"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-runtime-dependencies-test/deep ()
   (cask-test/with-bundle
@@ -84,7 +84,7 @@
           (expected (list (make-cask-dependency :name 'baz :version "0.0.3")
                           (make-cask-dependency :name 'qux :version "0.0.4")
                           (make-cask-dependency :name 'fux :version "0.0.6"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-runtime-dependencies-test/without-initialized-environment ()
   (cask-test/with-bundle
@@ -95,7 +95,7 @@
           (expected (list (make-cask-dependency :name 'baz :version "0.0.3")
                           (make-cask-dependency :name 'qux :version "0.0.4")
                           (make-cask-dependency :name 'fux :version "0.0.6"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 
 ;;;; cask-development-dependencies
@@ -116,7 +116,7 @@
          (depends-on "bar" "0.0.2")))
     (let ((actual (cask-development-dependencies bundle))
           (expected (list (make-cask-dependency :name 'bar :version "0.0.2"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-development-dependencies-test/with-multiple-dependenies ()
   (cask-test/with-bundle
@@ -127,7 +127,7 @@
     (let ((actual (cask-development-dependencies bundle))
           (expected (list (make-cask-dependency :name 'bar :version "0.0.2")
                           (make-cask-dependency :name 'baz :version "0.0.3"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-development-dependencies-test/deep ()
   (cask-test/with-bundle
@@ -139,7 +139,7 @@
           (expected (list (make-cask-dependency :name 'baz :version "0.0.3")
                           (make-cask-dependency :name 'qux :version "0.0.4")
                           (make-cask-dependency :name 'fux :version "0.0.6"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-development-dependencies-test/without-initialized-environment ()
   (cask-test/with-bundle
@@ -151,7 +151,7 @@
           (expected (list (make-cask-dependency :name 'baz :version "0.0.3")
                           (make-cask-dependency :name 'qux :version "0.0.4")
                           (make-cask-dependency :name 'fux :version "0.0.6"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 
 ;;;; cask-dependencies
@@ -171,7 +171,7 @@
         (depends-on "foo" "0.0.1"))
     (let ((actual (cask-dependencies bundle))
           (expected (list (make-cask-dependency :name 'foo :version "0.0.1"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-dependencies-test/with-multiple-dependenies ()
   (cask-test/with-bundle
@@ -182,7 +182,7 @@
     (let ((actual (cask-dependencies bundle))
           (expected (list (make-cask-dependency :name 'foo :version "0.0.1")
                           (make-cask-dependency :name 'bar :version "0.0.2"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-dependencies-test/deep ()
   (cask-test/with-bundle
@@ -193,7 +193,7 @@
           (expected (list (make-cask-dependency :name 'baz :version "0.0.3")
                           (make-cask-dependency :name 'qux :version "0.0.4")
                           (make-cask-dependency :name 'fux :version "0.0.6"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-dependencies-test/without-initialized-environment ()
   (cask-test/with-bundle
@@ -207,7 +207,7 @@
                           (make-cask-dependency :name 'baz :version "0.0.3")
                           (make-cask-dependency :name 'qux :version "0.0.4")
                           (make-cask-dependency :name 'fux :version "0.0.6"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 
 ;;;; cask-installed-dependencies
@@ -223,7 +223,7 @@
     (cask-install bundle)
     (let ((actual (cask-installed-dependencies bundle))
           (expected (list (make-cask-dependency :name 'baz :version "0.0.3"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-installed-dependencies-test/installed-deep ()
   (cask-test/with-bundle
@@ -234,7 +234,7 @@
           (expected (list (make-cask-dependency :name 'baz :version "0.0.3")
                           (make-cask-dependency :name 'qux :version "0.0.4")
                           (make-cask-dependency :name 'fux :version "0.0.6"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-installed-dependencies-test/no-directory ()
   (cask-test/with-bundle
@@ -252,7 +252,7 @@
     (f-mkdir (f-expand "bar-0.0.2" (cask-elpa-path bundle)))
     (let ((actual (cask-installed-dependencies bundle 'deep))
           (expected (list (make-cask-dependency :name 'foo :version "0.0.1"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-installed-dependencies-test/link ()
   (cask-test/with-bundle
@@ -262,7 +262,7 @@
     (cask-link bundle 'foo cask-test/sandbox-path)
     (let ((actual (cask-installed-dependencies bundle 'deep))
           (expected (list (make-cask-dependency :name 'foo :version "0.0.1"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-installed-dependencies-test/without-initialized-environment ()
   (cask-test/with-bundle
@@ -271,7 +271,7 @@
     (cask-test/install bundle)
     (let ((actual (cask-installed-dependencies bundle 'deep))
           (expected (list (make-cask-dependency :name 'foo :version "0.0.1"))))
-      (should (-same-items? actual expected)))))
+      (should-be-same-dependencies actual expected))))
 
 
 ;;;; cask-define-package-string
@@ -558,7 +558,7 @@
        (let ((missing-dependencies (cdr err))
              (missing-a (make-cask-dependency :name 'missing-a :version "0.0.1"))
              (missing-b (make-cask-dependency :name 'missing-b :version "0.0.2")))
-         (should (-same-items? missing-dependencies (list missing-a missing-b))))))))
+         (should-be-same-dependencies missing-dependencies (list missing-a missing-b)))))))
 
 (ert-deftest cask-install-test/link ()
   (cask-test/with-bundle
