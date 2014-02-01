@@ -92,8 +92,16 @@ Slots:
 
 `name' The package name, as symbol.
 
-`version' The version of the dependency package, as version string."
-  name version)
+`version' The version of the dependency package, as version string.
+
+`fetcher' Name of the fetcher. Available fetchers are specified
+by the variable `cask-fetchers'.
+
+`url' Url to the fetcher repository.
+
+`files' Files to include in build.  This property should only be used
+when fetcher is specified."
+  name version fetcher url files)
 
 (cl-defstruct cask-source
   "Structure representing a package source.
@@ -161,6 +169,39 @@ Slots:
 
 This variable should not be modifed.  It is used by
 the function `cask--with-environment'.")
+
+(defconst cask-fetchers
+  '(:git :bzr :hg :darcs :svn :cvs)
+  "List of supported fetchers.")
+
+(defconst cask-servant-path
+  (f-expand "servant" cask-directory)
+  "Path to servant directory used for fetcher installations.")
+
+(defconst cask-servant-packages-path
+  (f-expand "packages" cask-servant-path)
+  "Path to servant packages directory.")
+
+(defconst cask-servant-tmp-path
+  (f-expand "tmp" cask-servant-path)
+  "Path to servant tmp directory.")
+
+(defconst cask-servant-routes
+  (list (cons "^.*//packages/\\(.*\\)$"
+              (servant-make-elnode-handler cask-servant-packages-path)))
+  "Routes for local servant server.")
+
+(defvar cask-servant-host "127.0.0.1"
+  "Host to run servant on.")
+
+(defvar cask-servant-port 1337
+  "Port to run servant on.")
+
+(defvar cask-servant-url
+  (format "http://%s:%d/packages/"
+          cask-servant-host
+          cask-servant-port)
+  "Servant packages url.")
 
 
 ;;;; Internal functions
@@ -271,6 +312,72 @@ from the sources."
         (signal 'cask-failed-initialization
                 (list err (shut-up-current-output))))))))
 
+(defun cask--start-local-elpa-server (bundle)
+  "Start servant server for BUNDLE."
+  (elnode-start
+   (lambda (httpcon)
+     (elnode-hostpath-dispatcher httpcon cask-servant-routes))
+   :port cask-servant-port
+   :host cask-servant-host))
+
+(defun cask--stop-local-elpa-server (bundle)
+  "Stop servant server for BUNDLE."
+  (elnode-stop cask-servant-port))
+
+(defun cask--fetcher-dependencies (bundle)
+  "Return list of fetcher dependencies for BUNDLE."
+  (--select (cask-dependency-fetcher it) (cask--dependencies bundle)))
+
+(defun cask--has-fetcher-dependency-p (bundle)
+  "Return true if BUNDLE has any fetcher dependencies."
+  (> (length (cask--fetcher-dependencies bundle)) 0))
+
+(defun cask--dependency-to-package-build-config (dependency)
+  "Turn DEPENDENCY into a package-build config object."
+  (let ((fetcher (intern (substring (symbol-name (cask-dependency-fetcher dependency)) 1)))
+        (url (cask-dependency-url dependency))
+        (files (cask-dependency-files dependency)))
+    (list :fetcher fetcher :url url :files files)))
+
+(defun cask--checkout-and-package-fetcher-dependencies (bundle)
+  "Checkout and package all fetcher dependencies in BUNDLE.
+
+For each fetcher dependency in BUNDLE, do a checkout (will
+automatically update if already exist) and then build a package."
+  (-each (cask--fetcher-dependencies bundle)
+    (lambda (dependency)
+      (let* ((name (cask-dependency-name dependency))
+             (path (f-expand (symbol-name name) cask-servant-tmp-path))
+             (config (cask--dependency-to-package-build-config dependency))
+             (files (cask-dependency-files dependency)))
+        (let ((version (package-build-checkout name config path)))
+          (package-build-package name version files path cask-servant-packages-path))))))
+
+(defmacro cask--with-source (bundle name url &rest body)
+  "Temporarily add source to BUNDLE and yield BODY.
+
+NAME is the name of the source and URL is the url of the source."
+  (declare (indent 3))
+  `(progn
+     (cask-add-source ,bundle ,name ,url)
+     ,@body
+     (cask-remove-source ,bundle ,name)))
+
+(defmacro cask--with-local-elpa-server (bundle &rest body)
+  "Start servant server for BUNDLE and yield BODY.
+
+The local servant source is temporarily added and available in
+BUNDLE in BODY.  When BODY has run, the server is stopped."
+  (declare (indent 1))
+  `(if (cask--has-fetcher-dependency-p ,bundle)
+       (progn
+         (cask--checkout-and-package-fetcher-dependencies ,bundle)
+         (cask--start-local-elpa-server ,bundle)
+         (cask--with-source ,bundle "servant" cask-servant-url
+           ,@body)
+         (cask--stop-local-elpa-server ,bundle))
+     ,@body))
+
 (defmacro cask--with-environment (bundle &rest body)
   "Switch to BUNDLE environment and yield BODY.
 
@@ -284,12 +391,15 @@ refresh argument to `cask--use-environment'.
 When BODY has yielded, this function cleans up side effects
 outside of package.el, for example `load-path'."
   (declare (indent defun))
-  `(cask--with-file bundle
-     (when (or ,(plist-get body :force) (not (equal ,bundle cask-current-bundle)))
-       (let ((load-path (-clone load-path)))
-         (cask--use-environment ,bundle ,(plist-get body :refresh)))
-       (setq cask-current-bundle (copy-cask-bundle ,bundle)))
-     ,@body))
+  `(cask--with-file ,bundle
+     (if (or ,(plist-get body :force) (not (equal ,bundle cask-current-bundle)))
+         (prog1
+             (let ((load-path (-clone load-path)))
+               (cask--with-local-elpa-server ,bundle
+                 (cask--use-environment ,bundle ,(plist-get body :refresh))
+                 ,@body))
+           (setq cask-current-bundle (copy-cask-bundle ,bundle)))
+       ,@body)))
 
 (defmacro cask--with-file (bundle &rest body)
   "If BUNDLE path has a Cask-file, yield BODY.
@@ -316,7 +426,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 (defun cask--eval (bundle forms &optional scope)
   "Populare BUNDLE by evaluating FORMS in SCOPE.
 
-SCOPE may be nil or :development."
+SCOPE may be nil or 'development."
   (cl-dolist (form forms)
     (cl-case (car form)
       (source
@@ -336,18 +446,21 @@ SCOPE may be nil or :development."
            (setf (cask-bundle-description bundle) (epl-package-summary package))
            (-each (epl-package-requirements package)
              (lambda (requirement)
-               (cask-add-dependency bundle
-                                    (epl-requirement-name requirement)
-                                    (epl-requirement-version-string requirement)))))))
+               (let ((name (epl-requirement-name requirement))
+                     (version (epl-requirement-version-string requirement)))
+                 (cask-add-dependency bundle name :version version)))))))
       (depends-on
-       (cl-destructuring-bind (_ name &optional version) form
-         (cask-add-dependency bundle name version scope)))
+       (cl-destructuring-bind (_ name &rest args) form
+         (when (stringp (car args))
+           (push :version args))
+         (setq args (plist-put args :scope scope))
+         (apply 'cask-add-dependency (append (list bundle (intern name)) args))))
       (files
        (cl-destructuring-bind (_ &rest patterns) form
          (setf (cask-bundle-patterns bundle) patterns)))
       (development
        (cl-destructuring-bind (_ . body) form
-         (cask--eval bundle body :development)))
+         (cask--eval bundle body 'development)))
       (t
        (error "Unknown directive: %S" form)))))
 
@@ -694,14 +807,33 @@ in the list are relative to the path."
           (patterns (or (cask-bundle-patterns bundle) package-build-default-files-spec)))
       (-map 'car (ignore-errors (package-build-expand-file-specs path patterns))))))
 
-(defun cask-add-dependency (bundle name version &optional scope)
-  "Add to BUNDLE the dependency NAME with VERSION in SCOPE.
+(defun cask-add-dependency (bundle name &rest args)
+  "Add dependency to BUNDLE.
 
-SCOPE can be either nil, which means it's a runtime dependency
-or `:development', which means it's a development dependency."
-  (let ((name (if (stringp name) (intern name) name)))
-    (push (make-cask-dependency :name name :version version)
-          (if (eq scope :development)
+NAME is the name of the dependency.
+
+ARGS is a plist with these optional arguments:
+
+ `:version' Depend on at least this version for this dependency.
+
+ `:scope' Add dependency to a certain scope.  Allowed values are
+ 'development and 'runtime.
+
+ARGS can also include any of the items in `cask-fetchers'.  The
+plist key is one of the items in the list and the value is the
+url to the fetcher source."
+  (let ((dependency (make-cask-dependency :name name)))
+    (-when-let (version (plist-get args :version))
+      (setf (cask-dependency-version dependency) version))
+    (let ((files (plist-get args :files)))
+      (setf (cask-dependency-files dependency)
+            (or files package-build-default-files-spec)))
+    (-when-let (fetcher (--first (-contains? cask-fetchers it) args))
+      (setf (cask-dependency-fetcher dependency) fetcher)
+      (let ((url (plist-get args fetcher)))
+        (setf (cask-dependency-url dependency) url)))
+    (push dependency
+          (if (eq (plist-get args :scope) 'development)
               (cask-bundle-development-dependencies bundle)
             (cask-bundle-runtime-dependencies bundle)))))
 
@@ -714,14 +846,19 @@ symbol, which refers to some of the keys in
 
 Second argument URL is only required unless alias.  If no alias,
 URL is the url to the mirror."
-  (cask--with-file bundle
-    (unless url
-      (let ((mapping (assq name-or-alias cask-source-mapping)))
-        (unless mapping
-          (error "Unknown package archive: %s" name-or-alias))
-        (setq name-or-alias (symbol-name (car mapping)))
-        (setq url (cdr mapping))))
-    (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle))))
+  (unless url
+    (let ((mapping (assq name-or-alias cask-source-mapping)))
+      (unless mapping
+        (error "Unknown package archive: %s" name-or-alias))
+      (setq name-or-alias (symbol-name (car mapping)))
+      (setq url (cdr mapping))))
+  (push (make-cask-source :name name-or-alias :url url) (cask-bundle-sources bundle)))
+
+(defun cask-remove-source (bundle name)
+  "Remove source from BUNDLE with NAME."
+  (let ((sources (--reject (string= name (cask-source-name it))
+                           (cask-bundle-sources bundle))))
+    (setf (cask-bundle-sources bundle) sources)))
 
 (defun cask-build (bundle)
   "Build BUNDLE Elisp files."
