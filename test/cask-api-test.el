@@ -33,7 +33,8 @@
 (require 'cask)
 
 (eval-when-compile
-  (defvar cask-test/sandbox-path))
+  (defvar cask-test/sandbox-path)
+  (defvar cask-test/cvs-repo-path))
 
 
 ;;;; cask-setup
@@ -516,6 +517,10 @@
       (cask-update bundle)
       (should (equal orig-load-path load-path)))))
 
+(ert-deftest cask-update-test/fetcher-git ()
+  ;; TODO: How to test this?
+  )
+
 
 ;;;; cask-install
 
@@ -577,6 +582,49 @@
       (cask-install bundle)
       (should (equal orig-load-path load-path)))))
 
+(ert-deftest cask-install-test/fetcher-git ()
+  (cask-test/with-git-repo
+   (cask-test/with-bundle
+       `((depends-on "foo" :git ,cask-test/cvs-repo-path))
+     :packages '(("foo"))
+     (f-copy (cask-test/fixture-path "foo.el") cask-test/cvs-repo-path)
+     (git "add" "foo.el")
+     (git "commit" "-a" "-m" "Add foo.")
+     (cask-install bundle))))
+
+(ert-deftest cask-install-test/fetcher-bzr ()
+  ;; TODO
+  )
+
+(ert-deftest cask-install-test/fetcher-hg ()
+  ;; TODO
+  )
+
+(ert-deftest cask-install-test/fetcher-darcs ()
+  ;; TODO
+  )
+
+(ert-deftest cask-install-test/fetcher-svn ()
+  ;; TODO
+  )
+
+(ert-deftest cask-install-test/fetcher-cvs ()
+  ;; TODO
+  )
+
+(ert-deftest cask-install-test/fetcher-files ()
+  (cask-test/with-git-repo
+   (cask-test/with-bundle
+       `((depends-on "foo" :git ,cask-test/cvs-repo-path :files ("foo.el")))
+     :packages '(("foo"))
+     (f-copy (cask-test/fixture-path "foo.el") cask-test/cvs-repo-path)
+     (f-copy (cask-test/fixture-path "bar.el") cask-test/cvs-repo-path)
+     (git "add" "foo.el" "bar.el")
+     (git "commit" "-a" "-m" "Add foo and bar.")
+     (cask-install bundle)
+     (should (f-file? (f-expand "foo.el" (cask-dependency-path bundle 'foo))))
+     (should-not (f-file? (f-expand "bar.el" (cask-dependency-path bundle 'foo)))))))
+
 
 ;;;; cask-outdated
 
@@ -627,6 +675,10 @@
       (cask-install bundle)
       (cask-outdated bundle)
       (should (equal orig-load-path load-path)))))
+
+(ert-deftest cask-outdated-test/fetcher-git ()
+  ;; TODO: How to test this?
+  )
 
 
 ;;;; cask-initialize

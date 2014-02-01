@@ -28,6 +28,8 @@
 (require 'f)
 (require 's)
 (require 'dash)
+(require 'noflet)
+(require 'el-mock)
 
 (defconst cask-test/test-path
   (f-parent (f-this-file)))
@@ -37,6 +39,11 @@
 
 (defconst cask-test/sandbox-path
   (f-expand "sandbox" cask-test/test-path))
+
+(defconst cask-test/fixtures-path
+  (f-expand "fixtures" cask-test/test-path))
+
+(defvar cask-test/cvs-repo-path nil)
 
 (add-to-list 'load-path cask-test/root-path)
 
@@ -73,7 +80,9 @@ The items in the list are on the form (package version)."
 
 (defmacro cask-test/with-sandbox (&rest body)
   "Run BODY in a sandboxed environment."
-  `(f-with-sandbox cask-test/sandbox-path
+  `(f-with-sandbox (list cask-test/sandbox-path
+                         cask-test/cvs-repo-path
+                         cask-servant-path)
      (unwind-protect
          (let ((default-directory cask-test/sandbox-path))
            (when (f-dir? cask-test/sandbox-path)
@@ -101,8 +110,16 @@ asserted that only those packages are installed"
           (cask-test/write-forms ,forms cask-file)))
       (let (cask-current-bundle (bundle (cask-setup cask-test/sandbox-path)))
         ,@body
-        (-when-let (packages ,(plist-get body :packages))
-          (should (-same-items? packages (cask-test/installed-packages bundle))))))))
+        (-when-let (expected-packages ,(plist-get body :packages))
+          (let ((actual-packages (cask-test/installed-packages bundle)))
+            (should (-same-items? (-map 'car expected-packages) (-map 'car actual-packages)))
+            (-each expected-packages
+              (lambda (expected-package)
+                (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
+                  (let ((actual-package-version (cadr actual-package))
+                        (expected-package-version (cadr expected-package)))
+                    (when expected-package-version
+                      (should (string= actual-package-version expected-package-version)))))))))))))
 
 (defun cask-test/install (bundle)
   "Install BUNDLE and then reset the environment."
@@ -110,6 +127,33 @@ asserted that only those packages are installed"
       (let (cask-current-bundle)
         (cask-install bundle))
     (epl-reset)))
+
+(defun cask-test/run-command (command &rest args)
+  "Run COMMAND with ARGS."
+  (with-temp-buffer
+    (-if-let (program (executable-find command))
+        (let ((exit-code (apply 'call-process (append (list program nil t nil) args))))
+          (unless (zerop exit-code)
+            (error "Running command %s failed with: '%s'"
+                   (s-join " " (cons command args))
+                   (buffer-string))))
+      (error "No such command found %s" command))))
+
+(defmacro cask-test/with-git-repo (&rest body)
+  "Create temporary Git repo and yield BODY."
+  `(let* ((cask-test/cvs-repo-path (f-slash (make-temp-file "cask" 'directory)))
+          (default-directory cask-test/cvs-repo-path))
+     (cask-test/run-command "git" "init" cask-test/cvs-repo-path)
+     (cask-test/run-command "git" "remote" "add" "origin" (concat "file://" cask-test/cvs-repo-path))
+     (cask-test/run-command "git" "fetch" "origin")
+     (noflet ((git (&rest args)
+                   (let ((default-directory cask-test/cvs-repo-path))
+                     (apply 'cask-test/run-command (cons "git" args)))))
+             ,@body)))
+
+(defun cask-test/fixture-path (name)
+  "Return path to fixture with NAME."
+  (f-expand name cask-test/fixtures-path))
 
 (defun should-be-same-dependencies (actual expected)
   "Assert that the dependencies ACTUAL and EXPECTED are same."
