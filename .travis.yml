@@ -8,10 +8,10 @@ before_install:
   - cask
   - EMACS=$(evm bin emacs-24.3-bin) make start-server
 env:
-  - EMACS=emacs-23.4
-  - EMACS=emacs-24.1
-  - EMACS=emacs-24.2
-  - EMACS=emacs-24.3
+  - EVM_EMACS=emacs-23.4
+  - EVM_EMACS=emacs-24.1
+  - EVM_EMACS=emacs-24.2
+  - EVM_EMACS=emacs-24.3
 script:
   - make test
 after_failure:
