@@ -928,7 +928,8 @@ TARGET."
 
 (defun cask-linked-p (bundle name)
   "Return true if BUNDLE has link with NAME."
-  (f-symlink? (cask-dependency-path bundle name)))
+  (-when-let (path (cask-dependency-path bundle name))
+    (f-symlink? path)))
 
 (defun cask-package (bundle &optional target-dir)
   "Build an Elpa package of BUNDLE.

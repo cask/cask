@@ -1015,6 +1015,10 @@
     (cask-install bundle)
     (should-not (cask-linked-p bundle 'foo))))
 
+(ert-deftest cask-linked-p-test/not-installed ()
+  (cask-test/with-bundle 'empty
+    (should-not (cask-linked-p bundle 'foo))))
+
 
 ;;;; cask-package
 
