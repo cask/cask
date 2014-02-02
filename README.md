@@ -2,10 +2,12 @@
 
 ![Cask](cask.png)
 
-Cask for Emacs is what Bundler is to Ruby. It aims to make ELPA
-dependency management in Emacs painless (as painless as it can
-be). This includes both your local Emacs installation and Emacs
-package development.
+Cask is a project management tool for Emacs that helps automate the
+package development cycle; development, dependencies, testing,
+building, packaging and more.
+
+Cask can also be used to manage dependencies for your local Emacs
+configuration.
 
 To install Cask, run this command:
 
