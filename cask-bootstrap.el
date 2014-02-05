@@ -36,7 +36,7 @@
   "Path to Cask bootstrap directory.")
 
 (defconst cask-bootstrap-packages
-  '(s dash f commander git epl shut-up cl-lib package-build servant)
+  '(s dash f commander git epl shut-up cl-lib package-build)
   "List of bootstrap packages required by this file.")
 
 (unless (require 'package nil :noerror)

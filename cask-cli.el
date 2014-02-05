@@ -312,10 +312,6 @@ Commands:
   "Run command in this PATH instead of in `default-directory'."
   (setq cask-cli--path path))
 
-(defun cask-cli/set-port (port)
-  "Use PORT for servant server, defaults to 1337."
-  (setq cask-servant-port port))
-
 (defun cask-cli/dev ()
   "Run in dev mode."
   (setq cask-cli--dev-mode t))
@@ -323,6 +319,10 @@ Commands:
 (defun cask-cli/debug ()
   "Turn on debug output."
   (setq debug-on-error t))
+
+(defun cask-cli/verbose ()
+  "Be verbose and do not hide output."
+  (setq shut-up-ignore t))
 
 
 ;;;; Commander schedule
@@ -360,7 +360,7 @@ Commands:
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
- (option "--port <port>" cask-cli/set-port))
+ (option "--verbose" cask-cli/verbose))
 
 (provide 'cask-cli)
 

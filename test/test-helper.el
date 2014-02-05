@@ -82,7 +82,7 @@ The items in the list are on the form (package version)."
   "Run BODY in a sandboxed environment."
   `(f-with-sandbox (list cask-test/sandbox-path
                          cask-test/cvs-repo-path
-                         cask-servant-path)
+                         cask-tmp-path)
      (unwind-protect
          (let ((default-directory cask-test/sandbox-path))
            (when (f-dir? cask-test/sandbox-path)

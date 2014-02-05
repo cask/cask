@@ -79,6 +79,7 @@ Defaults to `error'."
         (when message (put name 'error-message message))))))
 
 (define-error 'cask-error "Cask error")
+(define-error 'cask-missing-dependency "Missing dependency" 'cask-error)
 (define-error 'cask-missing-dependencies "Missing dependencies" 'cask-error)
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
 (define-error 'cask-failed-initialization "Failed initialization" 'cask-error)
@@ -174,35 +175,14 @@ the function `cask--with-environment'.")
   '(:git :bzr :hg :darcs :svn :cvs)
   "List of supported fetchers.")
 
-(defconst cask-servant-path
-  (f-expand "servant" cask-directory)
-  "Path to servant directory used for fetcher installations.")
+(defconst cask-tmp-path
+  (f-expand "tmp" cask-directory))
 
-(defconst cask-servant-packages-path
-  (f-expand "packages" cask-servant-path)
-  "Path to servant packages directory.")
+(defconst cask-tmp-checkout-path
+  (f-expand "checkout" cask-tmp-path))
 
-(defconst cask-servant-tmp-path
-  (f-expand "tmp" cask-servant-path)
-  "Path to servant tmp directory.")
-
-(defconst cask-servant-routes
-  (list (cons "^.*//packages/\\(.*\\)$"
-              (servant-make-elnode-handler cask-servant-packages-path)))
-  "Routes for local servant server.")
-
-(defvar cask-servant-host "127.0.0.1"
-  "Host to run servant on.")
-
-(defvar cask-servant-port 1337
-  "Port to run servant on.")
-
-(defvar cask-servant-url
-  (format "http://%s:%d/packages/"
-          cask-servant-host
-          cask-servant-port)
-  "Servant packages url.")
-
+(defconst cask-tmp-packages-path
+  (f-expand "packages" cask-tmp-path))
 
 ;;;; Internal functions
 
@@ -245,12 +225,11 @@ ERR is the error object."
 (defun cask--upgradable-dependencies (bundle)
   "Return list of upgradable dependencies for BUNDLE.
 
-A dependency is upgradable if it if a dependency (non deep) and
-is not currently linked."
-  (-reject
-   (lambda (dependency)
-     (cask-linked-p bundle (cask-dependency-name dependency)))
-   (cask-dependencies bundle)))
+A dependency is upgradable if it if a dependency (non deep), is
+not currently linked and is not a fetcher dependency."
+  (--reject (or (cask-linked-p bundle (cask-dependency-name it))
+                (cask-dependency-fetcher it))
+            (cask-dependencies bundle)))
 
 (defun cask--upgradable-dependencies-as-epl-packages (bundle)
   "Return a list of upgradable packages for BUNDLE.
@@ -303,26 +282,14 @@ from the sources."
         (epl-add-archive (cask-source-name source)
                          (cask-source-url source))))
     (shut-up
-     (condition-case err
-         (progn
-           (when refresh
-             (epl-refresh))
-           (epl-initialize))
-       (error
-        (signal 'cask-failed-initialization
-                (list err (shut-up-current-output))))))))
-
-(defun cask--start-local-elpa-server (bundle)
-  "Start servant server for BUNDLE."
-  (elnode-start
-   (lambda (httpcon)
-     (elnode-hostpath-dispatcher httpcon cask-servant-routes))
-   :port cask-servant-port
-   :host cask-servant-host))
-
-(defun cask--stop-local-elpa-server (bundle)
-  "Stop servant server for BUNDLE."
-  (elnode-stop cask-servant-port))
+      (condition-case err
+          (progn
+            (when refresh
+              (epl-refresh))
+            (epl-initialize))
+        (error
+         (signal 'cask-failed-initialization
+                 (list err (shut-up-current-output))))))))
 
 (defun cask--fetcher-dependencies (bundle)
   "Return list of fetcher dependencies for BUNDLE."
@@ -339,44 +306,20 @@ from the sources."
         (files (cask-dependency-files dependency)))
     (list :fetcher fetcher :url url :files files)))
 
-(defun cask--checkout-and-package-fetcher-dependencies (bundle)
-  "Checkout and package all fetcher dependencies in BUNDLE.
+(defun cask--checkout-and-package-dependency (dependency)
+  "Checkout and package DEPENDENCY.
 
-For each fetcher dependency in BUNDLE, do a checkout (will
-automatically update if already exist) and then build a package."
-  (-each (cask--fetcher-dependencies bundle)
-    (lambda (dependency)
-      (let* ((name (cask-dependency-name dependency))
-             (path (f-expand (symbol-name name) cask-servant-tmp-path))
-             (config (cask--dependency-to-package-build-config dependency))
-             (files (cask-dependency-files dependency)))
-        (let ((version (package-build-checkout name config path)))
-          (package-build-package name version files path cask-servant-packages-path))))))
-
-(defmacro cask--with-source (bundle name url &rest body)
-  "Temporarily add source to BUNDLE and yield BODY.
-
-NAME is the name of the source and URL is the url of the source."
-  (declare (indent 3))
-  `(progn
-     (cask-add-source ,bundle ,name ,url)
-     ,@body
-     (cask-remove-source ,bundle ,name)))
-
-(defmacro cask--with-local-elpa-server (bundle &rest body)
-  "Start servant server for BUNDLE and yield BODY.
-
-The local servant source is temporarily added and available in
-BUNDLE in BODY.  When BODY has run, the server is stopped."
-  (declare (indent 1))
-  `(if (cask--has-fetcher-dependency-p ,bundle)
-       (progn
-         (cask--checkout-and-package-fetcher-dependencies ,bundle)
-         (cask--start-local-elpa-server ,bundle)
-         (cask--with-source ,bundle "servant" cask-servant-url
-           ,@body)
-         (cask--stop-local-elpa-server ,bundle))
-     ,@body))
+This function returns the path to the package file."
+  (--each (list cask-tmp-path cask-tmp-checkout-path cask-tmp-packages-path)
+    (unless (f-dir? it) (f-mkdir it)))
+  (let* ((name (cask-dependency-name dependency))
+         (path (f-expand (symbol-name name) cask-tmp-checkout-path))
+         (config (cask--dependency-to-package-build-config dependency))
+         (files (cask-dependency-files dependency)))
+    (let ((version (package-build-checkout name config path)))
+      (package-build-package name version files path cask-tmp-packages-path)
+      (let ((pattern (format "%s-%s.*" name version)))
+        (car (f-glob pattern cask-tmp-packages-path))))))
 
 (defmacro cask--with-environment (bundle &rest body)
   "Switch to BUNDLE environment and yield BODY.
@@ -395,9 +338,8 @@ outside of package.el, for example `load-path'."
      (if (or ,(plist-get body :force) (not (equal ,bundle cask-current-bundle)))
          (prog1
              (let ((load-path (-clone load-path)))
-               (cask--with-local-elpa-server ,bundle
-                 (cask--use-environment ,bundle ,(plist-get body :refresh))
-                 ,@body))
+               (cask--use-environment ,bundle ,(plist-get body :refresh))
+               ,@body)
            (setq cask-current-bundle (copy-cask-bundle ,bundle)))
        ,@body)))
 
@@ -580,6 +522,20 @@ is installed or not."
          (cask--dependency-installed-p bundle (cask-dependency-name dependency)))
        dependencies))))
 
+(defun cask--install-dependency (bundle dependency)
+  "In BUNDLE, install DEPENDENCY.
+
+If dependency does not exist, the error `cask-missing-dependency'
+is signaled."
+  (if (cask-dependency-fetcher dependency)
+      (let ((package-path (cask--checkout-and-package-dependency dependency)))
+        (epl-install-file package-path))
+    (let ((name (cask-dependency-name dependency)))
+      (unless (and (epl-package-installed-p name) (cask-linked-p bundle name))
+        (-if-let (package (car (epl-find-available-packages name)))
+            (epl-package-install package)
+          (signal 'cask-missing-dependency (list dependency)))))))
+
 
 ;;;; Public API
 
@@ -622,12 +578,16 @@ Return list of updated packages."
     :force t
     :refresh t
     (shut-up
-     (condition-case err
-         (-when-let (packages (cask--upgradable-dependencies-as-epl-packages bundle))
-           (epl-upgrade packages))
-       (error
-        (signal 'cask-failed-installation
-                (list nil err (shut-up-current-output))))))))
+      (condition-case err
+          (progn
+            (-when-let (packages (cask--upgradable-dependencies-as-epl-packages bundle))
+              (epl-upgrade packages))
+            (-each (cask--fetcher-dependencies bundle)
+              (lambda (dependency)
+                (cask--install-dependency bundle dependency))))
+        (error
+         (signal 'cask-failed-installation
+                 (list nil err (shut-up-current-output))))))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
@@ -655,19 +615,16 @@ to install, and ERR is the original error data."
     (cask--with-environment bundle
       :force t
       :refresh t
-      (-when-let (dependencies (cask--dependencies bundle))
-        (-each dependencies
-          (lambda (dependency)
-            (let ((name (cask-dependency-name dependency)))
-              (unless (and (epl-package-installed-p name) (cask-linked-p bundle name))
-                (-if-let (package (car (epl-find-available-packages name)))
-                    (shut-up
-                     (condition-case err
-                         (epl-package-install package)
-                       (error
-                        (signal 'cask-failed-installation
-                                (list dependency err (shut-up-current-output))))))
-                  (push dependency missing-dependencies)))))))
+      (-each (cask--dependencies bundle)
+        (lambda (dependency)
+          (shut-up
+            (condition-case err
+                (cask--install-dependency bundle dependency)
+              (cask-missing-dependency
+               (push dependency missing-dependencies))
+              (error
+               (signal 'cask-failed-installation
+                       (list nil err (shut-up-current-output))))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
