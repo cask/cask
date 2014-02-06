@@ -140,8 +140,7 @@ already is installed, it will not be installed again."
 
 This command requires that Cask is installed using Git and that
 Git is available in `exec-path'."
-  (if (f-exists? (f-expand ".no-upgrade" cask-directory))
-      (error "Refusing to upgrade because .no-upgrade file exist")
+  (unless (f-exists? (f-expand ".no-upgrade" cask-directory))
     (unwind-protect
         (progn
           (epl-change-package-dir cask-bootstrap-dir)
