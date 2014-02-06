@@ -625,6 +625,24 @@
      (should (f-file? (f-expand "foo.el" (cask-dependency-path bundle 'foo))))
      (should-not (f-file? (f-expand "bar.el" (cask-dependency-path bundle 'foo)))))))
 
+(ert-deftest cask-install-test/fetcher-ref ()
+  (cask-test/with-git-repo
+   (cask-test/with-bundle
+       `((depends-on "foo" :git ,cask-test/cvs-repo-path :ref "origin/bar"))
+     :packages '(("foo"))
+     (f-copy (cask-test/fixture-path "foo.el") cask-test/cvs-repo-path)
+     (git "add" "foo.el")
+     (git "commit" "-a" "-m" "Add foo.")
+     (git "branch" "bar")
+     (git "checkout" "bar")
+     (f-copy (cask-test/fixture-path "bar.el") cask-test/cvs-repo-path)
+     (git "add" "bar.el")
+     (git "commit" "-a" "-m" "Add bar.")
+     (git "checkout" "master")
+     (cask-install bundle)
+     (should (f-file? (f-expand "foo.el" (cask-dependency-path bundle 'foo))))
+     (should (f-file? (f-expand "bar.el" (cask-dependency-path bundle 'foo)))))))
+
 
 ;;;; cask-outdated
 

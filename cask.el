@@ -101,8 +101,11 @@ by the variable `cask-fetchers'.
 `url' Url to the fetcher repository.
 
 `files' Files to include in build.  This property should only be used
-when fetcher is specified."
-  name version fetcher url files)
+when fetcher is specified.
+
+`ref' Specifies the commit or branch of the fetcher repo to
+checkout."
+  name version fetcher url files ref)
 
 (cl-defstruct cask-source
   "Structure representing a package source.
@@ -183,6 +186,7 @@ the function `cask--with-environment'.")
 
 (defconst cask-tmp-packages-path
   (f-expand "packages" cask-tmp-path))
+
 
 ;;;; Internal functions
 
@@ -303,8 +307,9 @@ from the sources."
   "Turn DEPENDENCY into a package-build config object."
   (let ((fetcher (intern (substring (symbol-name (cask-dependency-fetcher dependency)) 1)))
         (url (cask-dependency-url dependency))
-        (files (cask-dependency-files dependency)))
-    (list :fetcher fetcher :url url :files files)))
+        (files (cask-dependency-files dependency))
+        (commit (cask-dependency-ref dependency)))
+    (list :fetcher fetcher :url url :files files :commit commit)))
 
 (defun cask--checkout-and-package-dependency (dependency)
   "Checkout and package DEPENDENCY.
@@ -778,6 +783,8 @@ ARGS is a plist with these optional arguments:
 
  `:files' Only include files matching this pattern.
 
+ `:ref' Fetcher ref to checkout.
+
 ARGS can also include any of the items in `cask-fetchers'.  The
 plist key is one of the items in the list and the value is the
 url to the fetcher source."
@@ -790,7 +797,9 @@ url to the fetcher source."
     (-when-let (fetcher (--first (-contains? cask-fetchers it) args))
       (setf (cask-dependency-fetcher dependency) fetcher)
       (let ((url (plist-get args fetcher)))
-        (setf (cask-dependency-url dependency) url)))
+        (setf (cask-dependency-url dependency) url))
+      (-when-let (ref (plist-get args :ref))
+        (setf (cask-dependency-ref dependency) ref)))
     (push dependency
           (if (eq (plist-get args :scope) 'development)
               (cask-bundle-development-dependencies bundle)
