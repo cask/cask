@@ -135,10 +135,6 @@ already is installed, it will not be installed again."
   (cask-cli/with-handled-errors
     (cask-install (cask-cli--bundle))))
 
-(defun cask-cli/upgrade ()
-  "Deprecated in favor of upgrade-cask."
-  (error "The upgrade command is deprecated in favor of upgrade-cask"))
-
 (defun cask-cli/upgrade-cask ()
   "Upgrade Cask itself and its dependencies.
 
@@ -336,7 +332,7 @@ Commands:
  (command "pkg-file" cask-cli/pkg-file)
  (command "install" cask-cli/install)
  (command "update" cask-cli/update)
- (command "upgrade" cask-cli/upgrade)
+ (command "upgrade" cask-cli/upgrade-cask)
  (command "upgrade-cask" cask-cli/upgrade-cask)
  (command "exec [*]" cask-cli/exec)
  (command "init" cask-cli/init)
