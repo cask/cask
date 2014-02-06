@@ -140,20 +140,22 @@ already is installed, it will not be installed again."
 
 This command requires that Cask is installed using Git and that
 Git is available in `exec-path'."
-  (unwind-protect
-      (progn
-        (epl-change-package-dir cask-bootstrap-dir)
-        (epl-initialize)
-        (epl-add-archive "gnu" "http://elpa.gnu.org/packages/")
-        (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
-        (epl-refresh)
-        (epl-upgrade))
-    (epl-reset))
-  (require 'git)
-  (let ((git-repo cask-directory))
-    (if (s-present? (git-run "status" "--porcelain"))
-        (error "Cannot update Cask because of dirty tree")
-      (git-pull))))
+  (if (f-exists? (f-expand ".no-upgrade" cask-directory))
+      (error "Refusing to upgrade because .no-upgrade file exist")
+    (unwind-protect
+        (progn
+          (epl-change-package-dir cask-bootstrap-dir)
+          (epl-initialize)
+          (epl-add-archive "gnu" "http://elpa.gnu.org/packages/")
+          (epl-add-archive "melpa" "http://melpa.milkbox.net/packages/")
+          (epl-refresh)
+          (epl-upgrade))
+      (epl-reset))
+    (require 'git)
+    (let ((git-repo cask-directory))
+      (if (s-present? (git-run "status" "--porcelain"))
+          (error "Cannot update Cask because of dirty tree")
+        (git-pull)))))
 
 (defun cask-cli/exec (&rest args)
   "Execute ARGS with correct `exec-path' and `load-path'.")
