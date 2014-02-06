@@ -6,7 +6,7 @@
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
-;; Version: 0.5.1
+;; Version: 0.5.2
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
 ;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.10.0") (epl "0.0.1"))
