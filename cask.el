@@ -776,6 +776,8 @@ ARGS is a plist with these optional arguments:
  `:scope' Add dependency to a certain scope.  Allowed values are
  'development and 'runtime.
 
+ `:files' Only include files matching this pattern.
+
 ARGS can also include any of the items in `cask-fetchers'.  The
 plist key is one of the items in the list and the value is the
 url to the fetcher source."
