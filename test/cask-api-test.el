@@ -498,7 +498,7 @@
         (depends-on "foo" "0.0.1"))
     :packages '(("foo" "0.0.1"))
     (cask-install bundle)
-    (cask-update bundle)))
+    (should-not (cask-update bundle))))
 
 (ert-deftest cask-update-test/with-updates ()
   (cask-test/with-bundle
@@ -508,7 +508,13 @@
     (cask-install bundle)
     (setf (cask-bundle-sources bundle) nil)
     (cask-add-source bundle "localhost" "http://127.0.0.1:9191/new-packages/")
-    (cask-update bundle)))
+    (let* ((upgrade (car (cask-update bundle)))
+           (installed (epl-upgrade-installed upgrade))
+           (available (epl-upgrade-available upgrade)))
+      (should (eq (epl-package-name installed) 'foo))
+      (should (eq (epl-package-name available) 'foo))
+      (should (string= (epl-package-version-string installed) "0.0.1"))
+      (should (string= (epl-package-version-string available) "0.0.2")))))
 
 (ert-deftest cask-update-test/link ()
   (cask-test/with-bundle
@@ -519,7 +525,7 @@
     (cask-link bundle 'foo cask-test/sandbox-path)
     (setf (cask-bundle-sources bundle) nil)
     (cask-add-source bundle "localhost" "http://127.0.0.1:9191/new-packages/")
-    (cask-update bundle)))
+    (should-not (cask-update bundle))))
 
 (ert-deftest cask-update-test/intact-load-path ()
   (cask-test/with-bundle

@@ -587,7 +587,7 @@ Return list of updated packages."
     :refresh t
     (shut-up
       (condition-case err
-          (progn
+          (prog1
             (-when-let (packages (cask--upgradable-dependencies-as-epl-packages bundle))
               (epl-upgrade packages))
             (-each (cask--fetcher-dependencies bundle)
