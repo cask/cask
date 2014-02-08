@@ -103,9 +103,10 @@ by the variable `cask-fetchers'.
 `files' Files to include in build.  This property should only be used
 when fetcher is specified.
 
-`ref' Specifies the commit or branch of the fetcher repo to
-checkout."
-  name version fetcher url files ref)
+`ref' The ref to use if fetcher.
+
+`branch' The branch to use if fetcher."
+  name version fetcher url files ref branch)
 
 (cl-defstruct cask-source
   "Structure representing a package source.
@@ -308,8 +309,9 @@ from the sources."
   (let ((fetcher (intern (substring (symbol-name (cask-dependency-fetcher dependency)) 1)))
         (url (cask-dependency-url dependency))
         (files (cask-dependency-files dependency))
-        (commit (cask-dependency-ref dependency)))
-    (list :fetcher fetcher :url url :files files :commit commit)))
+        (commit (cask-dependency-ref dependency))
+        (branch (cask-dependency-branch dependency)))
+    (list :fetcher fetcher :url url :files files :commit commit :branch branch)))
 
 (defun cask--checkout-and-package-dependency (dependency)
   "Checkout and package DEPENDENCY.
@@ -786,6 +788,8 @@ ARGS is a plist with these optional arguments:
 
  `:ref' Fetcher ref to checkout.
 
+ `:branch' Fetcher branch to checkout.
+
 ARGS can also include any of the items in `cask-fetchers'.  The
 plist key is one of the items in the list and the value is the
 url to the fetcher source."
@@ -800,7 +804,9 @@ url to the fetcher source."
       (let ((url (plist-get args fetcher)))
         (setf (cask-dependency-url dependency) url))
       (-when-let (ref (plist-get args :ref))
-        (setf (cask-dependency-ref dependency) ref)))
+        (setf (cask-dependency-ref dependency) ref))
+      (-when-let (branch (plist-get args :branch))
+        (setf (cask-dependency-branch dependency) branch)))
     (push dependency
           (if (eq (plist-get args :scope) 'development)
               (cask-bundle-development-dependencies bundle)
