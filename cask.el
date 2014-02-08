@@ -588,8 +588,8 @@ Return list of updated packages."
     (shut-up
       (condition-case err
           (prog1
-            (-when-let (packages (cask--upgradable-dependencies-as-epl-packages bundle))
-              (epl-upgrade packages))
+              (-when-let (packages (cask--upgradable-dependencies-as-epl-packages bundle))
+                (epl-upgrade packages))
             (-each (cask--fetcher-dependencies bundle)
               (lambda (dependency)
                 (cask--install-dependency bundle dependency))))
