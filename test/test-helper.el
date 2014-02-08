@@ -136,7 +136,8 @@ asserted that only those packages are installed"
   (with-temp-buffer
     (-if-let (program (executable-find command))
         (let ((exit-code (apply 'call-process (append (list program nil t nil) args))))
-          (unless (zerop exit-code)
+          (if (zerop exit-code)
+              (buffer-string)
             (error "Running command %s failed with: '%s'"
                    (s-join " " (cons command args))
                    (buffer-string))))
