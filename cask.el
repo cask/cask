@@ -539,7 +539,8 @@ is signaled."
       (unless (and (epl-package-installed-p name) (cask-linked-p bundle name))
         (-if-let (package (car (epl-find-available-packages name)))
             (epl-package-install package)
-          (signal 'cask-missing-dependency (list dependency)))))))
+          (unless (epl-built-in-p name)
+            (signal 'cask-missing-dependency (list dependency))))))))
 
 
 ;;;; Public API

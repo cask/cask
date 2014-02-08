@@ -656,6 +656,12 @@
      (should (f-file? (f-expand "foo.el" (cask-dependency-path bundle 'foo))))
      (should (f-file? (f-expand "bar.el" (cask-dependency-path bundle 'foo)))))))
 
+(ert-deftest cask-install-test/built-in ()
+  (cask-test/with-git-repo
+   (cask-test/with-bundle
+       `((depends-on "emacs"))
+     (cask-install bundle))))
+
 
 ;;;; cask-outdated
 
