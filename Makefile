@@ -1,7 +1,7 @@
 CASK ?= cask
 EMACS ?= emacs
 
-SERVANT_DIR = 'test/servant'
+SERVANT_DIR = 'servant'
 SERVANT_TMP_DIR = $(SERVANT_DIR)/'tmp'
 
 all: test

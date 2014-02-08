@@ -1,7 +1,7 @@
 *.elc
 /.cask
 /test/sandbox
-/test/servant/tmp
+/servant/tmp
 /features/sandbox
 /dist
 /tmp
