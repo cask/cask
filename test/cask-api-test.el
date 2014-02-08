@@ -404,6 +404,18 @@
       (let ((path (f-join (cask-elpa-path bundle) "hey-0.0.5" "bin")))
         (should (equal (cons path exec-path) (cask-exec-path bundle)))))))
 
+(ert-deftest cask-exec-path-test/development ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (development
+         (depends-on "hey" "0.0.5")))
+    (cask-install bundle)
+    (let ((hey-path (f-expand "hey" cask-test/sandbox-path)))
+      (f-copy (f-expand "hey-0.0.5" (cask-elpa-path bundle)) hey-path)
+      (cask-link bundle 'hey hey-path)
+      (let ((path (f-join (cask-elpa-path bundle) "hey-0.0.5" "bin")))
+        (should (equal (cons path exec-path) (cask-exec-path bundle)))))))
+
 
 ;;;; cask-load-path
 
@@ -438,7 +450,8 @@
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1")
-        (depends-on "bar" "0.0.2"))
+        (development
+         (depends-on "bar" "0.0.2")))
     (cask-test/install bundle)
     (let ((path-foo (f-expand "foo-0.0.1" (cask-elpa-path bundle)))
           (path-bar (f-expand "bar-0.0.2" (cask-elpa-path bundle))))
