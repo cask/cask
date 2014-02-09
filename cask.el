@@ -376,42 +376,43 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Populare BUNDLE by evaluating FORMS in SCOPE.
 
 SCOPE may be nil or 'development."
-  (cl-dolist (form forms)
-    (cl-case (car form)
-      (source
-       (cl-destructuring-bind (_ name-or-alias &optional url) form
-         (cask-add-source bundle name-or-alias url)))
-      (package
-       (cl-destructuring-bind (_ name version description) form
-         (setf (cask-bundle-name bundle) (intern name))
-         (setf (cask-bundle-version bundle) version)
-         (setf (cask-bundle-description bundle) description)))
-      (package-file
-       (cl-destructuring-bind (_ filename) form
-         (let ((package (epl-package-from-file
-                         (f-expand filename (cask-bundle-path bundle)))))
-           (setf (cask-bundle-name bundle) (epl-package-name package))
-           (setf (cask-bundle-version bundle) (epl-package-version-string package))
-           (setf (cask-bundle-description bundle) (epl-package-summary package))
-           (-each (epl-package-requirements package)
-             (lambda (requirement)
-               (let ((name (epl-requirement-name requirement))
-                     (version (epl-requirement-version-string requirement)))
-                 (cask-add-dependency bundle name :version version)))))))
-      (depends-on
-       (cl-destructuring-bind (_ name &rest args) form
-         (when (stringp (car args))
-           (push :version args))
-         (setq args (plist-put args :scope scope))
-         (apply 'cask-add-dependency (append (list bundle (intern name)) args))))
-      (files
-       (cl-destructuring-bind (_ &rest patterns) form
-         (setf (cask-bundle-patterns bundle) patterns)))
-      (development
-       (cl-destructuring-bind (_ . body) form
-         (cask--eval bundle body 'development)))
-      (t
-       (error "Unknown directive: %S" form)))))
+  (-each forms
+    (lambda (form)
+      (cl-case (car form)
+        (source
+         (cl-destructuring-bind (_ name-or-alias &optional url) form
+           (cask-add-source bundle name-or-alias url)))
+        (package
+         (cl-destructuring-bind (_ name version description) form
+           (setf (cask-bundle-name bundle) (intern name))
+           (setf (cask-bundle-version bundle) version)
+           (setf (cask-bundle-description bundle) description)))
+        (package-file
+         (cl-destructuring-bind (_ filename) form
+           (let ((package (epl-package-from-file
+                           (f-expand filename (cask-bundle-path bundle)))))
+             (setf (cask-bundle-name bundle) (epl-package-name package))
+             (setf (cask-bundle-version bundle) (epl-package-version-string package))
+             (setf (cask-bundle-description bundle) (epl-package-summary package))
+             (-each (epl-package-requirements package)
+               (lambda (requirement)
+                 (let ((name (epl-requirement-name requirement))
+                       (version (epl-requirement-version-string requirement)))
+                   (cask-add-dependency bundle name :version version)))))))
+        (depends-on
+         (cl-destructuring-bind (_ name &rest args) form
+           (when (stringp (car args))
+             (push :version args))
+           (setq args (plist-put args :scope scope))
+           (apply 'cask-add-dependency (append (list bundle (intern name)) args))))
+        (files
+         (cl-destructuring-bind (_ &rest patterns) form
+           (setf (cask-bundle-patterns bundle) patterns)))
+        (development
+         (cl-destructuring-bind (_ . body) form
+           (cask--eval bundle body 'development)))
+        (t
+         (error "Unknown directive: %S" form))))))
 
 (defun cask--template-get (name)
   "Return content of template with NAME."
