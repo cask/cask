@@ -538,7 +538,7 @@ is signaled."
       (let ((package-path (cask--checkout-and-package-dependency dependency)))
         (epl-install-file package-path))
     (let ((name (cask-dependency-name dependency)))
-      (unless (and (epl-package-installed-p name) (cask-linked-p bundle name))
+      (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
         (-if-let (package (car (epl-find-available-packages name)))
             (epl-package-install package)
           (unless (epl-built-in-p name)
