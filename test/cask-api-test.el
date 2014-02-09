@@ -682,7 +682,7 @@
 
 (ert-deftest cask-install-test/built-in ()
   (cask-test/with-bundle
-      `((depends-on "emacs"))
+      '((depends-on "emacs"))
     (cask-install bundle)))
 
 
