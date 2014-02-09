@@ -150,6 +150,8 @@ asserted that only those packages are installed"
      (cask-test/run-command "git" "init" cask-test/cvs-repo-path)
      (cask-test/run-command "git" "remote" "add" "origin" (concat "file://" cask-test/cvs-repo-path))
      (cask-test/run-command "git" "fetch" "origin")
+     (cask-test/run-command "git" "config" "user.name" "Bruce Wayne")
+     (cask-test/run-command "git" "config" "user.email" "bruce@wayne.com")
      (noflet ((git (&rest args)
                    (let ((default-directory cask-test/cvs-repo-path))
                      (apply 'cask-test/run-command (cons "git" args)))))
