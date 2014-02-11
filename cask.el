@@ -808,10 +808,9 @@ url to the fetcher source."
         (setf (cask-dependency-ref dependency) ref))
       (-when-let (branch (plist-get args :branch))
         (setf (cask-dependency-branch dependency) branch)))
-    (push dependency
           (if (eq (plist-get args :scope) 'development)
-              (cask-bundle-development-dependencies bundle)
-            (cask-bundle-runtime-dependencies bundle)))))
+              (push dependency (cask-bundle-development-dependencies bundle))
+            (push dependency (cask-bundle-runtime-dependencies bundle)))))
 
 (defun cask-add-source (bundle name-or-alias &optional url)
   "Add source to BUNDLE.
