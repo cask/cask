@@ -9,10 +9,10 @@ all: test
 test: unit ecukes
 
 unit:
-	${CASK} exec ert-runner
+	$(CASK) exec ert-runner
 
 ecukes:
-	${CASK} exec ecukes
+	$(CASK) exec ecukes
 
 start-server: $(SERVANT_DIR)
 	${CASK} exec ${EMACS} -Q --load $(SERVANT_DIR)/app.el --batch > $(SERVANT_TMP_DIR)/servant.log 2>&1 &
