@@ -21,6 +21,7 @@ stop-server:
 	kill $$(cat $(SERVANT_TMP_DIR)/servant.pid)
 
 $(SERVANT_DIR):
+	@mkdir -p $(SERVANT_DIR)
 	@mkdir -p $(SERVANT_TMP_DIR)
 
 .PHONY: start-server stop-server unit ecukes test all
