@@ -680,10 +680,11 @@
        (should (f-file? (f-expand "foo.el" (cask-dependency-path bundle 'foo))))
        (should-not (f-file? (f-expand "bar.el" (cask-dependency-path bundle 'foo))))))))
 
-(ert-deftest cask-install-test/built-in ()
-  (cask-test/with-bundle
-      '((depends-on "emacs"))
-    (cask-install bundle)))
+(when (>= emacs-major-version 24)
+  (ert-deftest cask-install-test/built-in ()
+    (cask-test/with-bundle
+     '((depends-on "emacs"))
+     (cask-install bundle))))
 
 
 ;;;; cask-outdated
