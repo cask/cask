@@ -50,7 +50,7 @@
 (defun cask-test/package-path (bundle package)
   "Return path in BUNDLE to PACKAGE."
   (let ((package-name (apply 'format "%s-%s" package)))
-    (f-expand package-name (cask-elpa-path bundle))(f-dir? package-path)))
+    (f-expand package-name (cask-elpa-path bundle))))
 
 (defun cask-test/package-installed-p (bundle package)
   "Return true if in BUNDLE, PACKAGE is installed.
