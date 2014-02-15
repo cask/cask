@@ -842,7 +842,9 @@ URL is the url to the mirror."
     (-each (cask-files bundle)
       (lambda (path)
         (when (and (f-file? path) (f-ext? path "el"))
-          (byte-recompile-file path 'force 0))))))
+          (if (fboundp 'byte-recompile-file)
+              (byte-recompile-file path 'force 0)
+            (byte-compile-file path nil)))))))
 
 (defun cask-clean-elc (bundle)
   "Remove BUNDLE Elisp byte compiled files."
