@@ -47,6 +47,11 @@
 
 (add-to-list 'load-path cask-test/root-path)
 
+;; Avoid Emacs 23 interupting the tests with:
+;;   File bar-autoloads.el changed on disk.  Reread from disk? (yes or no)
+(fset 'y-or-n-p (lambda (_) t))
+(fset 'yes-or-no-p (lambda (_) t))
+
 (defun cask-test/package-path (bundle package)
   "Return path in BUNDLE to PACKAGE."
   (let ((package-name (apply 'format "%s-%s" package)))
