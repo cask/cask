@@ -14,9 +14,11 @@ unit:
 ecukes:
 	$(CASK) exec ecukes
 
-start-server: $(SERVANT_DIR)
+index:
 	$(CASK) exec servant index --packages-path $(SERVANT_DIR)/packages
 	$(CASK) exec servant index --packages-path $(SERVANT_DIR)/new-packages
+
+start-server: $(SERVANT_DIR) index
 	$(SERVANT_DIR)/server
 
 stop-server:
@@ -26,4 +28,4 @@ $(SERVANT_DIR):
 	@mkdir -p $(SERVANT_DIR)
 	@mkdir -p $(SERVANT_TMP_DIR)
 
-.PHONY: start-server stop-server unit ecukes test all
+.PHONY: start-server stop-server unit ecukes test all index
