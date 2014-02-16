@@ -432,6 +432,12 @@ The BUNDLE is initialized when the elpa directory exists."
    :name (epl-package-name epl-package)
    :version (epl-package-version-string epl-package)))
 
+(defun cask--epl-requirement-to-dependency (epl-requirement)
+  "Turn EPL-REQUIREMENT into a `cask-dependency' object."
+  (make-cask-dependency
+   :name (epl-requirement-name epl-requirement)
+   :version (epl-requirement-version-string epl-requirement)))
+
 (defun cask--dependency-installed-p (bundle name)
   "Return true if BUNDLE has and installed dependency with NAME.
 
@@ -451,52 +457,47 @@ NAME."
    (let ((package-path (cask-dependency-path bundle name)))
      (and package-path (f-dir? package-path)))))
 
-(defun cask--find-installed-package (bundle name)
-  "Return installed package in BUNDLE with NAME.
+(defun cask--find-available-package (name)
+  "Find first available package with NAME."
+  (car (epl-find-available-packages name)))
 
-This function is similar to `epl-find-installed-package', but
-uses `cask--dependency-installed-p' to determine if the dependency
-is installed or not."
-  (-when-let (package (car (epl-find-available-packages name)))
-    (when (cask--dependency-installed-p bundle name)
-      package)))
+(defun cask--uniq-dependencies (dependencies)
+  "Return new list with all duplicates in DEPENDENCIES removed."
+  (let ((-compare-fn
+         (lambda (dependency-1 dependency-2)
+           (eq
+            (cask-dependency-name dependency-1)
+            (cask-dependency-name dependency-2)))))
+    (-uniq dependencies)))
 
-(defun cask--dependency-dependencies (name)
-  "Return a list of all NAME's dependencies, recursively."
-  (-when-let (package (car (epl-find-available-packages name)))
-    (cons
-     (cask--epl-package-to-dependency package)
-     (-flatten
-      (--map (cask--dependency-dependencies (epl-requirement-name it))
-             (epl-package-requirements package))))))
+(defun cask--dependency-dependencies (dependency)
+  "Return list of DEPENDENCY's dependencies, recursively."
+  (let ((name (cask-dependency-name dependency)))
+    (-when-let (package (cask--find-available-package name))
+      (cask--uniq-dependencies
+       (cons dependency
+             (cask--compute-dependencies
+              (-map 'cask--epl-requirement-to-dependency
+                    (epl-package-requirements package))))))))
 
-(defun cask--installed-dependency-dependencies (bundle name)
-  "Return a list of installed BUNDLE dependencies for NAME, recursively."
-  (-when-let (package (cask--find-installed-package bundle name))
-    (cons
-     (cask--epl-package-to-dependency package)
-     (-flatten
-      (--map (cask--installed-dependency-dependencies bundle (epl-requirement-name it))
-             (epl-package-requirements package))))))
-
-(defun cask--dependencies-deep (dependencies)
-  "Return a list of DEPENDENCIES dependencies, recursively."
-  (-uniq
-   (-flatten
-    (-map
-     (lambda (dependency)
-       (cask--dependency-dependencies (cask-dependency-name dependency)))
-     dependencies))))
+(defun cask--compute-dependencies (dependencies)
+  "Return a list of DEPENDENCIES's dependencies, recursively."
+  (cask--uniq-dependencies
+   (-flatten (-map 'cask--dependency-dependencies dependencies))))
 
 (defun cask--runtime-dependencies (bundle &optional deep)
   "Return runtime dependencies for BUNDLE, optionally DEEP."
   (let ((dependencies (cask-bundle-runtime-dependencies bundle)))
-    (if deep (cask--dependencies-deep dependencies) dependencies)))
+    (if deep
+        (cask--compute-dependencies dependencies)
+      dependencies)))
 
 (defun cask--development-dependencies (bundle &optional deep)
   "Return development dependencies for BUNDLE, optionally DEEP."
   (let ((dependencies (cask-bundle-development-dependencies bundle)))
-    (if deep (cask--dependencies-deep dependencies) dependencies)))
+    (if deep
+        (cask--compute-dependencies dependencies)
+      dependencies)))
 
 (defun cask--dependencies (bundle &optional deep)
   "Return dependencies for BUNDLE, optionally DEEP."
@@ -505,18 +506,10 @@ is installed or not."
 
 (defun cask--installed-dependencies (bundle &optional deep)
   "Return installed dependencies for BUNDLE, optionally DEEP."
-  (let ((dependencies (cask--dependencies bundle)))
-    (if deep
-        (-uniq
-         (-flatten
-          (-map
-           (lambda (dependency)
-             (cask--installed-dependency-dependencies bundle (cask-dependency-name dependency)))
-           dependencies)))
-      (-select
-       (lambda (dependency)
-         (cask--dependency-installed-p bundle (cask-dependency-name dependency)))
-       dependencies))))
+  (-select
+   (lambda (dependency)
+     (cask--dependency-installed-p bundle (cask-dependency-name dependency)))
+   (cask--dependencies bundle deep)))
 
 (defun cask--install-dependency (bundle dependency)
   "In BUNDLE, install DEPENDENCY.
@@ -528,7 +521,7 @@ is signaled."
         (epl-install-file package-path))
     (let ((name (cask-dependency-name dependency)))
       (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
-        (-if-let (package (car (epl-find-available-packages name)))
+        (-if-let (package (cask--find-available-package name))
             (epl-package-install package)
           (unless (epl-built-in-p name)
             (signal 'cask-missing-dependency (list dependency))))))))
