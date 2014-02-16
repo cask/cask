@@ -234,7 +234,7 @@ A dependency is upgradable if it if a dependency (non deep), is
 not currently linked and is not a fetcher dependency."
   (--reject (or (cask-linked-p bundle (cask-dependency-name it))
                 (cask-dependency-fetcher it))
-            (cask-dependencies bundle)))
+            (cask--dependencies bundle)))
 
 (defun cask--upgradable-dependencies-as-epl-packages (bundle)
   "Return a list of upgradable packages for BUNDLE.
