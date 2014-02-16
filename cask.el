@@ -722,7 +722,14 @@ If DEEP is t, all dependencies recursively will be returned."
 
 (defun cask-has-dependency (bundle name)
   "Return true if BUNDLE contain link with NAME, false otherwise."
-  (--any? (eq (cask-dependency-name it) name) (cask--dependencies bundle)))
+  (not (null (cask-find-dependency bundle name))))
+
+(defun cask-find-dependency (bundle name)
+  "Find dependency in BUNDLE with NAME."
+  (-first
+   (lambda (dependency)
+     (eq name (cask-dependency-name dependency)))
+   (cask--dependencies bundle)))
 
 (defun cask-define-package-string (bundle)
   "Return `define-package' string for BUNDLE."

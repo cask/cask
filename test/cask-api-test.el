@@ -289,6 +289,24 @@
         (depends-on "foo" "0.0.1"))
       (should-not (cask-has-dependency bundle 'bar))))
 
+
+;;;; cask-find-dependency
+
+(ert-deftest cask-find-dependency-test/find-dependency ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+      (let ((dependency (cask-find-dependency bundle 'foo)))
+        (should (eq (cask-dependency-name dependency) 'foo))
+        (should (string= (cask-dependency-version dependency) "0.0.1")))))
+
+(ert-deftest cask-find-dependency-test/does-not-have-dependency ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+      (should-not (cask-find-dependency bundle 'bar))))
+
+
 ;;;; cask-define-package-string
 
 (ert-deftest cask-define-package-string-test/no-cask-file ()
