@@ -901,7 +901,7 @@ TARGET."
             (cask--with-environment bundle
               :force t
               :refresh t
-              (epl-package-install (car (epl-find-available-packages name)))))
+              (cask--install-dependency bundle (cask-find-dependency bundle name))))
         (error "Package %s not linked" name)))))
 
 (defun cask-linked-p (bundle name)
