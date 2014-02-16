@@ -426,12 +426,6 @@ SCOPE may be nil or 'development."
 The BUNDLE is initialized when the elpa directory exists."
   (f-dir? (cask-elpa-path bundle)))
 
-(defun cask--dependency-to-string (dependency)
-  "Return string representatation of DEPENDENCY."
-  (let ((name (symbol-name (cask-dependency-name dependency)))
-        (version (cask-dependency-version dependency)))
-    (s-join "-" (list name version))))
-
 (defun cask--installed-dependencies-paths (bundle)
   "Return list of paths for all installed BUNDLE dependencies."
   (--map
