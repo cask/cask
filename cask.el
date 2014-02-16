@@ -426,12 +426,6 @@ SCOPE may be nil or 'development."
 The BUNDLE is initialized when the elpa directory exists."
   (f-dir? (cask-elpa-path bundle)))
 
-(defun cask--installed-dependencies-paths (bundle)
-  "Return list of paths for all installed BUNDLE dependencies."
-  (--map
-   (cask-dependency-path bundle (cask-dependency-name it))
-   (cask--installed-dependencies bundle 'deep)))
-
 (defun cask--epl-package-to-dependency (epl-package)
   "Turn EPL-PACKAGE into a `cask-dependency' object."
   (make-cask-dependency
@@ -670,7 +664,12 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 (defun cask-load-path (bundle)
   "Return Emacs `load-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
-    (append (cask--installed-dependencies-paths bundle) load-path)))
+    (append
+     (-map
+      (lambda (dependency)
+        (cask-dependency-path bundle (cask-dependency-name dependency)))
+      (cask--installed-dependencies bundle 'deep))
+     load-path)))
 
 (defun cask-exec-path (bundle)
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
@@ -678,8 +677,11 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
     (append
      (-select
       'f-dir?
-      (--map (f-expand "bin" it)
-             (cask--installed-dependencies-paths bundle)))
+      (-map
+       (lambda (dependency)
+         (let ((path (cask-dependency-path bundle (cask-dependency-name dependency))))
+           (f-expand "bin" path)))
+       (cask--installed-dependencies bundle 'deep)))
      exec-path)))
 
 (defun cask-elpa-path (bundle)
