@@ -459,7 +459,7 @@ NAME."
    (-any?
     (lambda (dependency)
       (eq (cask-dependency-name dependency) name))
-    (cask-dependencies bundle 'deep))
+    (cask--dependencies bundle 'deep))
    (let ((package-path (cask-dependency-path bundle name)))
      (and package-path (f-dir? package-path)))))
 
