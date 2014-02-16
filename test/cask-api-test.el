@@ -275,6 +275,20 @@
       (should-be-same-dependencies actual expected))))
 
 
+;;;; cask-has-dependency
+
+(ert-deftest cask-has-dependency-test/has-dependency ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+      (should (cask-has-dependency bundle 'foo))))
+
+(ert-deftest cask-has-dependency-test/does-not-have-dependency ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "foo" "0.0.1"))
+      (should-not (cask-has-dependency bundle 'bar))))
+
 ;;;; cask-define-package-string
 
 (ert-deftest cask-define-package-string-test/no-cask-file ()
