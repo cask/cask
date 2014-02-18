@@ -281,13 +281,13 @@
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
-      (should (cask-has-dependency bundle 'foo))))
+    (should (cask-has-dependency bundle 'foo))))
 
 (ert-deftest cask-has-dependency-test/does-not-have-dependency ()
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
-      (should-not (cask-has-dependency bundle 'bar))))
+    (should-not (cask-has-dependency bundle 'bar))))
 
 
 ;;;; cask-find-dependency
@@ -296,15 +296,15 @@
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
-      (let ((dependency (cask-find-dependency bundle 'foo)))
-        (should (eq (cask-dependency-name dependency) 'foo))
-        (should (string= (cask-dependency-version dependency) "0.0.1")))))
+    (let ((dependency (cask-find-dependency bundle 'foo)))
+      (should (eq (cask-dependency-name dependency) 'foo))
+      (should (string= (cask-dependency-version dependency) "0.0.1")))))
 
 (ert-deftest cask-find-dependency-test/does-not-have-dependency ()
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
-      (should-not (cask-find-dependency bundle 'bar))))
+    (should-not (cask-find-dependency bundle 'bar))))
 
 
 ;;;; cask-define-package-string
@@ -715,8 +715,8 @@
 (when (>= emacs-major-version 24)
   (ert-deftest cask-install-test/built-in ()
     (cask-test/with-bundle
-     '((depends-on "emacs"))
-     (cask-install bundle))))
+        '((depends-on "emacs"))
+      (cask-install bundle))))
 
 
 ;;;; cask-outdated
