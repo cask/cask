@@ -53,6 +53,9 @@
 (fset 'y-or-n-p (lambda (_) t))
 (fset 'yes-or-no-p (lambda (_) t))
 
+;; The ert-async package is only used to make sure we reach a certain
+;; branch, so a long timeout is not needed.
+(setq ert-async-timeout 2)
 
 (defun cask-test/package-path (bundle package)
   "Return path in BUNDLE to PACKAGE."
