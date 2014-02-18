@@ -602,7 +602,7 @@
                 ("bar" "0.0.2"))
     (cask-install bundle)))
 
-(ert-deftest cask-install-test/missing-dependencies ()
+(ert-deftest-async cask-install-test/missing-dependencies (done)
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "missing-a" "0.0.1")
@@ -614,7 +614,8 @@
        (let ((missing-dependencies (cdr err))
              (missing-a (make-cask-dependency :name 'missing-a :version "0.0.1"))
              (missing-b (make-cask-dependency :name 'missing-b :version "0.0.2")))
-         (should-be-same-dependencies missing-dependencies (list missing-a missing-b)))))))
+         (should-be-same-dependencies missing-dependencies (list missing-a missing-b)))
+       (funcall done)))))
 
 (ert-deftest cask-install-test/link ()
   (cask-test/with-bundle
@@ -1018,15 +1019,16 @@
     (should (f-same? (cask-dependency-path bundle 'foo) cask-test/sandbox-path))
     (should (f-same? (cask-dependency-path bundle 'bar) cask-test/sandbox-path))))
 
-(ert-deftest cask-link-test/no-such-dependency ()
+(ert-deftest-async cask-link-test/no-such-dependency (done)
   (cask-test/with-bundle 'empty
     (condition-case err
         (cask-link bundle 'foo cask-test/sandbox-path)
       (error
        (should (string= (error-message-string err)
-                        "Cannot link package foo, is not a dependency"))))))
+                        "Cannot link package foo, is not a dependency"))
+       (funcall done)))))
 
-(ert-deftest cask-link-test/non-existing-path ()
+(ert-deftest-async cask-link-test/non-existing-path (done)
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
@@ -1034,9 +1036,10 @@
         (cask-link bundle 'foo "/path/to/non-existing-directory")
       (error
        (should (string= (error-message-string err)
-                        "Cannot create link foo to non existing path: /path/to/non-existing-directory"))))))
+                        "Cannot create link foo to non existing path: /path/to/non-existing-directory"))
+       (funcall done)))))
 
-(ert-deftest cask-link-test/already-linked ()
+(ert-deftest-async cask-link-test/already-linked (done)
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
@@ -1046,7 +1049,8 @@
         (cask-link bundle 'foo cask-test/sandbox-path)
       (error
        (should (string= (error-message-string err)
-                        "Package foo has already been linked"))))))
+                        "Package foo has already been linked"))
+       (funcall done)))))
 
 
 ;;;; cask-link-delete
@@ -1073,22 +1077,24 @@
     (should-not (f-same? (cask-dependency-path bundle 'foo) cask-test/sandbox-path))
     (should-not (f-same? (cask-dependency-path bundle 'bar) cask-test/sandbox-path))))
 
-(ert-deftest cask-link-delete-test/no-such-dependency ()
+(ert-deftest-async cask-link-delete-test/no-such-dependency (done)
   (cask-test/with-bundle 'empty
     (condition-case err
         (cask-link-delete bundle 'foo)
       (error
        (should (string= (error-message-string err)
-                        "Cannot link package foo, is not a dependency"))))))
+                        "Cannot link package foo, is not a dependency"))
+       (funcall done)))))
 
-(ert-deftest cask-link-delete-test/not-linked ()
+(ert-deftest-async cask-link-delete-test/not-linked (done)
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
     (condition-case err
         (cask-link-delete bundle 'foo)
       (error
-       (should (string= (error-message-string err) "Package foo not linked"))))))
+       (should (string= (error-message-string err) "Package foo not linked"))
+       (funcall done)))))
 
 
 ;;;; cask-linked-p
@@ -1124,14 +1130,15 @@
   (cask-test/with-bundle 'empty
     (should-error (cask-package bundle) :type 'cask-not-a-package)))
 
-(ert-deftest cask-package-test/no-files ()
+(ert-deftest-async cask-package-test/no-files (done)
   (cask-test/with-bundle
       '((package "foo" "0.0.1" "FOO"))
     (condition-case err
         (cask-package bundle)
       (error
        (should (s-matches? (regexp-quote "No matching file(s) found in")
-                           (error-message-string err)))))))
+                           (error-message-string err)))
+       (funcall done)))))
 
 (ert-deftest cask-package-test/without-target-dir ()
   (cask-test/with-bundle

@@ -30,6 +30,7 @@
 (require 'dash)
 (require 'noflet)
 (require 'el-mock)
+(require 'ert-async)
 
 (defconst cask-test/test-path
   (f-parent (f-this-file)))
