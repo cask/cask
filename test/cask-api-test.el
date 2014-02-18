@@ -1039,18 +1039,14 @@
                         "Cannot create link foo to non existing path: /path/to/non-existing-directory"))
        (funcall done)))))
 
-(ert-deftest-async cask-link-test/already-linked (done)
+(ert-deftest cask-link-test/already-linked ()
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "foo" "0.0.1"))
     (cask-install bundle)
     (cask-link bundle 'foo cask-test/sandbox-path)
-    (condition-case err
-        (cask-link bundle 'foo cask-test/sandbox-path)
-      (error
-       (should (string= (error-message-string err)
-                        "Package foo has already been linked"))
-       (funcall done)))))
+    (cask-link bundle 'foo cask-test/sandbox-path)
+    (should (f-same? (cask-dependency-path bundle 'foo) cask-test/sandbox-path))))
 
 
 ;;;; cask-link-delete
