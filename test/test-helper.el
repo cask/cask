@@ -53,7 +53,6 @@
 (fset 'y-or-n-p (lambda (_) t))
 (fset 'yes-or-no-p (lambda (_) t))
 
-(setq shut-up-verbose t)
 
 (defun cask-test/package-path (bundle package)
   "Return path in BUNDLE to PACKAGE."
