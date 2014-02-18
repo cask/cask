@@ -889,12 +889,7 @@ TARGET."
       (error "Cannot link package %s, is not a dependency" name))
     (let ((link (cask-dependency-path bundle name)))
       (if (and link (f-symlink? link))
-          (progn
-            (f-delete link)
-            (cask--with-environment bundle
-              :force t
-              :refresh t
-              (cask--install-dependency bundle (cask-find-dependency bundle name))))
+          (f-delete link)
         (error "Package %s not linked" name)))))
 
 (defun cask-linked-p (bundle name)

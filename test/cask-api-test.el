@@ -1061,8 +1061,6 @@
       '((source localhost)
         (depends-on "foo" "0.0.1")
         (depends-on "bar" "0.0.2"))
-    :packages '(("foo" "0.0.1")
-                ("bar" "0.0.2"))
     (cask-install bundle)
     (cask-link bundle 'foo cask-test/sandbox-path)
     (cask-link bundle 'bar cask-test/sandbox-path)
@@ -1070,8 +1068,8 @@
     (should (f-same? (cask-dependency-path bundle 'bar) cask-test/sandbox-path))
     (cask-link-delete bundle 'foo)
     (cask-link-delete bundle 'bar)
-    (should-not (f-same? (cask-dependency-path bundle 'foo) cask-test/sandbox-path))
-    (should-not (f-same? (cask-dependency-path bundle 'bar) cask-test/sandbox-path))))
+    (should-not (cask-dependency-path bundle 'foo))
+    (should-not (cask-dependency-path bundle 'bar))))
 
 (ert-deftest-async cask-link-delete-test/no-such-dependency (done)
   (cask-test/with-bundle 'empty
