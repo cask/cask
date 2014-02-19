@@ -73,12 +73,12 @@ directory exists."
   "Return list of all of BUNDLE's installed packages.
 
 The items in the list are on the form (package version)."
-  (let ((elpa-dir (cask-elpa-path bundle)))
+  (let ((elpa-dir (cask-elpa-path bundle)) (package-regex "\\(.+\\)-\\([^\-]+\\)"))
     (when (f-dir? elpa-dir)
-      (let ((directories (f--directories elpa-dir (s-matches? "[^/]+-[^/]+$" it))))
+      (let ((directories (f--directories elpa-dir (s-matches? package-regex it))))
         (-map
          (lambda (filename)
-           (s-split "-" filename))
+           (cdr (s-match package-regex (f-filename filename))))
          (-map 'f-filename directories))))))
 
 (defun cask-test/write-forms (forms path)
