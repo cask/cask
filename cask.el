@@ -868,9 +868,6 @@ link, as a string and the value is the absolute path to the link."
 
 NAME is the name of the package to link as a string.  SOURCE is
 the path to the directory to link to.
-
-This will create the link `cask-elpa-path'/NAME-dev pointing to
-TARGET."
   (cask--with-file bundle
     (unless (cask-has-dependency bundle name)
       (error "Cannot link package %s, is not a dependency" name))
