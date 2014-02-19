@@ -28,6 +28,7 @@ start-server: $(SERVANT_DIR)
 stop-server:
 	kill $$(cat $(SERVANT_TMP_DIR)/servant.pid)
 
+$(SERVANT_DIR): clean
 $(SERVANT_DIR): $(SERVANT_TMP_DIR)
 $(SERVANT_DIR): $(SERVANT_PACKAGES_DIR)/archive-contents
 $(SERVANT_DIR): $(SERVANT_NEW_PACKAGES_DIR)/archive-contents
