@@ -42,7 +42,7 @@
   (f-expand "sandbox" cask-test/test-path))
 
 (defconst cask-test/fixtures-path
-  (f-expand "fixtures" cask-test/test-path))
+  (f-expand "fixtures" cask-test/root-path))
 
 (defvar cask-test/cvs-repo-path nil)
 
