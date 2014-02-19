@@ -16,13 +16,13 @@ Feature: Exec
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
-      (depends-on "baz" "0.0.3")
+      (depends-on "package-c" "0.0.1")
       """
     When I run cask "install"
-    When I run cask "exec {{EMACS}} --script .cask/{{EMACS-VERSION}}/elpa/baz-0.0.3/baz.el -Q --funcall hello"
+    When I run cask "exec {{EMACS}} --script .cask/{{EMACS-VERSION}}/elpa/package-c-0.0.1/package-c.el -Q --funcall hello"
     Then I should see command output:
       """
-      Hello from QUX, which is a BAZ dependency
+      Hello from PACKAGE-D, which is a PACKAGE-C dependency
       """
 
   Scenario: Binary in local package
@@ -30,13 +30,13 @@ Feature: Exec
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
-      (depends-on "hey" "0.0.5")
+      (depends-on "package-e" "0.0.1")
       """
     When I run cask "install"
-    When I run cask "exec hey"
+    When I run cask "exec hello"
     Then I should see command output:
       """
-      Hello from HEY
+      Hello from PACKAGE-E
       """
 
   Scenario: Do not include bootstrap dependencies

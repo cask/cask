@@ -1,3 +1,0 @@
-(require 'qux)
-
-(provide 'baz)

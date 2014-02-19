@@ -17,12 +17,12 @@ Feature: List
   Scenario: With dependencies
     Given this Cask file:
       """
-      (depends-on "foo" "0.1.2")
-      (depends-on "bar" "0.2.1")
+      (depends-on "package-a" "0.1.2")
+      (depends-on "package-b" "0.2.1")
 
       (development
-       (depends-on "baz")
-       (depends-on "qux"))
+       (depends-on "package-c")
+       (depends-on "package-d"))
       """
     When I run cask "list"
     Then I should see command output:
@@ -30,10 +30,10 @@ Feature: List
       ### Dependencies ###
 
       Runtime [2]:
-       - bar (0.2.1)
-       - foo (0.1.2)
+       - package-b (0.2.1)
+       - package-a (0.1.2)
 
       Development [2]:
-       - qux
-       - baz
+       - package-d
+       - package-c
       """

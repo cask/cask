@@ -6,7 +6,7 @@ Feature: Outdated
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
-      (depends-on "bar" "0.0.2")
+      (depends-on "package-b" "0.0.1")
       """
     When I run cask "install"
     And I run cask "outdated"
@@ -20,18 +20,18 @@ Feature: Outdated
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
-      (depends-on "foo" "0.0.1")
+      (depends-on "package-a" "0.0.1")
       """
     When I run cask "install"
     Given this Cask file:
       """
       (source "localhost" "http://127.0.0.1:9191/new-packages/")
 
-      (depends-on "foo" "0.0.1")
+      (depends-on "package-a" "0.0.1")
       """
     When I run cask "outdated"
     Then I should see command output:
       """
       Outdated packages:
-      foo 0.0.1 -> 0.0.2
+      package-a 0.0.1 -> 0.0.2
       """
