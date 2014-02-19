@@ -33,6 +33,7 @@
 (require 'cask)
 
 (eval-when-compile
+  (defvar cask-test/link-path)
   (defvar cask-test/sandbox-path)
   (defvar cask-test/fixtures-path)
   (defvar cask-test/cvs-repo-path))
@@ -259,11 +260,13 @@
 (ert-deftest cask-installed-dependencies-test/link ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
+        (depends-on "package-c" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
+    (cask-test/link bundle 'package-c "package-c-0.0.1")
     (let ((actual (cask-installed-dependencies bundle 'deep))
-          (expected (list (make-cask-dependency :name 'package-a :version "0.0.1"))))
+          (expected (list (make-cask-dependency :name 'package-c :version "0.0.1")
+                          (make-cask-dependency :name 'package-d :version "0.0.1")
+                          (make-cask-dependency :name 'package-f :version "0.0.1"))))
       (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-installed-dependencies-test/without-initialized-environment ()
@@ -420,22 +423,18 @@
       '((source localhost)
         (depends-on "package-e" "0.0.1"))
     (cask-install bundle)
-    (let ((package-e-path (f-expand "package-e" cask-test/sandbox-path)))
-      (f-copy (f-expand "package-e-0.0.1" (cask-elpa-path bundle)) package-e-path)
-      (cask-link bundle 'package-e package-e-path)
-      (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
-        (should (equal (cons path exec-path) (cask-exec-path bundle)))))))
+    (cask-test/link bundle 'package-e "package-e-0.0.1")
+    (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
+      (should (equal (cons path exec-path) (cask-exec-path bundle))))))
 
 (ert-deftest cask-exec-path-test/without-initialized-environment ()
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "package-e" "0.0.1"))
     (cask-test/install bundle)
-    (let ((package-e-path (f-expand "package-e" cask-test/sandbox-path)))
-      (f-copy (f-expand "package-e-0.0.1" (cask-elpa-path bundle)) package-e-path)
-      (cask-link bundle 'package-e package-e-path)
-      (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
-        (should (equal (cons path exec-path) (cask-exec-path bundle)))))))
+    (cask-test/link bundle 'package-e "package-e-0.0.1")
+    (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
+      (should (equal (cons path exec-path) (cask-exec-path bundle))))))
 
 (ert-deftest cask-exec-path-test/development ()
   (cask-test/with-bundle
@@ -443,11 +442,9 @@
         (development
          (depends-on "package-e" "0.0.1")))
     (cask-install bundle)
-    (let ((package-e-path (f-expand "package-e" cask-test/sandbox-path)))
-      (f-copy (f-expand "package-e-0.0.1" (cask-elpa-path bundle)) package-e-path)
-      (cask-link bundle 'package-e package-e-path)
-      (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
-        (should (equal (cons path exec-path) (cask-exec-path bundle)))))))
+    (cask-test/link bundle 'package-e "package-e-0.0.1")
+    (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
+      (should (equal (cons path exec-path) (cask-exec-path bundle))))))
 
 
 ;;;; cask-load-path
@@ -468,15 +465,18 @@
 (ert-deftest cask-load-path-test/link ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1")
-        (depends-on "package-b" "0.0.1"))
+        (depends-on "package-c" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
-    (let ((path-package-a (f-expand "package-a-0.0.1" (cask-elpa-path bundle)))
-          (path-package-b (f-expand "package-b-0.0.1" (cask-elpa-path bundle))))
+    (cask-test/link bundle 'package-c "package-c-0.0.1")
+    (let ((path-package-c (f-expand "package-c-0.0.1" (cask-elpa-path bundle)))
+          (path-package-d (f-expand "package-d-0.0.1" (cask-elpa-path bundle)))
+          (path-package-f (f-expand "package-f-0.0.1" (cask-elpa-path bundle))))
       (should
        (-same-items?
-        (append (list path-package-b path-package-a) load-path)
+        (append (list path-package-c
+                      path-package-d
+                      path-package-f)
+                load-path)
         (cask-load-path bundle))))))
 
 (ert-deftest cask-load-path-test/without-initialized-environment ()
@@ -552,10 +552,11 @@
 (ert-deftest cask-update-test/link ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
-    :packages '(("package-a" "0.0.1"))
+        (depends-on "package-d" "0.0.1"))
+    :packages '(("package-d" "0.0.1")
+                ("package-f" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
+    (cask-test/link bundle 'package-d "package-d-0.0.1")
     (setf (cask-bundle-sources bundle) nil)
     (cask-add-source bundle "localhost" "http://127.0.0.1:9191/new-packages/")
     (should-not (cask-update bundle))))
@@ -621,10 +622,11 @@
 (ert-deftest cask-install-test/link ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
-    :packages '(("package-a" "0.0.1"))
-    (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
+        (depends-on "package-c" "0.0.1"))
+    :packages '(("package-c" "0.0.1")
+                ("package-d" "0.0.1")
+                ("package-f" "0.0.1"))
+    (cask-test/link bundle 'package-c "package-c-0.0.1")
     (cask-install bundle)))
 
 (ert-deftest cask-install-test/intact-load-path ()
@@ -763,10 +765,9 @@
 (ert-deftest cask-outdated-test/link ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
-    :packages '(("package-a" "0.0.1"))
+        (depends-on "package-c" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
+    (cask-test/link bundle 'package-c "package-c-0.0.1")
     (should-not (cask-outdated bundle))))
 
 (ert-deftest cask-outdated-test/intact-load-path ()
@@ -803,27 +804,14 @@
     (cask-initialize (cask-path bundle))
     (should (equal (-map 'car package-alist) '(package-b)))))
 
-(ert-deftest cask-initialize-test/link-with-define-package-file ()
+(ert-deftest cask-initialize-test/link ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
+        (depends-on "package-d" "0.0.1"))
     (cask-install bundle)
-    (let ((package-a-path (f-expand "package-a" cask-test/sandbox-path)))
-      (f-copy (cask-dependency-path bundle 'package-a) package-a-path)
-      (cask-link bundle 'package-a package-a-path))
+    (cask-test/link bundle 'package-d "package-d-0.0.1")
     (cask-initialize (cask-path bundle))
-    (should (equal (-map 'car package-alist) '(package-a)))))
-
-(ert-deftest cask-initialize-test/link-no-define-package-file ()
-  (cask-test/with-bundle
-      '((source localhost)
-        (depends-on "package-a" "0.0.1"))
-    (cask-install bundle)
-    (let ((package-a-path (f-expand "package-a" cask-test/sandbox-path)))
-      (f-mkdir package-a-path)
-      (cask-link bundle 'package-a package-a-path))
-    (cask-initialize (cask-path bundle))
-    (should-not package-alist)))
+    (should (-same-items? (-map 'car package-alist) '(package-d package-f)))))
 
 
 ;;;; cask-files
@@ -998,15 +986,15 @@
 (ert-deftest cask-links-test/with-links ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1")
-        (depends-on "package-b" "0.0.1"))
+        (depends-on "package-c" "0.0.1")
+        (depends-on "package-d" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
-    (cask-link bundle 'package-b cask-test/sandbox-path)
-    (let ((actual (cask-links bundle))
-          (expected `(("package-a-0.0.1" ,cask-test/sandbox-path)
-                      ("package-b-0.0.1" ,cask-test/sandbox-path))))
-      (should (-same-items? actual expected)))))
+    (let ((package-c-path (cask-test/link bundle 'package-c "package-c-0.0.1"))
+          (package-d-path (cask-test/link bundle 'package-d "package-d-0.0.1")))
+      (let ((actual (cask-links bundle))
+            (expected `(("package-c-0.0.1" ,package-c-path)
+                        ("package-d-0.0.1" ,package-d-path))))
+        (should (-same-items? actual expected))))))
 
 
 ;;;; cask-link
@@ -1016,21 +1004,39 @@
     (should-error
      (cask-link bundle 'package-a cask-test/sandbox-path) :type 'cask-no-cask-file)))
 
-(ert-deftest cask-link-test/valid-links ()
+(ert-deftest cask-link-test/with-pkg-file ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1")
+        (depends-on "package-c" "0.0.1"))
+    (cask-install bundle)
+    (let ((link-path (cask-test/link bundle 'package-c "package-c-0.0.1")))
+      (should (f-same? (cask-dependency-path bundle 'package-c) link-path)))))
+
+(ert-deftest cask-link-test/with-cask-file ()
+  (cask-test/with-bundle
+      '((source localhost)
         (depends-on "package-b" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
-    (cask-link bundle 'package-b cask-test/sandbox-path)
-    (should (f-same? (cask-dependency-path bundle 'package-a) cask-test/sandbox-path))
-    (should (f-same? (cask-dependency-path bundle 'package-b) cask-test/sandbox-path))))
+    (let ((link-path (cask-test/link bundle 'package-b "package-b-0.0.1")))
+      (should (f-same? (cask-dependency-path bundle 'package-b) link-path)))))
+
+(ert-deftest-async cask-link-test/without-cask-and-pkg-files (done)
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "package-a" "0.0.1"))
+    (cask-install bundle)
+    (condition-case err
+        (cask-test/link bundle 'package-a "package-a-0.0.1")
+      (error
+       (should (string= (error-message-string err)
+                        (format "Link source %s does not have a Cask or package-a-pkg.el file"
+                                (f-expand "package-a-0.0.1" cask-test/link-path))))
+       (funcall done)))))
 
 (ert-deftest-async cask-link-test/no-such-dependency (done)
   (cask-test/with-bundle 'empty
     (condition-case err
-        (cask-link bundle 'package-a cask-test/sandbox-path)
+        (cask-test/link bundle 'package-a "package-a-0.0.1")
       (error
        (should (string= (error-message-string err)
                         "Cannot link package package-a, is not a dependency"))
@@ -1050,11 +1056,11 @@
 (ert-deftest cask-link-test/already-linked ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
+        (depends-on "package-d" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
-    (should (f-same? (cask-dependency-path bundle 'package-a) cask-test/sandbox-path))))
+    (let ((link-path (cask-test/link bundle 'package-d "package-d-0.0.1")))
+      (cask-link bundle 'package-d link-path)
+      (should (f-same? (cask-dependency-path bundle 'package-d) link-path)))))
 
 
 ;;;; cask-link-delete
@@ -1064,20 +1070,15 @@
     (should-error
      (cask-link-delete bundle 'package-a) :type 'cask-no-cask-file)))
 
-(ert-deftest cask-link-delete-test/valid-links ()
+(ert-deftest cask-link-delete-test/with-link ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1")
-        (depends-on "package-b" "0.0.1"))
+        (depends-on "package-c" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
-    (cask-link bundle 'package-b cask-test/sandbox-path)
-    (should (f-same? (cask-dependency-path bundle 'package-a) cask-test/sandbox-path))
-    (should (f-same? (cask-dependency-path bundle 'package-b) cask-test/sandbox-path))
-    (cask-link-delete bundle 'package-a)
-    (cask-link-delete bundle 'package-b)
-    (should-not (cask-dependency-path bundle 'package-a))
-    (should-not (cask-dependency-path bundle 'package-b))))
+    (let ((link-path (cask-test/link bundle 'package-c "package-c-0.0.1")))
+      (should (f-same? (cask-dependency-path bundle 'package-c) link-path))
+      (cask-link-delete bundle 'package-c)
+      (should-not (cask-dependency-path bundle 'package-c)))))
 
 (ert-deftest-async cask-link-delete-test/no-such-dependency (done)
   (cask-test/with-bundle 'empty
@@ -1104,10 +1105,10 @@
 (ert-deftest cask-linked-p-test/linked ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
+        (depends-on "package-c" "0.0.1"))
     (cask-install bundle)
-    (cask-link bundle 'package-a cask-test/sandbox-path)
-    (should (cask-linked-p bundle 'package-a))))
+    (cask-test/link bundle 'package-c "package-c-0.0.1")
+    (should (cask-linked-p bundle 'package-c))))
 
 (ert-deftest cask-linked-p-test/not-linked ()
   (cask-test/with-bundle

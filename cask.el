@@ -867,12 +867,20 @@ link, as a string and the value is the absolute path to the link."
   "Add BUNDLE link with NAME to SOURCE.
 
 NAME is the name of the package to link as a string.  SOURCE is
-the path to the directory to link to.
+the path to the directory to link to.  SOURCE must have either a
+NAME-pkg.el or Cask file for the linking to be possible."
   (cask--with-file bundle
     (unless (cask-has-dependency bundle name)
       (error "Cannot link package %s, is not a dependency" name))
     (unless (f-dir? source)
       (error "Cannot create link %s to non existing path: %s" name source))
+    (unless (f-file? (f-expand (format "%s-pkg.el" name) source))
+      (if (f-file? (f-expand cask-filename source))
+          (let ((link-bundle (cask-setup source)))
+            (f-write-text (cask-define-package-string link-bundle) 'utf-8
+                          (cask-define-package-file link-bundle)))
+        (error "Link source %s does not have a Cask or %s-pkg.el file"
+               source name)))
     (when (cask--initialized-p bundle)
       (let ((target (cask-dependency-path bundle name)))
         (when (and target (f-exists? target))

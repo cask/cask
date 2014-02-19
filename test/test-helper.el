@@ -44,6 +44,9 @@
 (defconst cask-test/fixtures-path
   (f-expand "fixtures" cask-test/root-path))
 
+(defconst cask-test/link-path
+  (f-expand "link" cask-test/sandbox-path))
+
 (defvar cask-test/cvs-repo-path nil)
 
 (add-to-list 'load-path cask-test/root-path)
@@ -101,6 +104,7 @@ The items in the list are on the form (package version)."
            (when (f-dir? cask-test/sandbox-path)
              (f-delete cask-test/sandbox-path 'force))
            (f-mkdir cask-test/sandbox-path)
+           (f-mkdir cask-test/link-path)
            ,@body)
        (epl-reset))))
 
@@ -166,6 +170,16 @@ asserted that only those packages are installed"
                    (let ((default-directory cask-test/cvs-repo-path))
                      (apply 'cask-test/run-command (cons "git" args)))))
              ,@body)))
+
+(defun cask-test/link (bundle name fixture-name)
+  "Create BUNDLE link with NAME.
+
+The fixture with name FIXTURE-NAME will be copied to
+`cask-test/link-path' and will be the link source."
+  (f-copy (f-expand fixture-name cask-test/fixtures-path) cask-test/link-path)
+  (let ((link-path (f-expand fixture-name cask-test/link-path)))
+    (cask-link bundle name link-path)
+    link-path))
 
 (defun should-be-same-dependencies (actual expected)
   "Assert that the dependencies ACTUAL and EXPECTED are same."
