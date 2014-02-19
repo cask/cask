@@ -167,10 +167,6 @@ asserted that only those packages are installed"
                      (apply 'cask-test/run-command (cons "git" args)))))
              ,@body)))
 
-(defun cask-test/fixture-path (name)
-  "Return path to fixture with NAME."
-  (f-expand name cask-test/fixtures-path))
-
 (defun should-be-same-dependencies (actual expected)
   "Assert that the dependencies ACTUAL and EXPECTED are same."
   (should

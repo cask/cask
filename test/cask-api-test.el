@@ -34,6 +34,7 @@
 
 (eval-when-compile
   (defvar cask-test/sandbox-path)
+  (defvar cask-test/fixtures-path)
   (defvar cask-test/cvs-repo-path))
 
 
@@ -639,7 +640,8 @@
    (cask-test/with-bundle
        `((depends-on "package-a" :git ,cask-test/cvs-repo-path))
      :packages '(("package-a"))
-     (f-copy (cask-test/fixture-path "package-a-0.0.1/package-a.el") cask-test/cvs-repo-path)
+     (f-copy (f-join cask-test/fixtures-path "package-a-0.0.1" "package-a.el")
+             cask-test/cvs-repo-path)
      (git "add" "package-a.el")
      (git "commit" "-a" "-m" "Add package-a.")
      (cask-install bundle))))
@@ -669,8 +671,10 @@
    (cask-test/with-bundle
        `((depends-on "package-a" :git ,cask-test/cvs-repo-path :files ("package-a.el")))
      :packages '(("package-a"))
-     (f-copy (cask-test/fixture-path "package-a-0.0.1/package-a.el") cask-test/cvs-repo-path)
-     (f-copy (cask-test/fixture-path "package-b-0.0.1/package-b.el") cask-test/cvs-repo-path)
+     (f-copy (f-join cask-test/fixtures-path "package-a-0.0.1" "package-a.el")
+             cask-test/cvs-repo-path)
+     (f-copy (f-join cask-test/fixtures-path "package-b-0.0.1" "package-b.el")
+             cask-test/cvs-repo-path)
      (git "add" "package-a.el" "package-b.el")
      (git "commit" "-a" "-m" "Add package-a and package-b.")
      (cask-install bundle)
@@ -682,12 +686,14 @@
    (cask-test/with-bundle
        `((depends-on "package-a" :git ,cask-test/cvs-repo-path :branch "package-b"))
      :packages '(("package-a"))
-     (f-copy (cask-test/fixture-path "package-a-0.0.1/package-a.el") cask-test/cvs-repo-path)
+     (f-copy (f-join cask-test/fixtures-path "package-a-0.0.1" "package-a.el")
+             cask-test/cvs-repo-path)
      (git "add" "package-a.el")
      (git "commit" "-a" "-m" "Add package-a.")
      (git "branch" "package-b")
      (git "checkout" "package-b")
-     (f-copy (cask-test/fixture-path "package-b-0.0.1/package-b.el") cask-test/cvs-repo-path)
+     (f-copy (f-join cask-test/fixtures-path "package-b-0.0.1" "package-b.el")
+             cask-test/cvs-repo-path)
      (git "add" "package-b.el")
      (git "commit" "-a" "-m" "Add package-b.")
      (git "checkout" "master")
@@ -697,7 +703,8 @@
 
 (ert-deftest cask-install-test/fetcher-ref ()
   (cask-test/with-git-repo
-   (f-copy (cask-test/fixture-path "package-a-0.0.1/package-a.el") cask-test/cvs-repo-path)
+   (f-copy (f-join cask-test/fixtures-path "package-a-0.0.1" "package-a.el")
+           cask-test/cvs-repo-path)
    (git "add" "package-a.el")
    (git "commit" "-a" "-m" "Add package-a.")
    (let ((ref (s-trim (git "rev-parse" "HEAD"))))
@@ -706,7 +713,8 @@
        :packages '(("package-a"))
        (git "branch" "package-b")
        (git "checkout" "package-b")
-       (f-copy (cask-test/fixture-path "package-b-0.0.1/package-b.el") cask-test/cvs-repo-path)
+       (f-copy (f-join cask-test/fixtures-path "package-b-0.0.1" "package-b.el")
+               cask-test/cvs-repo-path)
        (git "add" "package-b.el")
        (git "commit" "-a" "-m" "Add package-b.")
        (cask-install bundle)
