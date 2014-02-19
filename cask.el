@@ -438,28 +438,13 @@ The BUNDLE is initialized when the elpa directory exists."
    :name (epl-requirement-name epl-requirement)
    :version (epl-requirement-version-string epl-requirement)))
 
-(defun cask--dependency-installed-p (bundle name)
-  "Return true if BUNDLE has and installed dependency with NAME.
-
-This is the Cask definition if a dependency is installed or not.
-The functions in package.el requires a package to have a -pkg.el
-file to be considered installed.  This does not work in Cask
-because we allow links that may not have a -pkg.el file.
-
-The dependency is considered installed if there exists a
-dependency for NAME and if there exists a directory or link for
-NAME."
-  (and
-   (-any?
-    (lambda (dependency)
-      (eq (cask-dependency-name dependency) name))
-    (cask--dependencies bundle 'deep))
-   (let ((package-path (cask-dependency-path bundle name)))
-     (and package-path (f-dir? package-path)))))
-
 (defun cask--find-available-package (name)
   "Find first available package with NAME."
   (car (epl-find-available-packages name)))
+
+(defun cask--find-installed-package (name)
+  "Find installed package with NAME."
+  (epl-find-installed-package name))
 
 (defun cask--uniq-dependencies (dependencies)
   "Return new list with all duplicates in DEPENDENCIES removed."
@@ -470,33 +455,37 @@ NAME."
             (cask-dependency-name dependency-2)))))
     (-uniq dependencies)))
 
-(defun cask--dependency-dependencies (dependency)
-  "Return list of DEPENDENCY's dependencies, recursively."
-  (let ((name (cask-dependency-name dependency)))
-    (-when-let (package (cask--find-available-package name))
-      (cask--uniq-dependencies
-       (cons dependency
-             (cask--compute-dependencies
-              (-map 'cask--epl-requirement-to-dependency
-                    (epl-package-requirements package))))))))
+(defun cask--compute-dependencies (dependencies package-function)
+  "Return a list of DEPENDENCIES's dependencies, recursively.
 
-(defun cask--compute-dependencies (dependencies)
-  "Return a list of DEPENDENCIES's dependencies, recursively."
+PACKAGE-FUNCTION is a function that takes a name as argument and
+returns an `epl-package' object."
   (cask--uniq-dependencies
-   (-flatten (-map 'cask--dependency-dependencies dependencies))))
+   (-flatten
+    (-map
+     (lambda (dependency)
+       (let ((name (cask-dependency-name dependency)))
+         (-when-let (package (funcall package-function name))
+           (cask--uniq-dependencies
+            (cons dependency
+                  (cask--compute-dependencies
+                   (-map 'cask--epl-requirement-to-dependency
+                         (epl-package-requirements package))
+                   package-function))))))
+     dependencies))))
 
 (defun cask--runtime-dependencies (bundle &optional deep)
   "Return runtime dependencies for BUNDLE, optionally DEEP."
   (let ((dependencies (cask-bundle-runtime-dependencies bundle)))
     (if deep
-        (cask--compute-dependencies dependencies)
+        (cask--compute-dependencies dependencies 'cask--find-available-package)
       dependencies)))
 
 (defun cask--development-dependencies (bundle &optional deep)
   "Return development dependencies for BUNDLE, optionally DEEP."
   (let ((dependencies (cask-bundle-development-dependencies bundle)))
     (if deep
-        (cask--compute-dependencies dependencies)
+        (cask--compute-dependencies dependencies 'cask--find-available-package)
       dependencies)))
 
 (defun cask--dependencies (bundle &optional deep)
@@ -506,10 +495,10 @@ NAME."
 
 (defun cask--installed-dependencies (bundle &optional deep)
   "Return installed dependencies for BUNDLE, optionally DEEP."
-  (-select
-   (lambda (dependency)
-     (cask--dependency-installed-p bundle (cask-dependency-name dependency)))
-   (cask--dependencies bundle deep)))
+  (let ((dependencies (cask--dependencies bundle)))
+    (if deep
+        (cask--compute-dependencies dependencies 'cask--find-installed-package)
+      dependencies)))
 
 (defun cask--install-dependency (bundle dependency)
   "In BUNDLE, install DEPENDENCY.

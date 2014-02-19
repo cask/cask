@@ -239,14 +239,6 @@
                           (make-cask-dependency :name 'package-f :version "0.0.1"))))
       (should-be-same-dependencies actual expected))))
 
-(ert-deftest cask-installed-dependencies-test/no-directory ()
-  (cask-test/with-bundle
-      '((source localhost)
-        (depends-on "package-a" "0.0.1"))
-    (cask-install bundle)
-    (f-delete (cask-dependency-path bundle 'package-a) 'force)
-    (should-not (cask-installed-dependencies bundle))))
-
 (ert-deftest cask-installed-dependencies-test/not-in-cask-file ()
   (cask-test/with-bundle
       '((source localhost)
