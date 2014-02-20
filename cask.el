@@ -524,7 +524,7 @@ This function return a `cask-bundle' object."
               (progn
                 (epl-change-package-dir (cask-elpa-path bundle))
                 (--map (list (cask-dependency-name it)
-                             (cask-dependency-version it))
+                             (or (cask-dependency-version it) t))
                        (cask--installed-dependencies bundle 'deep)))
             (epl-reset))))
     (when (f-same? (epl-package-dir) (epl-default-package-dir))
