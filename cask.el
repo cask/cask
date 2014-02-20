@@ -227,24 +227,6 @@ ERR is the error object."
       (message "%s: %s" (cask-file bundle) msg)))
   (kill-emacs 1))
 
-(defun cask--upgradable-dependencies (bundle)
-  "Return list of upgradable dependencies for BUNDLE.
-
-A dependency is upgradable if it if a dependency (non deep), is
-not currently linked and is not a fetcher dependency."
-  (--reject (or (cask-linked-p bundle (cask-dependency-name it))
-                (cask-dependency-fetcher it))
-            (cask--dependencies bundle)))
-
-(defun cask--upgradable-dependencies-as-epl-packages (bundle)
-  "Return a list of upgradable packages for BUNDLE.
-
-The list contains `epl-package' objects."
-  (-map
-   (lambda (dependency)
-     (epl-find-installed-package (cask-dependency-name dependency)))
-   (cask--upgradable-dependencies bundle)))
-
 (defun cask--current-source-position ()
   "Get the current position in the buffer."
   (make-cask-source-position :line (line-number-at-pos)
@@ -558,12 +540,7 @@ Return list of updated packages."
     :refresh t
     (shut-up
       (condition-case err
-          (prog1
-              (-when-let (packages (cask--upgradable-dependencies-as-epl-packages bundle))
-                (epl-upgrade packages))
-            (-each (cask--fetcher-dependencies bundle)
-              (lambda (dependency)
-                (cask--install-dependency bundle dependency))))
+          (epl-upgrade)
         (error
          (signal 'cask-failed-installation
                  (list (car err) err (shut-up-current-output))))))))
@@ -573,8 +550,7 @@ Return list of updated packages."
   (cask--with-environment bundle
     :force t
     :refresh t
-    (-when-let (packages (cask--upgradable-dependencies-as-epl-packages bundle))
-      (epl-find-upgrades packages))))
+    (epl-find-upgrades)))
 
 (defun cask-install (bundle)
   "Install BUNDLE dependencies.
