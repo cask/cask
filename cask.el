@@ -290,7 +290,7 @@ from the sources."
   "Turn DEPENDENCY into a package-build config object."
   (let ((fetcher (intern (substring (symbol-name (cask-dependency-fetcher dependency)) 1)))
         (url (cask-dependency-url dependency))
-        (files (cask-dependency-files dependency))
+        (files (cask--dependency-files dependency))
         (commit (cask-dependency-ref dependency))
         (branch (cask-dependency-branch dependency)))
     (list :fetcher fetcher :url url :files files :commit commit :branch branch)))
@@ -304,7 +304,7 @@ This function returns the path to the package file."
   (let* ((name (cask-dependency-name dependency))
          (path (f-expand (symbol-name name) cask-tmp-checkout-path))
          (config (cask--dependency-to-package-build-config dependency))
-         (files (cask-dependency-files dependency)))
+         (files (cask--dependency-files dependency)))
     (let ((version (package-build-checkout name config path)))
       (package-build-package name version files path cask-tmp-packages-path)
       (let ((pattern (format "%s-%s.*" name version)))
@@ -496,6 +496,13 @@ is signaled."
             (epl-package-install package)
           (unless (epl-built-in-p name)
             (signal 'cask-missing-dependency (list dependency))))))))
+
+(defun cask--dependency-files (dependency)
+  "Return DEPENDENCY files.
+
+Return the files attribute is set.  Otherwise fallback and return
+the default files pattern `package-build-default-files-spec'."
+  (or (cask-dependency-files dependency) package-build-default-files-spec))
 
 
 ;;;; Public API
@@ -758,9 +765,8 @@ url to the fetcher source."
   (let ((dependency (make-cask-dependency :name name)))
     (-when-let (version (plist-get args :version))
       (setf (cask-dependency-version dependency) version))
-    (let ((files (plist-get args :files)))
-      (setf (cask-dependency-files dependency)
-            (or files package-build-default-files-spec)))
+    (-when-let (files (plist-get args :files))
+      (setf (cask-dependency-files dependency) files))
     (-when-let (fetcher (--first (-contains? cask-fetchers it) args))
       (setf (cask-dependency-fetcher dependency) fetcher)
       (let ((url (plist-get args fetcher)))
