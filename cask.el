@@ -1,4 +1,4 @@
-;;; cask.el --- Cask: Emacs dependency management made easy  -*- lexical-binding: t; -*-
+;;; cask.el --- Cask: Project management for Emacs package development  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012-2014 Johan Andersson
 ;; Copyright (C) 2013 Sebastian Wiesner
@@ -30,7 +30,8 @@
 
 ;;; Commentary:
 
-;; Easy dependency management for Emacs!
+;; Cask is a project management tool for Emacs that helps automate the
+;; package development cycle.
 
 ;;; Code:
 
