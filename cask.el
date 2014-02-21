@@ -264,7 +264,7 @@ If REFRESH is true, refresh the environment by fetching new data
 from the sources."
   (cask--with-file bundle
     (setq package-archives nil)
-    (epl-change-package-dir (cask-elpa-path bundle))
+    (setq package-user-dir (cask-elpa-path bundle))
     (-each (cask-bundle-sources bundle)
       (lambda (source)
         (epl-add-archive (cask-source-name source)
