@@ -528,13 +528,9 @@ This function return a `cask-bundle' object."
 This function return a `cask-bundle' object."
   (let* ((bundle (cask-setup (or project-path user-emacs-directory)))
          (package-load-list
-          (unwind-protect
-              (progn
-                (epl-change-package-dir (cask-elpa-path bundle))
-                (--map (list (cask-dependency-name it)
-                             (or (cask-dependency-version it) t))
-                       (cask--installed-dependencies bundle)))
-            (epl-reset))))
+          (-snoc (--map (list (cask-dependency-name it) t)
+                        (cask--runtime-dependencies bundle))
+                 'all)))
     (when (f-same? (epl-package-dir) (epl-default-package-dir))
       (cask--use-environment bundle))
     bundle))

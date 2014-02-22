@@ -781,29 +781,11 @@
 (ert-deftest cask-initialize-test ()
   (cask-test/with-bundle
       '((source localhost)
-        (depends-on "package-a" "0.0.1"))
-    (cask-install bundle)
-    (should (cask-bundle-p (cask-initialize (cask-path bundle))))
-    (should (equal (-map 'car package-alist) '(package-a)))))
-
-(ert-deftest cask-initialize-test/only-installed ()
-  (cask-test/with-bundle
-      '((source localhost)
         (depends-on "package-a" "0.0.1")
         (depends-on "package-b" "0.0.1"))
     (cask-install bundle)
-    (f-delete (cask-dependency-path bundle 'package-a) 'force)
-    (cask-initialize (cask-path bundle))
-    (should (equal (-map 'car package-alist) '(package-b)))))
-
-(ert-deftest cask-initialize-test/link ()
-  (cask-test/with-bundle
-      '((source localhost)
-        (depends-on "package-d" "0.0.1"))
-    (cask-install bundle)
-    (cask-test/link bundle 'package-d "package-d-0.0.1")
-    (cask-initialize (cask-path bundle))
-    (should (-same-items? (-map 'car package-alist) '(package-d package-f)))))
+    (should (cask-bundle-p (cask-initialize (cask-path bundle))))
+    (should (equal (-map 'car package-alist) '(package-a package-b)))))
 
 
 ;;;; cask-files
