@@ -78,7 +78,8 @@ directory exists."
 The items in the list are on the form (package version)."
   (let ((elpa-dir (cask-elpa-path bundle)) (package-regex "\\(.+\\)-\\([^\-]+\\)"))
     (when (f-dir? elpa-dir)
-      (let ((directories (f--directories elpa-dir (s-matches? package-regex it))))
+      (let ((directories (f--directories elpa-dir (s-matches? package-regex
+                                                              (f-filename it)))))
         (-map
          (lambda (filename)
            (cdr (s-match package-regex (f-filename filename))))
