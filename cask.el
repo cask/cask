@@ -853,7 +853,7 @@ NAME-pkg.el or Cask file for the linking to be possible."
       (let ((target (cask-dependency-path bundle name)))
         (when (and target (f-exists? target))
           (f-delete target 'force))
-        (f-symlink source target)))))
+        (f-symlink (f-expand source) target)))))
 
 (defun cask-link-delete (bundle name)
   "Delete BUNDLE link with NAME."
