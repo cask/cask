@@ -838,6 +838,7 @@ NAME is the name of the package to link as a string.  SOURCE is
 the path to the directory to link to.  SOURCE must have either a
 NAME-pkg.el or Cask file for the linking to be possible."
   (cask--with-file bundle
+    (setq source (f-expand source))
     (unless (cask-has-dependency bundle name)
       (error "Cannot link package %s, is not a dependency" name))
     (unless (f-dir? source)
@@ -853,7 +854,7 @@ NAME-pkg.el or Cask file for the linking to be possible."
       (let ((target (cask-dependency-path bundle name)))
         (when (and target (f-exists? target))
           (f-delete target 'force))
-        (f-symlink (f-expand source) target)))))
+        (f-symlink source target)))))
 
 (defun cask-link-delete (bundle name)
   "Delete BUNDLE link with NAME."
