@@ -715,6 +715,18 @@
        (should (f-file? (f-expand "package-a.el" (cask-dependency-path bundle 'package-a))))
        (should-not (f-file? (f-expand "package-b.el" (cask-dependency-path bundle 'package-a))))))))
 
+(ert-deftest cask-install-test/fetcher-install-twice ()
+  (cask-test/with-git-repo
+   (cask-test/with-bundle
+       `((depends-on "package-a" :git ,cask-test/cvs-repo-path))
+     :packages '(("package-a"))
+     (f-copy (f-join cask-test/fixtures-path "package-a-0.0.1" "package-a.el")
+             cask-test/cvs-repo-path)
+     (git "add" "package-a.el")
+     (git "commit" "-a" "-m" "Add package-a.")
+     (cask-install bundle)
+     (cask-install bundle))))
+
 (when (>= emacs-major-version 24)
   (ert-deftest cask-install-test/built-in ()
     (cask-test/with-bundle
