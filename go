@@ -31,7 +31,8 @@ import errno
 from subprocess import CalledProcessError, check_call
 
 
-TARGET_DIRECTORY = '$HOME/.cask'
+HOME = os.path.expanduser('~')
+TARGET_DIRECTORY = os.path.join(HOME, 'cask')
 REPOSITORY = 'https://github.com/cask/cask.git'
 ISSUE_TRACKER = 'https://github.com/cask/cask/issues'
 
@@ -85,9 +86,8 @@ def install_cask(target_directory):
 
 def main():
     try:
-        target_directory = os.path.expandvars(TARGET_DIRECTORY)
-        install_cask(target_directory)
-        bootstrap_cask(target_directory)
+        install_cask(TARGET_DIRECTORY)
+        bootstrap_cask(TARGET_DIRECTORY)
         success("""\
 Successfully installed Cask!  Now, add the cask binary to your $PATH:
   export PATH="{0}/bin:$PATH\"""".format(TARGET_DIRECTORY))
