@@ -32,7 +32,7 @@ from subprocess import CalledProcessError, check_call
 
 
 HOME = os.path.expanduser('~')
-TARGET_DIRECTORY = os.path.join(HOME, 'cask')
+TARGET_DIRECTORY = os.path.join(HOME, '.cask')
 REPOSITORY = 'https://github.com/cask/cask.git'
 ISSUE_TRACKER = 'https://github.com/cask/cask/issues'
 
