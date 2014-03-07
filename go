@@ -60,7 +60,7 @@ def bootstrap_cask(target_directory):
     cask = os.path.join(target_directory, 'bin', 'cask')
 
     try:
-        check_call(["python", cask, 'upgrade'])
+        check_call([sys.executable, cask, 'upgrade'])
     except CalledProcessError:
         raise CaskGoError('Cask could not be bootstrapped. Try again later, '
                           'or report an issue at {0}'.format(ISSUE_TRACKER))
