@@ -851,8 +851,9 @@ NAME-pkg.el or Cask file for the linking to be possible."
                source name)))
     (when (cask--initialized-p bundle)
       (let ((target (cask-dependency-path bundle name)))
-        (when (and target (f-exists? target))
-          (f-delete target 'force))
+        (if target
+            (f-delete target 'force)
+          (error "Cannot link non installed package: %s" name))
         (f-symlink source target)))))
 
 (defun cask-link-delete (bundle name)

@@ -1048,6 +1048,21 @@
       (cask-link bundle 'package-d link-path)
       (should (f-same? (cask-dependency-path bundle 'package-d) link-path)))))
 
+(ert-deftest-async cask-link-test/link-when-not-installed (done)
+  (cask-test/with-bundle
+   '((source localhost)
+     (depends-on "package-c" "0.0.1"))
+   (cask-install bundle)
+   (condition-case err
+       (progn
+         (cask-test/link bundle 'package-c "package-c-0.0.1")
+         (cask-link-delete bundle 'package-c)
+         (cask-test/link bundle 'package-c "package-c-0.0.1"))
+     (error
+      (should (string= (error-message-string err)
+                       "Cannot link non installed package: package-c"))
+      (funcall done)))))
+
 
 ;;;; cask-link-delete
 
