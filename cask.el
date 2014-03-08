@@ -853,19 +853,25 @@ NAME-pkg.el or Cask file for the linking to be possible."
       (error "Cannot link package %s, is not a dependency" name))
     (unless (f-dir? source)
       (error "Cannot create link %s to non existing path: %s" name source))
-    (unless (f-file? (f-expand (format "%s-pkg.el" name) source))
-      (if (f-file? (f-expand cask-filename source))
-          (let ((link-bundle (cask-setup source)))
+    (let ((link-bundle (cask-setup source)))
+      (unless (f-file? (f-expand (format "%s-pkg.el" name) source))
+        (if (f-file? (f-expand cask-filename source))
             (f-write-text (cask-define-package-string link-bundle) 'utf-8
-                          (cask-define-package-file link-bundle)))
-        (error "Link source %s does not have a Cask or %s-pkg.el file"
-               source name)))
-    (when (cask--initialized-p bundle)
-      (let ((target (cask-dependency-path bundle name)))
-        (if target
-            (f-delete target 'force)
-          (error "Cannot link non installed package: %s" name))
-        (f-symlink source target)))))
+                          (cask-define-package-file link-bundle))
+          (error "Link source %s does not have a Cask or %s-pkg.el file"
+                 source name)))
+      (when (cask--initialized-p bundle)
+        (let ((link-path
+               (f-expand
+                (format "%s-%s"
+                        (cask-package-name link-bundle)
+                        (cask-package-version link-bundle))
+                (cask-elpa-path bundle))))
+          (when (f-exists? link-path)
+            (f-delete link-path 'force))
+          (-when-let (dependency-path (cask-dependency-path bundle name))
+            (f-delete dependency-path 'force))
+          (f-symlink source link-path))))))
 
 (defun cask-link-delete (bundle name)
   "Delete BUNDLE link with NAME."
