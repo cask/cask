@@ -712,13 +712,13 @@ If DEEP is t, all dependencies recursively will be returned."
 (defun cask-define-package-file (bundle)
   "Return path to `define-package' file for BUNDLE."
   (cask--with-package bundle
-    (f-expand (concat (symbol-name (cask-bundle-name bundle)) "-pkg.el") (cask-bundle-path bundle))))
+    (f-expand (format "%s-pkg.el" (cask-bundle-name bundle)) (cask-bundle-path bundle))))
 
 (defun cask-dependency-path (bundle name)
   "Return path to BUNDLE dependency with NAME.
 
 If no such dependency exist, return nil."
-  (car (f-glob (concat (symbol-name name) "-*") (cask-elpa-path bundle))))
+  (car (f-glob (format "%s-*" name) (cask-elpa-path bundle))))
 
 (defun cask-path (bundle)
   "Return BUNDLE root path."
