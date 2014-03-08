@@ -813,12 +813,13 @@ URL is the url to the mirror."
   "Build BUNDLE Elisp files."
   (cask--with-file bundle
     (require 'bytecomp)
-    (-each (cask-files bundle)
-      (lambda (path)
-        (when (and (f-file? path) (f-ext? path "el"))
-          (if (fboundp 'byte-recompile-file)
-              (byte-recompile-file path 'force 0)
-            (byte-compile-file path nil)))))))
+    (let ((load-path (cons (cask-path bundle) load-path)))
+      (-each (cask-files bundle)
+        (lambda (path)
+          (when (and (f-file? path) (f-ext? path "el"))
+            (if (fboundp 'byte-recompile-file)
+                (byte-recompile-file path 'force 0)
+              (byte-compile-file path nil))))))))
 
 (defun cask-clean-elc (bundle)
   "Remove BUNDLE Elisp byte compiled files."
