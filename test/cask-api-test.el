@@ -1048,6 +1048,16 @@
       (cask-link bundle 'package-d link-path)
       (should (f-same? (cask-dependency-path bundle 'package-d) link-path)))))
 
+(ert-deftest cask-link-test/relative-path ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "package-d" "0.0.1"))
+    (cask-install bundle)
+    (let* ((link-path (cask-test/link bundle 'package-d "package-d-0.0.1"))
+           (relative-link-path "./link/package-d-0.0.1"))
+      (cask-link bundle 'package-d relative-link-path)
+      (should (f-same? (cask-dependency-path bundle 'package-d) link-path)))))
+
 
 ;;;; cask-link-delete
 
