@@ -257,11 +257,14 @@ Return all directives in the Cask file as list."
                                  (cdr err)))))
       (nreverse forms))))
 
-(defun cask--use-environment (bundle &optional refresh)
+(defun cask--use-environment (bundle &rest args)
   "Use BUNDLE environment.
 
-If REFRESH is true, refresh the environment by fetching new data
-from the sources."
+ARGS is a plist with these additional options:
+
+`refresh' If non nil, refresh the environment by calling `epl-refresh'.
+
+`activate' If non nil, activate packages on initialization."
   (cask--with-file bundle
     (setq package-archives nil)
     (setq package-user-dir (cask-elpa-path bundle))
@@ -272,9 +275,9 @@ from the sources."
     (shut-up
       (condition-case err
           (progn
-            (when refresh
+            (when (plist-get args :refresh)
               (epl-refresh))
-            (epl-initialize))
+            (epl-initialize (not (plist-get args :activate))))
         (error
          (signal 'cask-failed-initialization
                  (list err (shut-up-current-output))))))))
@@ -328,7 +331,7 @@ outside of package.el, for example `load-path'."
      (if (or ,(plist-get body :force) (not (equal ,bundle cask-current-bundle)))
          (prog1
              (let ((load-path (-clone load-path)))
-               (cask--use-environment ,bundle ,(plist-get body :refresh))
+               (cask--use-environment ,bundle :refresh ,(plist-get body :refresh))
                ,@body)
            (setq cask-current-bundle (copy-cask-bundle ,bundle)))
        ,@body)))
@@ -532,7 +535,7 @@ This function return a `cask-bundle' object."
                         (cask--runtime-dependencies bundle))
                  'all)))
     (when (f-same? (epl-package-dir) (epl-default-package-dir))
-      (cask--use-environment bundle))
+      (cask--use-environment bundle :activate t))
     bundle))
 
 (defun cask-update (bundle)
