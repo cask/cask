@@ -377,14 +377,7 @@ SCOPE may be nil or 'development."
          (cl-destructuring-bind (_ filename) form
            (let ((package (epl-package-from-file
                            (f-expand filename (cask-bundle-path bundle)))))
-             (setf (cask-bundle-name bundle) (epl-package-name package))
-             (setf (cask-bundle-version bundle) (epl-package-version-string package))
-             (setf (cask-bundle-description bundle) (epl-package-summary package))
-             (-each (epl-package-requirements package)
-               (lambda (requirement)
-                 (let ((name (epl-requirement-name requirement))
-                       (version (epl-requirement-version-string requirement)))
-                   (cask-add-dependency bundle name :version version)))))))
+             (cask--from-epl-package bundle package))))
         (depends-on
          (cl-destructuring-bind (_ name &rest args) form
            (when (stringp (car args))
@@ -508,6 +501,17 @@ Return the files attribute is set.  Otherwise fallback and return
 the default files pattern `package-build-default-files-spec'."
   (or (cask-dependency-files dependency) package-build-default-files-spec))
 
+(defun cask--from-epl-package (bundle package)
+  "Extend BUNDLE with epl PACKAGE."
+  (setf (cask-bundle-name bundle) (epl-package-name package))
+  (setf (cask-bundle-version bundle) (epl-package-version-string package))
+  (setf (cask-bundle-description bundle) (epl-package-summary package))
+  (-each (epl-package-requirements package)
+    (lambda (requirement)
+      (let ((name (epl-requirement-name requirement))
+            (version (epl-requirement-version-string requirement)))
+        (cask-add-dependency bundle name :version version)))))
+
 
 ;;;; Public API
 
@@ -516,13 +520,16 @@ the default files pattern `package-build-default-files-spec'."
 
 This function return a `cask-bundle' object."
   (let ((bundle (make-cask-bundle :path (f-canonical project-path))))
-    (when (f-file? (cask-file bundle))
-      (condition-case err
-          (cask--eval bundle (cask--read (cask-file bundle)))
-        (end-of-file
-         (cask--exit-error bundle err))
-        (invalid-read-syntax
-         (cask--exit-error bundle err))))
+    (if (f-file? (cask-file bundle))
+        (condition-case err
+            (cask--eval bundle (cask--read (cask-file bundle)))
+          (end-of-file
+           (cask--exit-error bundle err))
+          (invalid-read-syntax
+           (cask--exit-error bundle err)))
+      (-when-let (define-package-file (car (f-glob "*-pkg.el" project-path)))
+        (let ((package (epl-package-from-descriptor-file define-package-file)))
+          (cask--from-epl-package bundle package))))
     bundle))
 
 (defun cask-initialize (&optional project-path)
@@ -606,19 +613,19 @@ configuration template is used."
   "Return BUNDLE name.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  (cask--with-package bundle (cask-bundle-name bundle)))
+  (cask-bundle-name bundle))
 
 (defun cask-package-version (bundle)
   "Return BUNDLE version.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  (cask--with-package bundle (cask-bundle-version bundle)))
+  (cask-bundle-version bundle))
 
 (defun cask-package-description (bundle)
   "Return BUNDLE description.
 
 If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
-  (cask--with-package bundle (cask-bundle-description bundle)))
+  (cask-bundle-description bundle))
 
 (defun cask-version ()
   "Return Cask's version."

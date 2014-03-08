@@ -41,10 +41,23 @@
 
 ;;;; cask-setup
 
-(ert-deftest cask-setup-test/returns-bundle ()
+(ert-deftest cask-setup-test/cask-file ()
   (cask-test/with-sandbox
-   (let ((bundle (cask-setup cask-test/sandbox-path)))
-     (should (cask-bundle-p bundle)))))
+   (f-copy (f-join cask-test/fixtures-path "package-b-0.0.1")
+           cask-test/sandbox-path)
+   (let ((bundle (cask-setup (f-expand "package-b-0.0.1" cask-test/sandbox-path))))
+     (should (string= (cask-package-name bundle) "package-b"))
+     (should (string= (cask-package-version bundle) "0.0.1"))
+     (should (string= (cask-package-description bundle) "Package-B")))))
+
+(ert-deftest cask-setup-test/define-package-file ()
+  (cask-test/with-sandbox
+   (f-copy (f-join cask-test/fixtures-path "package-c-0.0.1")
+           cask-test/sandbox-path)
+   (let ((bundle (cask-setup (f-expand "package-c-0.0.1" cask-test/sandbox-path))))
+     (should (string= (cask-package-name bundle) "package-c"))
+     (should (string= (cask-package-version bundle) "0.0.1"))
+     (should (string= (cask-package-description bundle) "Package-C")))))
 
 
 ;;;; cask-runtime-dependencies
@@ -351,10 +364,6 @@
 
 ;; cask-package-name
 
-(ert-deftest cask-package-name-test/not-a-package ()
-  (cask-test/with-bundle 'empty
-    (should-error (cask-package-name bundle) :type 'cask-not-a-package)))
-
 (ert-deftest cask-package-name-test/is-package ()
   (cask-test/with-bundle
       '((package "package-a" "0.0.1" "PACKAGE-A"))
@@ -363,10 +372,6 @@
 
 ;;;; cask-package-version
 
-(ert-deftest cask-package-version-test/not-a-package ()
-  (cask-test/with-bundle 'empty
-    (should-error (cask-package-version bundle) :type 'cask-not-a-package)))
-
 (ert-deftest cask-package-version-test/is-package ()
   (cask-test/with-bundle
       '((package "package-a" "0.0.1" "PACKAGE-A"))
@@ -374,10 +379,6 @@
 
 
 ;;;; cask-package-description
-
-(ert-deftest cask-package-description-test/not-a-package ()
-  (cask-test/with-bundle 'empty
-    (should-error (cask-package-description bundle) :type 'cask-not-a-package)))
 
 (ert-deftest cask-package-description-test/is-package ()
   (cask-test/with-bundle
