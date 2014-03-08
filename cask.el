@@ -494,6 +494,12 @@ is signaled."
           (unless (epl-built-in-p name)
             (signal 'cask-missing-dependency (list dependency))))))))
 
+(defun cask--delete-dependency (bundle dependency)
+  "In BUNDLE, delete DEPENDENCY if it is installed."
+  (let ((name (cask-dependency-name dependency)))
+    (-when-let (package (epl-find-installed-package name))
+      (epl-package-delete package))))
+
 (defun cask--dependency-files (dependency)
   "Return DEPENDENCY files.
 
@@ -554,7 +560,11 @@ Return list of updated packages."
     :refresh t
     (shut-up
       (condition-case err
-          (epl-upgrade)
+          (prog1
+              (epl-upgrade)
+            (--each (cask--fetcher-dependencies bundle)
+              (cask--delete-dependency bundle it)
+              (cask--install-dependency bundle it)))
         (error
          (signal 'cask-failed-installation
                  (list (car err) err (shut-up-current-output))))))))
