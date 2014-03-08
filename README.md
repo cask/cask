@@ -1,4 +1,4 @@
-# Cask [![Build Status](https://api.travis-ci.org/cask/cask.png?branch=master)](http://travis-ci.org/cask/cask)
+# Cask
 
 ![Cask](cask.png)
 
