@@ -488,11 +488,11 @@ returns an `epl-package' object."
 
 If dependency does not exist, the error `cask-missing-dependency'
 is signaled."
-  (if (cask-dependency-fetcher dependency)
-      (let ((package-path (cask--checkout-and-package-dependency dependency)))
-        (epl-install-file package-path))
-    (let ((name (cask-dependency-name dependency)))
-      (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
+  (let ((name (cask-dependency-name dependency)))
+    (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
+      (if (cask-dependency-fetcher dependency)
+          (let ((package-path (cask--checkout-and-package-dependency dependency)))
+            (epl-install-file package-path))
         (-if-let (package (cask--find-available-package name))
             (epl-package-install package)
           (unless (epl-built-in-p name)
