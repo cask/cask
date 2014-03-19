@@ -1,37 +1,20 @@
 language: emacs-lisp
 before_install:
-  - sudo add-apt-repository -y ppa:cassou/emacs
-  - sudo apt-get update -qq
-
-  # Always install Emacs-24 for the fake ELPA server.
-  - sudo apt-get install -qq
-      emacs24-nox emacs24-el emacs24-common-non-dfsg
-
-  - if [ "$EMACS" = 'emacs-snapshot' ]; then
-      sudo apt-get install -qq
-          emacs-snapshot-el emacs-snapshot-nox;
-    fi
-
-  - curl -fsSkL "https://raw.github.com/cask/cask/${TRAVIS_BRANCH}/go" | python
-  - export PATH="${HOME}/.cask/bin:$PATH"
-
-  # There is no need for running this as `make ecukes` automatically
-  # does it.  However, it makes Travis CI log cleaner and failure in
-  # `make elpa` is counted as non-test failure (the gray icon).
-  - make elpa
-
-  - EMACS=emacs24 make start-server
+  - curl -fsSkL https://gist.github.com/rejeep/7736123/raw | sh
+  - export PATH="/home/travis/.cask/bin:$PATH"
+  - export PATH="/home/travis/.evm/bin:$PATH"
+  - evm install emacs-24.3-bin
+  - evm install $EVM_EMACS --use --force
+  - cask
+  - EMACS=$(evm bin emacs-24.3-bin) make start-server
 env:
-  - EMACS=emacs-snapshot
-  - EMACS=emacs24
-  - EMACS=emacs23
-matrix:
-  allow_failures:
-    - env: EMACS=emacs23
-    - env: EMACS=emacs-snapshot
+  - EVM_EMACS=emacs-23.4-bin
+  - EVM_EMACS=emacs-24.1-bin
+  - EVM_EMACS=emacs-24.2-bin
+  - EVM_EMACS=emacs-24.3-bin
 script:
-  - make ecukes
+  - make test
 after_failure:
-  - cat servant/tmp/servant.log
+  - cat test/servant/tmp/servant.log
 after_script:
   - make stop-sever

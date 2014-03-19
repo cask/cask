@@ -1,6 +1,6 @@
 ;;; cask-steps.el --- Cask: Step definitions for Ecukes tests  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2012-2014 Johan Andersson
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
@@ -25,28 +25,28 @@
 
 ;; Step definitions for Ecukes integration tests of Cask.
 
+
 ;;; Code:
 
-(defun cask-test/elpa-dir ()
-  (f-expand (format ".cask/%s/elpa" emacs-version) cask-current-project))
-
-(defun cask-test/create-project-file (filename content)
-  (f-write content 'utf-8 (f-expand filename cask-current-project)))
+(eval-when-compile
+  (defvar cask-test/sandbox-path)
+  (defvar cask-test/bin-command)
+  (defvar cask-test/stdout)
+  (defvar cask-test/stderr))
 
 (defun cask-test/template (command)
-  (let* ((command (s-replace "{{EMACS-VERSION}}" emacs-version command))
-         (command (s-replace "{{EMACS}}" (getenv "EMACS") command))
-         (command (s-replace "{{PROJECTS-PATH}}" cask-projects-path command))
-         (command (s-replace "{{PROJECT-PATH}}" cask-current-project command)))
-    command))
+  "Return COMMAND with placeholders replaced with values."
+  (->> command
+    (s-replace "{{EMACS-VERSION}}" emacs-version)
+    (s-replace "{{EMACS}}" (executable-find (or (getenv "EMACS") "emacs")))))
 
 (Given "^this Cask file:$"
   (lambda (content)
-    (cask-test/create-project-file "Cask" content)))
+    (f-write-text content 'utf-8 (f-expand "Cask" cask-test/sandbox-path))))
 
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)
-    (cask-test/create-project-file filename content)))
+    (f-write-text content 'utf-8 (f-expand filename cask-test/sandbox-path))))
 
 (When "^I run cask \"\\([^\"]*\\)\"$"
   (lambda (command)
@@ -54,96 +54,46 @@
     ;; EMACSLOADPATH, these will also be available in the subprocess
     ;; created here. Removing all Cask dependencies here to solve it.
     (setenv "EMACSLOADPATH" (s-join path-separator (--reject (s-matches? ".cask" it) load-path)))
-    (setq command (cask-test/template command))
-    (let* ((buffer-name "*cask-output*")
-           (buffer
-            (progn
-              (when (get-buffer buffer-name)
-                (kill-buffer buffer-name))
-              (get-buffer-create buffer-name)))
-           (default-directory
-             (if cask-current-project
-                 (f-full cask-current-project)
-               default-directory))
-           (args
-            (unless (equal command "")
-              (s-split " " command)))
-           (exit-code
-            (apply
-             'call-process
-             (append (list cask-bin-command nil buffer nil) args))))
-      (with-current-buffer buffer
+    (with-temp-buffer
+      (let* ((default-directory (f-full cask-test/sandbox-path))
+             (args (s-split " " (cask-test/template command)))
+             (exit-code
+              (apply
+               'call-process
+               (append (list cask-test/bin-command nil (current-buffer) nil) args))))
         (let ((content (buffer-string)))
           (cond ((= exit-code 0)
-                 (setq cask-output content))
+                 (setq cask-test/stdout content))
                 (t
-                 (setq cask-error content))))))))
-
-(Given "^I create a project called \"\\([^\"]+\\)\"$"
-  (lambda (project-name)
-    (f-mkdir (f-expand project-name cask-projects-path))))
-
-(When "^I go to the project called \"\\([^\"]+\\)\"$"
-  (lambda (project-name)
-    (setq cask-current-project (f-expand project-name cask-projects-path))))
-
-(Then "^I should see command output:$"
-  (lambda (output)
-    (should (s-contains? (cask-test/template output) cask-output))))
+                 (setq cask-test/stderr content))))))))
 
 (Then "^I should see command error:$"
   (lambda (output)
-    (should (s-contains? (cask-test/template output) cask-error))))
+    (should (s-contains? output cask-test/stderr))))
 
-(Then "^I should not see command output:$"
+(Then "^I should see command output:$"
   (lambda (output)
-    (should-not (s-contains? (cask-test/template output) cask-output))))
+    (should (s-contains? output cask-test/stdout))))
 
 (Then "^I should not see command error:$"
   (lambda (output)
-    (should-not (s-contains? (cask-test/template output) cask-error))))
+    (should-not (s-contains? output cask-test/stderr))))
+
+(Then "^I should not see command output:$"
+  (lambda (output)
+    (should-not (s-contains? output cask-test/stdout))))
 
 (Then "^I should see usage information$"
   (lambda ()
-    (Then
-      "I should see command output:"
-      "USAGE: cask [COMMAND] [OPTIONS]")))
+    (should (s-contains? "USAGE: cask [COMMAND] [OPTIONS]" cask-test/stdout))))
 
-(Then "^there should exist a file called \"\\([^\"]+\\)\" with this content:$"
-  (lambda (filename content)
-    (let ((filepath (f-expand filename cask-current-project)))
-      (with-temp-buffer
-        (insert-file-contents filepath)
-        (Then "I should see:" content)))))
+(Then "^package \"\\([^\"]+\\)\" should be installed$"
+  (lambda (package)
+    (should (f-dir? (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" package)))))
 
-(Then "^there should exist a directory called \"\\([^\"]+\\)\"$"
-  (lambda (dirname)
-    (should (f-dir? (f-expand dirname cask-current-project)))))
-
-(Then "^there should not exist a directory called \"\\([^\"]+\\)\"$"
-  (lambda (dirname)
-    (should-not (f-dir? (f-expand dirname cask-current-project)))))
-
-(Then "^there should exist a package directory called \"\\([^\"]+\\)\"$"
-  (lambda (dirname)
-    (should (f-dir? (f-expand dirname (cask-test/elpa-dir))))))
-
-(Then "^there should not exist a package directory called \"\\([^\"]+\\)\"$"
-  (lambda (dirname)
-    (should-not (f-dir? (f-expand dirname (cask-test/elpa-dir))))))
-
-(Then "^package directory should not exist$"
-  (lambda ()
-    (should-not (f-dir? (cask-test/elpa-dir)))))
-
-(When "^I move \"\\([^\"]+\\)\" to \"\\([^\"]+\\)\"$"
-  (lambda (from to)
-    (let ((default-directory cask-current-project))
-      (f-move (cask-test/template from) (cask-test/template to)))))
-
-(Then "^I should see cask version$"
-  (lambda ()
-    (should (s-matches? "^[0-9]+\.[0-9]+\.[0-9]+\n$" cask-output))))
+(Then "^package \"\\([^\"]+\\)\" should not be installed$"
+  (lambda (package)
+    (should-not (f-dir? (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" package)))))
 
 (provide 'cask-steps)
 

@@ -1,10 +1,13 @@
-# Cask [![Build Status](https://api.travis-ci.org/cask/cask.png?branch=master)](http://travis-ci.org/cask/cask)
+# Cask
 
 ![Cask](cask.png)
 
-Cask is a tool for managing dependencies in Emacs, both your local
-Emacs installation and Emacs package development. It's similar to
-Ruby's Bundler and node's npm.
+Cask is a project management tool for Emacs that helps automate the
+package development cycle; development, dependencies, testing,
+building, packaging and more.
+
+Cask can also be used to manage dependencies for your local Emacs
+configuration.
 
 To install Cask, run this command:
 

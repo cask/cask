@@ -1,10 +1,10 @@
+(source gnu)
 (source melpa)
 
-(package "" "0.0.1" "")
-
-(depends-on "s" "1.3.0")
-(depends-on "dash" "1.0.3")
+(package-file "TODO")
 
 (development
+ (depends-on "f")
  (depends-on "ecukes")
- (depends-on "espuds"))
+ (depends-on "ert-runner")
+ (depends-on "el-mock"))

@@ -1,6 +1,6 @@
 ;;; cask-cli.el --- Cask: CLI interface  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013 Johan Andersson
+;; Copyright (C) 2012-2014 Johan Andersson
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
@@ -27,9 +27,6 @@
 
 ;;; Code:
 
-;; Avoid "Loading vc-git..." messages
-(remove-hook 'find-file-hooks 'vc-find-file-hook)
-
 (eval-and-compile
   (defconst cask-directory
     (file-name-directory
@@ -43,51 +40,24 @@
 (require 'cask-bootstrap (expand-file-name "cask-bootstrap" cask-directory))
 (require 'cask (expand-file-name "cask" cask-directory))
 
+(when noninteractive
+  (shut-up-silence-emacs))
+
+(defconst cask-cli--table-padding 10
+  "Number of spaces to pad with when printing table.")
+
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
 (defvar cask-cli--path default-directory
   "Cask commands will execute in this path.")
 
-(defun cask-cli--find-unbalanced-parenthesis ()
-  (with-temp-buffer
-    (insert (f-read-text cask-file 'utf-8))
-    (goto-char (point-min))
-    (condition-case nil
-        (progn
-          (check-parens)
-          nil)
-      (error (cask-current-source-position)))))
+(defvar cask-cli--bundle-cache nil)
 
-(defun cask-cli--exit-error (err)
-  (let ((type (car err))
-        (data (cdr err))
-        pos msg)
-    (if (eq type 'end-of-file)
-        ;; In case of premature end of file, try hard to find the real
-        ;; position, by scanning for unbalanced parenthesis
-        (setq pos (or (cask-cli--find-unbalanced-parenthesis) (cadr err))
-              msg "End of file while reading (possible unbalanced parenthesis)")
-      ;; For other types of error, check whether the error has a position, and
-      ;; print it.  Otherwise just print the error like Emacs would do
-      (when (cask-source-position-p (car data))
-        (setq pos (car data))
-        ;; Strip the position from the error data
-        (setq data (cdr data)))
-      (setq msg (error-message-string (cons type data))))
-    (if pos
-        (message "%s:%s:%s: %s" cask-file (cask-source-position-line pos)
-                 (cask-source-position-column pos) msg)
-      (message "%s: %s" cask-file msg)))
-  (kill-emacs 1))
-
-(defun cask-cli--setup ()
-  (condition-case err
-      (cask-setup cask-cli--path)
-    (end-of-file
-     (cask-cli--exit-error err))
-    (invalid-read-syntax
-     (cask-cli--exit-error err))))
+(defun cask-cli--bundle ()
+  "Setup in `cask-cli--path' and return bundle."
+  (or cask-cli--bundle-cache
+      (setq cask-cli--bundle-cache (cask-setup cask-cli--path))))
 
 (defun cask-cli--print-dependency (dependency)
   (let ((name (cask-dependency-name dependency))
@@ -106,36 +76,66 @@
     (epl-package-version-string (epl-upgrade-installed upgrade))
     (epl-package-version-string (epl-upgrade-available upgrade)))))
 
+(defun cask-cli--print-table (table)
+  "Print TABLE, which is a list of alist's."
+  (let ((max (length (--max-by (> (length it)
+                                  (length other))
+                               (-map 'car table)))))
+    (-each table
+      (lambda (row)
+        (let ((key (car row)) (value (cadr row)))
+          (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
+          (princ (concat value "\n")))))))
+
 
 ;;;; Commands
 
-(defun cask-cli/package ()
-  "Create -pkg.el file."
-  (cask-cli--setup)
-  (f-write-text (cask-package) 'utf-8 cask-package-file))
+(defmacro cask-cli/with-handled-errors (&rest body)
+  "Evaluate BODY and handle errors accordingly."
+  (declare (indent 0))
+  `(condition-case err
+       (progn ,@body)
+     (cask-missing-dependencies
+      (let ((missing-dependencies (cdr err)))
+        (error "Some dependencies were not available: %s"
+               (->> missing-dependencies
+                 (-map #'cask-dependency-name)
+                 (-map #'symbol-name)
+                 (s-join ", ")))))
+     (cask-failed-initialization
+      (let* ((data (cdr err))
+             (message (error-message-string (nth 0 data)))
+             (output (nth 1 data)))
+        (error "Package initialization failed: %s\nOutput:\n%s"
+               message output)))
+     (cask-failed-installation
+      (let* ((data (cdr err))
+             (dependency (cask-dependency-name (nth 0 data)))
+             (message (error-message-string (nth 1 data)))
+             (output (nth 2 data)))
+        (if dependency
+            (error "Dependency %s failed to install: %s\nOutput:\n%s"
+                   dependency message output)
+          (error "Package installation failed: %s\nOutput:\n%s"
+                 message output))))))
+
+(defun cask-cli/pkg-file ()
+  "Write a `define-package' file.
+
+The file is written to the Cask project root path with name
+{project-name}-pkg.el."
+  (f-write-text (cask-define-package-string (cask-cli--bundle)) 'utf-8
+                (cask-define-package-file (cask-cli--bundle))))
 
 (defun cask-cli/install ()
   "Install all packages specified in the Cask-file.
 
 The dependencies to packages are also installed.  If a package
 already is installed, it will not be installed again."
-  (cask-cli--setup)
-  (condition-case err
-      (cask-install)
-    (cask-missing-dependencies
-     (let ((missing-dependencies (cdr err)))
-       (error "Some dependencies were not available: %s"
-                (->> missing-dependencies
-                  (-map #'cask-dependency-name)
-                  (-map #'symbol-name)
-                  (s-join ", ")))))
-    (cask-failed-installation
-     (let* ((data (cdr err))
-            (dependency (cask-dependency-name (car data)))
-            (message (error-message-string (cdr data))))
-       (error "Dependency %s failed to install: %s" dependency message)))))
+  (cask-cli/with-handled-errors
+    (cask-install (cask-cli--bundle))))
 
-(defun cask-cli/upgrade ()
+(defun cask-cli/upgrade-cask ()
   "Upgrade Cask itself and its dependencies.
 
 This command requires that Cask is installed using Git and that
@@ -164,88 +164,145 @@ Git is available in `exec-path'."
 
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
-  (cask-cli--setup)
-  (-when-let (upgrades (cask-update))
-    (princ "Updated packages:\n")
-    (-each upgrades 'cask-cli--print-upgrade)))
+  (cask-cli/with-handled-errors
+    (-when-let (upgrades (cask-update (cask-cli--bundle)))
+      (princ "Updated packages:\n")
+      (-each upgrades 'cask-cli--print-upgrade))))
 
 (defun cask-cli/init ()
-  "Initialize the current directory with a Cask-file."
-  (cask-new-project cask-cli--path cask-cli--dev-mode))
+  "Initialize the current directory with a Cask-file.
+
+By default, the created Cask-file will be for an Emacs
+configuration.  If the --dev option is specified, the Cask-file
+will be for an Emacs package."
+  (cask-caskify (cask-cli--bundle) cask-cli--dev-mode))
 
 (defun cask-cli/list ()
   "List this package dependencies."
-  (cask-cli--setup)
-  (princ "### Dependencies ###\n\n")
-  (princ (format "Runtime [%s]:\n" (length cask-runtime-dependencies)))
-  (mapc 'cask-cli--print-dependency cask-runtime-dependencies)
-  (if (> (length cask-runtime-dependencies) 0)
-      (princ "\n"))
-  (princ (format "Development [%s]:\n" (length cask-development-dependencies)))
-  (mapc 'cask-cli--print-dependency cask-development-dependencies))
+  (let ((runtime-dependencies (cask-runtime-dependencies (cask-cli--bundle)))
+        (development-dependencies (cask-development-dependencies (cask-cli--bundle))))
+    (princ "### Dependencies ###\n\n")
+    (princ (format "Runtime [%s]:\n" (length runtime-dependencies)))
+    (mapc 'cask-cli--print-dependency runtime-dependencies)
+    (if (> (length runtime-dependencies) 0)
+        (princ "\n"))
+    (princ (format "Development [%s]:\n" (length development-dependencies)))
+    (mapc 'cask-cli--print-dependency development-dependencies)))
 
 (defun cask-cli/version ()
   "Print version for the current project."
-  (cask-cli--setup)
-  (princ (concat (cask-version) "\n")))
+  (princ (concat (cask-package-version (cask-cli--bundle)) "\n")))
 
 (defun cask-cli/info ()
   "Show info about the current package."
-  (cask-cli--setup)
-  (let* ((info (cask-info))
-         (name (cask-package-name info))
-         (version (cask-package-version info))
-         (description (cask-package-description info)))
+  (let ((name (cask-package-name (cask-cli--bundle)))
+        (version (cask-package-version (cask-cli--bundle)))
+        (description (cask-package-description (cask-cli--bundle))))
     (princ (format "### %s (%s) ###" name version))
     (princ "\n\n")
     (princ description)
     (princ "\n")))
 
-(defun cask-cli/help ()
-  "Display usage information."
-  (commander-print-usage-and-exit))
+(defun cask-cli/help (&optional command-name)
+  "Display usage information or documentation for COMMAND-NAME."
+  (if command-name
+      (commander-print-usage-for-and-exit command-name)
+    (commander-print-usage-and-exit)))
 
 (defun cask-cli/load-path ()
   "Print `load-path' for all packages and dependencies.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-load-path) "\n")))
+  (princ (concat (s-join path-separator (cask-load-path (cask-cli--bundle))) "\n")))
 
-(defun cask-cli/path ()
+(defun cask-cli/exec-path ()
   "Print `exec-path' for all packages and dependencies.
 
 A dependency will be included in this list of the package has a
 directory called bin in the root directory.
 
 The output is formatted as a colon path."
-  (princ (concat (cask-path) "\n")))
+  (princ (concat (s-join path-separator (cask-exec-path (cask-cli--bundle))) "\n")))
 
 (defun cask-cli/package-directory ()
   "Print current package installation directory."
-  (princ (concat (cask-elpa-dir) "\n")))
+  (princ (concat (cask-elpa-path (cask-cli--bundle)) "\n")))
 
 (defun cask-cli/outdated ()
   "Print list of outdated packages.
 
 That is packages that have a more recent version available for
 installation."
-  (cask-cli--setup)
-  (-when-let (outdated (cask-outdated))
+  (-when-let (outdated (cask-outdated (cask-cli--bundle)))
     (princ "Outdated packages:\n")
     (-each outdated 'cask-cli--print-upgrade)))
+
+(defun cask-cli/files ()
+  "Print list of files specified in the files directive.
+
+If no files directive or no files, do nothing."
+  (-each (cask-files (cask-cli--bundle))
+    (lambda (file)
+      (princ (concat file "\n")))))
+
+(defun cask-cli/build ()
+  "Build all Elisp files in the files directive."
+  (cask-build (cask-cli--bundle)))
+
+(defun cask-cli/clean-elc ()
+  "Remove all byte compiled Elisp files in the files directive."
+  (cask-clean-elc (cask-cli--bundle)))
+
+(defun cask-cli/link (&optional command-or-name arg)
+  "Manage links.
+
+A link is just that, a symbolic link.  The purpose of the link
+command is that you should be able to work with local
+dependencies.
+
+For example, let's say you are developing an Emacs package that
+depends on f.el. Consider what happens if you need to extend f.el
+with some function that your package requires.
+
+With the link command, you can checkout f.el locally, add it as a
+link in your local package.  That means that when you require
+f.el, you will require the local package instead of the one
+fetched from the Elpa mirror.  Now you add the desired function
+to f.el and use your library to try it out.
+
+COMMAND-OR-NAME can be one of: delete, list a link name.
+ARG is sent to some of the commands.
+
+Commands:
+
+ $ cask link list
+
+  List all project links.
+
+ $ cask link name path
+
+  Add local link with NAME to PATH.
+
+ $ cask link delete name
+
+  Delete local link with NAME."
+  (cond ((string= command-or-name "delete")
+         (cask-link-delete (cask-cli--bundle) (intern arg)))
+        ((string= command-or-name "list")
+         (cask-cli--print-table
+          (cask-links (cask-cli--bundle))))
+        (t (cask-link (cask-cli--bundle) (intern command-or-name) arg))))
+
+(defun cask-cli/package (&optional target-dir)
+  "Build package and put in TARGET-DIR or dist if not specified."
+  (cask-package (cask-cli--bundle) target-dir))
 
 
 ;;;; Options
 
 (defun cask-cli/cask-version ()
-  "Print Cask's version.
-
-This function prints Cask's version on the format:
-'MAJOR.MINOR.PATCH'."
-  (let* ((package (epl-package-from-lisp-file (f-expand "cask.el" cask-directory)))
-         (version (epl-package-version-string package)))
-    (princ version)
-    (princ "\n"))
+  "Print Cask's version."
+  (princ (concat (cask-version) "\n"))
   (kill-emacs 0))
 
 (defun cask-cli/set-path (path)
@@ -258,8 +315,11 @@ This function prints Cask's version on the format:
 
 (defun cask-cli/debug ()
   "Turn on debug output."
-  (setq debug-on-error t)
-  (setq debug-on-entry t))
+  (setq debug-on-error t))
+
+(defun cask-cli/verbose ()
+  "Be verbose and do not hide output."
+  (setq shut-up-ignore t))
 
 
 ;;;; Commander schedule
@@ -270,26 +330,34 @@ This function prints Cask's version on the format:
 
  (default "install")
 
- (command "package" cask-cli/package)
+ (command "pkg-file" cask-cli/pkg-file)
  (command "install" cask-cli/install)
  (command "update" cask-cli/update)
- (command "upgrade" cask-cli/upgrade)
+ (command "upgrade" cask-cli/upgrade-cask)
+ (command "upgrade-cask" cask-cli/upgrade-cask)
  (command "exec [*]" cask-cli/exec)
  (command "init" cask-cli/init)
  (command "version" cask-cli/version)
  (command "list" cask-cli/list)
  (command "info" cask-cli/info)
- (command "help" cask-cli/help)
+ (command "help [command]" cask-cli/help)
  (command "load-path" cask-cli/load-path)
- (command "path" cask-cli/path)
+ (command "exec-path" cask-cli/exec-path)
+ (command "path" cask-cli/exec-path)
  (command "package-directory" cask-cli/package-directory)
  (command "outdated" cask-cli/outdated)
+ (command "files" cask-cli/files)
+ (command "build" cask-cli/build)
+ (command "clean-elc" cask-cli/clean-elc)
+ (command "link [*]" cask-cli/link)
+ (command "package [target-dir]" cask-cli/package)
 
  (option "--version" cask-cli/cask-version)
- (option "-h, --help" cask-cli/help)
+ (option "-h [command], --help [command]" cask-cli/help)
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
- (option "--path <path>" cask-cli/set-path))
+ (option "--path <path>" cask-cli/set-path)
+ (option "--verbose" cask-cli/verbose))
 
 (provide 'cask-cli)
 
