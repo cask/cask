@@ -157,11 +157,12 @@ Slots:
   line column)
 
 (defvar cask-source-mapping
-  '((gnu         . "http://elpa.gnu.org/packages/")
-    (melpa       . "http://melpa.milkbox.net/packages/")
-    (marmalade   . "http://marmalade-repo.org/packages/")
-    (SC          . "http://joseito.republika.pl/sunrise-commander/")
-    (org         . "http://orgmode.org/elpa/"))
+  '((gnu          . "http://elpa.gnu.org/packages/")
+    (melpa        . "http://melpa.milkbox.net/packages/")
+    (melpa-stable . "http://hiddencameras.milkbox.net/packages/")
+    (marmalade    . "http://marmalade-repo.org/packages/")
+    (SC           . "http://joseito.republika.pl/sunrise-commander/")
+    (org          . "http://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
 (defconst cask-filename "Cask"
