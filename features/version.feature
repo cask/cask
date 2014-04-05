@@ -2,7 +2,7 @@ Feature: Version
   Show package version
 
   Scenario: Show package version
-    Given this Cask file:
+    Given this Caskfile:
       """
       (package "super-project" "0.0.1" "Super project.")
       """

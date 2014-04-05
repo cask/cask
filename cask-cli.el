@@ -128,7 +128,7 @@ The file is written to the Cask project root path with name
                 (cask-define-package-file (cask-cli--bundle))))
 
 (defun cask-cli/install ()
-  "Install all packages specified in the Cask-file.
+  "Install all packages specified in the Caskfile.
 
 The dependencies to packages are also installed.  If a package
 already is installed, it will not be installed again."
@@ -162,7 +162,7 @@ Git is available in `exec-path'."
 (defun cask-cli/update ()
   "Update package version.
 
-All packages that are specified in the Cask-file will be updated
+All packages that are specified in the Caskfile will be updated
 including their dependencies."
   (cask-cli/with-handled-errors
     (-when-let (upgrades (cask-update (cask-cli--bundle)))
@@ -170,10 +170,10 @@ including their dependencies."
       (-each upgrades 'cask-cli--print-upgrade))))
 
 (defun cask-cli/init ()
-  "Initialize the current directory with a Cask-file.
+  "Initialize the current directory with a Caskfile.
 
-By default, the created Cask-file will be for an Emacs
-configuration.  If the --dev option is specified, the Cask-file
+By default, the created Caskfile will be for an Emacs
+configuration.  If the --dev option is specified, the Caskfile
 will be for an Emacs package."
   (cask-caskify (cask-cli--bundle) cask-cli--dev-mode))
 

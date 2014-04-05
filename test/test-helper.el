@@ -124,7 +124,7 @@ asserted that only those packages are installed"
     (let ((cask-source-mapping
            (cons (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping)))
       (when ,forms
-        (let ((cask-file (f-expand "Cask" cask-test/sandbox-path)))
+        (let ((cask-file (f-expand "Caskfile" cask-test/sandbox-path)))
           (cask-test/write-forms ,forms cask-file)))
       (let (cask-current-bundle (bundle (cask-setup cask-test/sandbox-path)))
         ,@body

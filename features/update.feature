@@ -2,7 +2,7 @@ Feature: Update
   Update dependencies and list updated
 
   Scenario: With update
-    Given this Cask file:
+    Given this Caskfile:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
@@ -10,7 +10,7 @@ Feature: Update
       """
     When I run cask "install"
     Then package "package-a-0.0.1" should be installed
-    Given this Cask file:
+    Given this Caskfile:
       """
       (source "localhost" "http://127.0.0.1:9191/new-packages/")
 

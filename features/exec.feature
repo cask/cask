@@ -2,7 +2,7 @@ Feature: Exec
   Execute command with environment set up
 
   Scenario: No dependencies
-    Given this Cask file:
+    Given this Caskfile:
       """
       """
     When I run cask "exec echo foo"
@@ -12,7 +12,7 @@ Feature: Exec
       """
 
   Scenario: With dependency
-    Given this Cask file:
+    Given this Caskfile:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
@@ -26,7 +26,7 @@ Feature: Exec
       """
 
   Scenario: Binary in local package
-    Given this Cask file:
+    Given this Caskfile:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
@@ -40,7 +40,7 @@ Feature: Exec
       """
 
   Scenario: Do not include bootstrap dependencies
-    Given this Cask file:
+    Given this Caskfile:
       """
       """
     And I create a file called "foo.el" with content:
@@ -55,7 +55,7 @@ Feature: Exec
       """
 
   Scenario: Executable does not exist
-    Given this Cask file:
+    Given this Caskfile:
       """
       """
     When I run cask "exec does-not-exist"

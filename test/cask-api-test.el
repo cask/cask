@@ -498,16 +498,16 @@
 
 (ert-deftest cask-file-test ()
   (cask-test/with-bundle nil
-    (should (f-same? (cask-file bundle) (f-expand "Cask" cask-test/sandbox-path)))))
+    (should (f-same? (cask-file bundle) (f-expand "Caskfile" cask-test/sandbox-path)))))
 
 
 ;;;; cask-caskify
 
 (ert-deftest cask-caskify-test ()
   (cask-test/with-bundle nil
-    (should-not (f-file? (f-expand "Cask" cask-test/sandbox-path)))
+    (should-not (f-file? (f-expand "Caskfile" cask-test/sandbox-path)))
     (cask-caskify bundle)
-    (should (f-file? (f-expand "Cask" cask-test/sandbox-path)))))
+    (should (f-file? (f-expand "Caskfile" cask-test/sandbox-path)))))
 
 
 ;;;; cask-update

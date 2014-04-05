@@ -2,7 +2,7 @@ Feature: List
   List package dependencies
 
   Scenario: No dependencies
-    Given this Cask file:
+    Given this Caskfile:
       """
       """
     When I run cask "list"
@@ -15,7 +15,7 @@ Feature: List
       """
 
   Scenario: With dependencies
-    Given this Cask file:
+    Given this Caskfile:
       """
       (depends-on "package-a" "0.1.2")
       (depends-on "package-b" "0.2.1")

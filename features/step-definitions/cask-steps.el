@@ -40,9 +40,9 @@
     (s-replace "{{EMACS-VERSION}}" emacs-version)
     (s-replace "{{EMACS}}" (executable-find (or (getenv "EMACS") "emacs")))))
 
-(Given "^this Cask file:$"
+(Given "^this Caskfile:$"
   (lambda (content)
-    (f-write-text content 'utf-8 (f-expand "Cask" cask-test/sandbox-path))))
+    (f-write-text content 'utf-8 (f-expand "Caskfile" cask-test/sandbox-path))))
 
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)
