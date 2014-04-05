@@ -85,7 +85,7 @@ Defaults to `error'."
 (define-error 'cask-failed-installation "Failed installation" 'cask-error)
 (define-error 'cask-failed-initialization "Failed initialization" 'cask-error)
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
-(define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
+(define-error 'cask-no-cask-file "Caskfile does not exist" 'cask-error)
 
 (cl-defstruct cask-dependency
   "Structure representing a dependency.
@@ -147,7 +147,7 @@ dependencies that are required for local development.
   development-dependencies path patterns sources)
 
 (cl-defstruct cask-source-position
-  "Structure for a position in a Cask-file.
+  "Structure for a position in a Caskfile.
 
 Slots:
 
@@ -338,7 +338,7 @@ outside of package.el, for example `load-path'."
        ,@body)))
 
 (defmacro cask--with-file (bundle &rest body)
-  "If BUNDLE path has a Cask-file, yield BODY.
+  "If BUNDLE path has a Caskfile, yield BODY.
 
 If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
   (declare (indent 1))
@@ -609,7 +609,7 @@ to install, and ERR is the original error data."
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
 (defun cask-caskify (bundle &optional dev-mode)
-  "Create Cask-file for BUNDLE path.
+  "Create Caskfile for BUNDLE path.
 
 If DEV-MODE is true, the dev template is used, otherwise the
 configuration template is used."
@@ -617,7 +617,7 @@ configuration template is used."
         (init-content
          (cask--template-get (if dev-mode "init-dev.tpl" "init.tpl"))))
     (if (f-file? cask-file)
-        (error "Cask-file already exists")
+        (error "Caskfile already exists")
       (f-write-text init-content 'utf-8 cask-file))))
 
 (defun cask-package-name (bundle)
@@ -746,7 +746,7 @@ If no such dependency exist, return nil."
   (cask-bundle-path bundle))
 
 (defun cask-file (bundle)
-  "Return path to BUNDLE Cask-file."
+  "Return path to BUNDLE Caskfile."
   (f-expand cask-filename (cask-path bundle)))
 
 (defun cask-files (bundle)

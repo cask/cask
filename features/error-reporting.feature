@@ -2,7 +2,7 @@ Feature: Error Reporting
   Report good errors about invalid Cask files
 
   Scenario: Unbalanced Parenthesis
-    Given this Cask file:
+    Given this Caskfile:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 
@@ -16,7 +16,7 @@ Feature: Error Reporting
        """
 
   Scenario: Invalid read syntax
-    Given this Cask file:
+    Given this Caskfile:
       """
       (source "localhost" "http://127.0.0.1:9191/packages/")
 

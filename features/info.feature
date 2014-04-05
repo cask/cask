@@ -1,7 +1,7 @@
 Feature: Info
 
   Scenario: Show project information
-    Given this Cask file:
+    Given this Caskfile:
       """
       (package "super-project" "0.0.1" "Super project.")
       """

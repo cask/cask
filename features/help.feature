@@ -12,7 +12,7 @@ Feature: Help
       | --help  |
 
   Scenario Outline: With Cask file
-    Given this Cask file:
+    Given this Caskfile:
       """
       """
     When I run cask "<command>"
