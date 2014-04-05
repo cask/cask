@@ -42,7 +42,7 @@
 
 (Given "^this Cask file:$"
   (lambda (content)
-    (f-write-text content 'utf-8 (f-expand "Cask" cask-test/sandbox-path))))
+    (f-write-text content 'utf-8 (f-expand "Caskfile" cask-test/sandbox-path))))
 
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)

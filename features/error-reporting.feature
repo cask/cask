@@ -12,7 +12,7 @@ Feature: Error Reporting
     When I run cask "install"
     Then I should see command error:
        """
-       /Cask:3:1: End of file while reading (possible unbalanced parenthesis)
+       /Caskfile:3:1: End of file while reading (possible unbalanced parenthesis)
        """
 
   Scenario: Invalid read syntax
@@ -26,5 +26,5 @@ Feature: Error Reporting
     When I run cask "install"
     Then I should see command error:
       """
-      /Cask:4:19: Invalid read syntax: ")"
+      /Caskfile:4:19: Invalid read syntax: ")"
       """

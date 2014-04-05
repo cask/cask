@@ -165,8 +165,8 @@ Slots:
     (org          . "http://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
-(defconst cask-filename "Cask"
-  "Name of the `Cask` file.")
+(defconst cask-filename "Caskfile"
+  "Name of the `Caskfile` file.")
 
 (defconst cask-dist-path "dist"
   "Name of default target directory for building packages.")
@@ -747,7 +747,7 @@ If no such dependency exist, return nil."
 
 (defun cask-file (bundle)
   "Return path to BUNDLE Cask-file."
-  (f-expand "Cask" (cask-path bundle)))
+  (f-expand cask-filename (cask-path bundle)))
 
 (defun cask-files (bundle)
   "Return BUNDLE files list.
