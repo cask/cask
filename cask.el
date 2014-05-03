@@ -747,7 +747,7 @@ If no such dependency exist, return nil."
 
 (defun cask-file (bundle)
   "Return path to BUNDLE Cask-file."
-  (f-expand "Cask" (cask-path bundle)))
+  (f-expand cask-filename (cask-path bundle)))
 
 (defun cask-files (bundle)
   "Return BUNDLE files list.
