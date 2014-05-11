@@ -300,6 +300,25 @@ Commands:
 
 ;;;; Options
 
+(require 'url)
+
+(defun cask-cli/cask-proxy (host)
+  "Set Emacs proxy for HTTP and HTTPS to HOST."
+  (cask-cli/cask-http-proxy host)
+  (cask-cli/cask-https-proxy host))
+
+(defun cask-cli/cask-http-proxy (host)
+  "Set Emacs proxy for HTTP to HOST."
+  (push (cons "http" host) url-proxy-services))
+
+(defun cask-cli/cask-https-proxy (host)
+  "Set Emacs proxy for HTTPS to HOST."
+  (push (cons "https" host) url-proxy-services))
+
+(defun cask-cli/cask-no-proxy (host)
+  "Set Emacs no-proxy to HOST."
+  (push (cons "no_proxy" host) url-proxy-services))
+
 (defun cask-cli/cask-version ()
   "Print Cask's version."
   (princ (concat (cask-version) "\n"))
@@ -351,6 +370,11 @@ Commands:
  (command "clean-elc" cask-cli/clean-elc)
  (command "link [*]" cask-cli/link)
  (command "package [target-dir]" cask-cli/package)
+
+ (option "--proxy <host>" cask-cli/cask-proxy)
+ (option "--http-proxy <host>" cask-cli/cask-http-proxy)
+ (option "--https-proxy <host>" cask-cli/cask-https-proxy)
+ (option "--no-proxy" cask-cli/cask-no-proxy)
 
  (option "--version" cask-cli/cask-version)
  (option "-h [command], --help [command]" cask-cli/help)
