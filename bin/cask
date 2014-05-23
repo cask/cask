@@ -50,7 +50,7 @@ ENVB = getattr(os, 'environb', os.environ)
 VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)$', re.MULTILINE)
 
 # The minimum support Emacs version
-MIN_EMACS_VERSION = (23,)
+MIN_EMACS_VERSION = (24,)
 
 # Various Emacs locations on OS X.  We use these to try and find a better Emacs
 # when the default Emacs is not supported.
