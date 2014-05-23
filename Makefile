@@ -1,6 +1,8 @@
 CASK ?= cask
 EMACS ?= emacs
 SERVANT ?= servant
+SPHINX-BUILD = sphinx-build
+SPHINXFLAGS =
 
 SERVANT_DIR = servant
 SERVANT_TMP_DIR = $(SERVANT_DIR)/tmp
@@ -9,8 +11,10 @@ SERVANT_NEW_PACKAGES_DIR = $(SERVANT_DIR)/new-packages
 SERVANT_ARCHIVE_CONTENTS = $(SERVANT_PACKAGES_DIR)/archive-contents
 SERVANT_NEW_ARCHIVE_CONTENTS = $(SERVANT_NEW_PACKAGES_DIR)/archive-contents
 
-FIXTURES_DIR = fixtures
+DOCBUILDDIR=build/doc
+DOCTREEDIR=$(DOCBUILDDIR)/doctrees
 
+FIXTURES_DIR = fixtures
 
 all: test
 
@@ -21,6 +25,14 @@ unit:
 
 ecukes:
 	$(CASK) exec ecukes
+
+doc: html
+
+html:
+	$(SPHINX-BUILD) -b html -d $(DOCTREEDIR) $(SPHINXFLAGS) doc $(DOCBUILDDIR)/html
+
+linkcheck :
+	$(SPHINX-BUILD) -b linkcheck -d $(DOCTREEDIR) $(SPHINXFLAGS) doc $(DOCBUILDDIR)/linkcheck
 
 start-server: $(SERVANT_DIR)
 	$(CASK) exec $(SERVANT) start > $(SERVANT_TMP_DIR)/servant.log 2>&1 &
@@ -76,5 +88,7 @@ $(SERVANT_NEW_ARCHIVE_CONTENTS): $(SERVANT_NEW_PACKAGES_DIR)/package-a-0.0.2.el
 
 clean:
 	rm -rf $(SERVANT_DIR)
+	rm -rf $(DOCBUILDDIR)
 
-.PHONY: start-server stop-server unit ecukes test all clean
+.PHONY: start-server stop-server unit ecukes test all clean \
+	doc html linkcheck
