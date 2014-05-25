@@ -181,7 +181,7 @@ cask pkg-file
 
 Write a package descriptor file to :file:`{project}-pkg.el` in the project root.
 ``project`` is the project name, as declared in the :file:`Cask` file.  See
-:infonode:`(emacs)Multi-file Packages` for details.
+:infonode:`(elisp)Multi-file Packages` for details.
 
 .. _cask package-directory:
 
@@ -394,7 +394,7 @@ Environment variables
 
 .. envvar:: EMACSLOADPATH
 
-   The load path for Emacs, see :infonode:`(emacs)Library Search`.
+   The load path for Emacs, see :infonode:`(elisp)Library Search`.
 
 .. envvar:: EMACS
 
