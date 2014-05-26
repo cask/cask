@@ -330,7 +330,7 @@ cask package
    cask [GLOBAL-OPTIONS] package [DISTDIR]
 
 Build a package artefact, and put it into the given :var:`DISTDIR`, defaulting
-to :file:`file/`.
+to :file:`dist/`.
 
 For single-file packages, this command merely copies the corresponding file to
 ``DISTDIR``, under the correct filename :file:`{package}-{version}.el`.
@@ -350,7 +350,7 @@ Global options
 
 The following options are available on all Cask commands:
 
-.. option:: --proxy <proxyc>
+.. option:: --proxy <proxy>
 
    Set Emacs proxy for HTTP and HTTPS:
 

@@ -32,7 +32,7 @@ You can also clone the repository explicitly:
 
    $ git clone https://github.com/cask/cask.git
 
-To upgrade a manual installation, use::
+To upgrade a manual installation, use:
 
 .. code-block:: console
 

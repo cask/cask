@@ -67,7 +67,7 @@ Dependencies
 ============
 
 .. function:: depends-on package-name &optional minimum-version
-              depends-on package-name :git repopulate &optional :ref hash :branch master :files patterns
+              depends-on package-name :git repourl &optional :ref hash :branch master :files patterns
 
    Specify a dependency of this package.
 
