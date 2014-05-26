@@ -312,8 +312,8 @@ cask link
 
 Handle package links.
 
-:varcode:`cask link {package} {source}` links the given :var:`SOURCE` directory
-into the package directory of this project, under the given :var:`PACKAGE` name.
+:varcode:`cask link {package} {source}` links the given :var:`source` directory
+into the package directory of this project, under the given :var:`package` name.
 
 ``cask link list`` lists all links, and :varcode:`cask link delete {package}`
 deletes the link for the given :var:`package`.
