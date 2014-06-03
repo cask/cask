@@ -21,7 +21,7 @@ Or if you are on a Mac, you can install Cask via Homebrew:
 $ brew install cask
 ```
 
-See <http://cask.github.io/> for more information and
+See <http://cask.readthedocs.org/> for more information and
 <https://groups.google.com/forum/#!forum/cask-dev> for development
 related discussion.
 
