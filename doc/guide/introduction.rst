@@ -2,7 +2,7 @@
  Introduction — Why Cask?
 ==========================
 
-Cask is an Emacs Lisp project management tool, similar to Maven or Leinigen.  It
+Cask is an Emacs Lisp project management tool, similar to Maven or Leiningen.  It
 aims to control and automate the entire life cycle of an Emacs Lisp package,
 including dependency management, packaging, distribution and testing.
 
