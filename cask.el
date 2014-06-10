@@ -1,7 +1,7 @@
 ;;; cask.el --- Cask: Project management for Emacs package development  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012-2014 Johan Andersson
-;; Copyright (C) 2013 Sebastian Wiesner
+;; Copyright (C) 2013 Sebastian Wiesner <swiesner@lunaryorn.com>
 ;; Copyright (C) 2013 Takafumi Arakaki
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
