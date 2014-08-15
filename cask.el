@@ -824,7 +824,7 @@ URL is the url to the mirror."
   "Build BUNDLE Elisp files."
   (cask--with-file bundle
     (require 'bytecomp)
-    (let ((load-path (cons (cask-path bundle) load-path)))
+    (let ((load-path (cons (cask-path bundle) (cask-load-path bundle))))
       (-each (cask-files bundle)
         (lambda (path)
           (when (and (f-file? path) (f-ext? path "el"))

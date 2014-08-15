@@ -920,6 +920,14 @@
     (should (f-file? "bar.el"))
     (should (f-file? "bar.elc"))))
 
+(ert-deftest cask-build-test/with-dependencies ()
+  (cask-test/with-bundle '((source localhost)
+                           (files "foo.el")
+                           (depends-on "package-a" "0.0.1"))
+    (f-write-text "(require 'package-a)" 'utf-8 "foo.el")
+    (cask-install bundle)
+    (cask-build bundle)))
+
 
 ;;;; cask-clean-elc
 
