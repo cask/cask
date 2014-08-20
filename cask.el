@@ -480,13 +480,34 @@ returns an `epl-package' object."
         (cask--compute-dependencies dependencies 'cask--find-installed-package)
       dependencies)))
 
+(defun cask--max-version-available (name)
+  "Return the max version available in archives for package with NAME."
+  (let* ((available-pkg (epl-find-available-packages name))
+         (available-versions (mapcar 'epl-package-version available-pkg)))
+    (when available-versions
+      (cl-reduce (lambda (l1 l2) (if (version-list-<= l1 l2) l2 l1))
+                 available-versions))))
+
+(defun cask--check-installed-version (dependency)
+  "Check installed DEPENDENCY version."
+  (let* ((name (cask-dependency-name dependency))
+         (version (cask-dependency-version dependency))
+         (version-lst (and version (version-to-list version))))
+    (if (epl-package-installed-p name version-lst)
+        t
+      (let ((max-version-available (cask--max-version-available name)))
+        (when (and max-version-available (version-list-< max-version-available version-lst))
+          (message "WARNING: '%s' version '%s' is greater than available in archives." name version)
+          t)))))
+
 (defun cask--install-dependency (bundle dependency)
   "In BUNDLE, install DEPENDENCY.
 
 If dependency does not exist, the error `cask-missing-dependency'
 is signaled."
   (let ((name (cask-dependency-name dependency)))
-    (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
+    (unless (or (cask--check-installed-version dependency)
+                (cask-linked-p bundle name))
       (if (cask-dependency-fetcher dependency)
           (let ((package-path (cask--checkout-and-package-dependency dependency)))
             (epl-install-file package-path))
