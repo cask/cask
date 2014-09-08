@@ -182,7 +182,7 @@ def get_emacs_version(emacs):
             locale.getpreferredencoding()))
         if not version:
             raise ValueError(
-                'Could not determine the version of Emacs {0!r}'.format(emacs))
+                'Could not determine the version of Emacs at {0}'.format(emacs))
         else:
             return parse_version(version.group('version'))
 
@@ -336,10 +336,10 @@ def main():
             format_version(error.actual_version)))
     except MissingEmacsError as error:
         exit_error(
-            'Emacs does not exist as {0!r}.  Did you install Emacs?'.format(
+            'Emacs does not exist at {0}.  Did you install Emacs?'.format(
                 error.emacs))
     except EmacsCommandError as error:
-        exit_error('Emacs command {0!r} failed: {1}'.format(
+        exit_error('Emacs command "{0}" failed: {1}'.format(
             error.command, error.real_error))
 
 
