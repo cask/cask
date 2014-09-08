@@ -78,11 +78,31 @@ class UnsupportedEmacsVersionError(Exception):
 
 
 class MissingEmacsError(Exception):
-    """An exception indicating that Emacs is missing."""
+    """An exception indicating that Emacs is missing.
+
+    The ``emacs`` attribute has the name of the executable that was used to
+    call Emacs.
+
+    """
 
     def __init__(self, emacs):
         Exception.__init__(self)
         self.emacs = emacs
+
+
+class EmacsCommandError(Exception):
+    """An exception indicating a failed Emacs command.
+
+    The ``command`` attribute has the failed command as list, as given to
+    ``subprocess``, and the ``real_error`` attribute stores the underlying
+    exception.
+
+    """
+
+    def __init__(self, command, real_error):
+        Exception.__init__(self)
+        self.command = command
+        self.real_error = real_error
 
 
 def is_executable_file(path):
@@ -146,15 +166,25 @@ def get_emacs_version(emacs):
     e.g. because ``emacs`` was not a valid Emacs executable.  Raise
     ``OSError``, if ``emacs`` did not refer to an existing executable file.
     """
-    process = subprocess.Popen(
-        [emacs, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, _ = process.communicate()
-    version = VERSION_RE.search(stdout.decode(
-        locale.getpreferredencoding()))
-    if not version:
-        raise ValueError('Could not determine the version of {0}'.format(emacs))
+    cmd = [emacs, '--version']
+    try:
+        process = subprocess.Popen(cmd,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        stdout, _ = process.communicate()
+    except OSError as error:
+        if error.errno == errno.ENOENT:
+            raise MissingEmacsError(emacs)
+        else:
+            raise EmacsCommandError(cmd, error)
     else:
-        return parse_version(version.group('version'))
+        version = VERSION_RE.search(stdout.decode(
+            locale.getpreferredencoding()))
+        if not version:
+            raise ValueError(
+                'Could not determine the version of Emacs {0!r}'.format(emacs))
+        else:
+            return parse_version(version.group('version'))
 
 
 def is_supported_emacs(emacs):
@@ -183,15 +213,9 @@ def ensure_supported_emacs(emacs):
     executable file.
 
     """
-    try:
-        if not is_supported_emacs(emacs):
-            raise UnsupportedEmacsVersionError(get_emacs_version(emacs),
-                                               MIN_EMACS_VERSION)
-    except OSError as error:
-        if error.errno == errno.ENOENT:
-            raise MissingEmacsError(emacs)
-        else:
-            raise
+    if not is_supported_emacs(emacs):
+        raise UnsupportedEmacsVersionError(get_emacs_version(emacs),
+                                           MIN_EMACS_VERSION)
 
 
 def find_best_emacs():
@@ -314,6 +338,9 @@ def main():
         exit_error(
             'Emacs does not exist as {0!r}.  Did you install Emacs?'.format(
                 error.emacs))
+    except EmacsCommandError as error:
+        exit_error('Emacs command {0!r} failed: {1}'.format(
+            error.command, error.real_error))
 
 
 if __name__ == '__main__':
