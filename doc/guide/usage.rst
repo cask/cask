@@ -64,8 +64,9 @@ cask exec
 
    cask [GLOBAL-OPTIONS] exec [COMMAND] [ARGUMENTS ...]
 
-Execute the :var:`command` with the given :var:`arguments`, with a proper
-`$PATH` (see :ref:`cask path`) and `$EMACSLOADPATH` (see :ref:`cask load-path`).
+Execute the system :var:`command` with the given :var:`arguments`, with a
+proper `$PATH` (see :ref:`cask path`) and `$EMACSLOADPATH` (see :ref:`cask
+load-path`).
 
 .. _cask help:
 
@@ -310,7 +311,10 @@ cask link
    cask [GLOBAL-OPTIONS] link list
    cask [GLOBAL-OPTIONS] link delete PACKAGE
 
-Handle package links.
+Link between this package and a dependency on the local filesystem. A linked
+dependency avoids the need to download a dependency from a remote archive. The
+package linked to must either have a :file:`Cask`\ -file or a :file:`-pkg.el`\
+-file.
 
 :varcode:`cask link {package} {source}` links the given :var:`source` directory
 into the package directory of this project, under the given :var:`package` name.
