@@ -36,6 +36,7 @@ import os
 import locale
 import re
 import subprocess
+import errno
 
 
 # The Cask executable and directories
@@ -74,6 +75,14 @@ class UnsupportedEmacsVersionError(Exception):
         Exception.__init__(self)
         self.actual_version = actual_version
         self.expected_version = expected_version
+
+
+class MissingEmacsError(Exception):
+    """An exception indicating that Emacs is missing."""
+
+    def __init__(self, emacs):
+        Exception.__init__(self)
+        self.emacs = emacs
 
 
 def is_executable_file(path):
@@ -163,7 +172,7 @@ def is_supported_emacs(emacs):
 
 
 def ensure_supported_emacs(emacs):
-    """Ensure that ``emacs`` is a supported Emacs version.
+    """Ensure that ``emacs`` is an existing and supported Emacs version.
 
     ``emacs`` is a string containing the path to an Emacs executable.
 
@@ -174,9 +183,15 @@ def ensure_supported_emacs(emacs):
     executable file.
 
     """
-    if not is_supported_emacs(emacs):
-        raise UnsupportedEmacsVersionError(get_emacs_version(emacs),
-                                           MIN_EMACS_VERSION)
+    try:
+        if not is_supported_emacs(emacs):
+            raise UnsupportedEmacsVersionError(get_emacs_version(emacs),
+                                               MIN_EMACS_VERSION)
+    except OSError as error:
+        if error.errno == errno.ENOENT:
+            raise MissingEmacsError(emacs)
+        else:
+            raise
 
 
 def find_best_emacs():
@@ -295,6 +310,10 @@ def main():
         exit_error('Emacs {0} required, yours is Emacs {1}.'.format(
             format_version(error.expected_version),
             format_version(error.actual_version)))
+    except MissingEmacsError as error:
+        exit_error(
+            'Emacs does not exist as {0!r}.  Did you install Emacs?'.format(
+                error.emacs))
 
 
 if __name__ == '__main__':
