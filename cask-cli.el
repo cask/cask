@@ -291,7 +291,10 @@ Commands:
         ((string= command-or-name "list")
          (cask-cli--print-table
           (cask-links (cask-cli--bundle))))
-        (t (cask-link (cask-cli--bundle) (intern command-or-name) arg))))
+        ((stringp command-or-name)
+         (cask-link (cask-cli--bundle) (intern command-or-name) arg))
+        (t
+         (cask-cli/help "link"))))
 
 (defun cask-cli/package (&optional target-dir)
   "Build package and put in TARGET-DIR or dist if not specified."
