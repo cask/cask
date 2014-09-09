@@ -48,7 +48,7 @@ CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
 ENVB = getattr(os, 'environb', os.environ)
 
 # Regular expression to extract the version number from emacs --version
-VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)$', re.MULTILINE)
+VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)\r?$', re.MULTILINE)
 
 # The minimum support Emacs version
 MIN_EMACS_VERSION = (24,)
@@ -151,7 +151,7 @@ def get_cask_path(kind):
     separated by path separators.
 
     """
-    process = subprocess.Popen([CASK, kind], stdout=subprocess.PIPE)
+    process = subprocess.Popen(["python", CASK, kind], stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
     return stdout.rstrip()
 
