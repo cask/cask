@@ -12,7 +12,8 @@ not work with Emacs 23 and below, or with other flavours of Emacs, e.g. XEmacs.
 
 .. warning::
 
-   Cask does not currently support Windows.
+   Windows support for Cask requires additional work (see
+   :ref:`windows setup`)
 
 Manual installation
 ===================
@@ -57,3 +58,53 @@ Add Cask to your `$PATH`:
 .. code-block:: bash
 
    export PATH="$HOME/.cask/bin:$PATH"
+
+.. _windows setup:
+
+Windows Installation and Setup
+==============================
+
+Cask requires the following additional steps to run under Windows
+
+Both :program:`emacs` and :program:`python` need to be added to your
+:envvar:`%PATH%`
+
+Assuming that python is installed to the default location
+(:file:`c:\Python27`) and emacs is under :file:`c:\bin\emacs`
+
+By Command Line
+---------------
+
+.. code-block:: bat
+
+   > setx PATH "%PATH%;c:\Python27\"
+   > setx PATH "%PATH%;c:\bin\emacs\bin"
+   > setx PATH "%PATH%;%userprofile%\.cask\bin"
+
+By GUI
+------
+
+1. Use :kbd:`Win+Pause` to open System Properties
+
+2. Under Windows 7 or newer, click on ``Advanced system settings``.
+   
+   Under Windowx XP, click on the ``Advanced`` tab.
+
+3. Click on ``Environtment Variables...``
+
+4. Under System Variables find :envvar:`Path` then choose to ``Edit...``
+   
+   At the end of the listed path, append (include the first ``;`` only if not
+   already present)::
+     
+     ;C:\Python27\;C:\bin\emacs\bin
+
+   If you do not have administrative rights to the machine, add
+   the above to the User Variables :envvar:`Path`.
+
+5. Under User Variables find :envvar:`Path`, and edit.  If not present select
+   ``New...`` and name it ``Path``
+
+   Append or insert (add a ``;`` at the beginning if :envvar:`Path` exists)::
+     
+     %userprofile%\.cask\bin
