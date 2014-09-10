@@ -151,7 +151,7 @@ def get_cask_path(kind):
     separated by path separators.
 
     """
-    process = subprocess.Popen(["python", CASK, kind], stdout=subprocess.PIPE)
+    process = subprocess.Popen([sys.executable, CASK, kind], stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
     return stdout.rstrip()
 
