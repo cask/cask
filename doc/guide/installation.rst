@@ -90,7 +90,7 @@ By GUI
    
    Under Windowx XP, click on the ``Advanced`` tab.
 
-3. Click on ``Environtment Variables...``
+3. Click on ``Environment Variables...``
 
 4. Under System Variables find :envvar:`Path` then choose to ``Edit...``
    
