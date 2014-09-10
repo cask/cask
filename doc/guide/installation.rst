@@ -13,7 +13,7 @@ not work with Emacs 23 and below, or with other flavours of Emacs, e.g. XEmacs.
 .. warning::
 
    Windows support for Cask requires additional work (see
-   :ref:`windows setup`)
+   :ref:`windows setup`).
 
 Manual installation
 ===================
@@ -64,13 +64,13 @@ Add Cask to your `$PATH`:
 Windows Installation and Setup
 ==============================
 
-Cask requires the following additional steps to run under Windows
+Cask requires the following additional steps to run under Windows.
 
 Both :program:`emacs` and :program:`python` need to be added to your
-:envvar:`%PATH%`
+:envvar:`%PATH%`.
 
 Assuming that python is installed to the default location
-(:file:`c:\Python27`) and emacs is under :file:`c:\bin\emacs`
+(:file:`c:\Python27`) and emacs is under :file:`c:\bin\emacs`.
 
 By Command Line
 ---------------
@@ -84,15 +84,15 @@ By Command Line
 By GUI
 ------
 
-1. Use :kbd:`Win+Pause` to open System Properties
+1. Use :kbd:`Win+Pause` to open System Properties.
 
-2. Under Windows 7 or newer, click on ``Advanced system settings``.
+2. Under Windows 7 or newer, click on :guilabel:`Advanced system settings`.
    
-   Under Windowx XP, click on the ``Advanced`` tab.
+   Under Windows XP, click on the :guilabel:`Advanced` tab.
 
-3. Click on ``Environment Variables...``
+3. Click on :guilabel:`Environment Variables...`.
 
-4. Under System Variables find :envvar:`Path` then choose to ``Edit...``
+4. Under System Variables find :envvar:`Path` then choose to :guilabel:`Edit...`.
    
    At the end of the listed path, append (include the first ``;`` only if not
    already present)::
@@ -103,7 +103,7 @@ By GUI
    the above to the User Variables :envvar:`Path`.
 
 5. Under User Variables find :envvar:`Path`, and edit.  If not present select
-   ``New...`` and name it ``Path``
+   :guilabel:`New...` and name it :envvar:`Path`.
 
    Append or insert (add a ``;`` at the beginning if :envvar:`Path` exists)::
      
