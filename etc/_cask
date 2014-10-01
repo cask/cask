@@ -1,3 +1,5 @@
+#compdef cask
+
 function _cask_commands() {
     local ret=1 state
     _arguments \
@@ -35,4 +37,4 @@ function _cask_commands() {
     return ret
 }
 
-compdef _cask_commands cask
+_cask_commands "$@"
