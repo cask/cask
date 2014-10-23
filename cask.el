@@ -158,8 +158,8 @@ Slots:
 
 (defvar cask-source-mapping
   '((gnu          . "http://elpa.gnu.org/packages/")
-    (melpa        . "http://melpa.milkbox.net/packages/")
-    (melpa-stable . "http://melpa-stable.milkbox.net/packages/")
+    (melpa        . "http://melpa.org/packages/")
+    (melpa-stable . "http://stable.melpa.org/packages/")
     (marmalade    . "http://marmalade-repo.org/packages/")
     (SC           . "http://joseito.republika.pl/sunrise-commander/")
     (org          . "http://orgmode.org/elpa/"))
