@@ -118,7 +118,7 @@ Dependencies
 
    `melpa`
       An archive of VCS snapshots built automatically from upstream
-      repositories, at http://melpa.milkbox.net/.
+      repositories, at http://melpa.org/.
 
    `marmalade`
       An archive of packages uploaded by users and maintainers, at

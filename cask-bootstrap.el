@@ -53,7 +53,7 @@
             (mapc 'require cask-bootstrap-packages)
           (error
            (add-to-list 'package-archives (cons "gnu" "http://elpa.gnu.org/packages/"))
-           (add-to-list 'package-archives (cons "melpa" "http://melpa.milkbox.net/packages/"))
+           (add-to-list 'package-archives (cons "melpa" "http://melpa.org/packages/"))
            (package-refresh-contents)
            (mapc
             (lambda (package)
