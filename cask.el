@@ -423,8 +423,8 @@ The BUNDLE is initialized when the elpa directory exists."
   (car (epl-find-available-packages name)))
 
 (defun cask--find-installed-package (name)
-  "Find installed package with NAME."
-  (epl-find-installed-package name))
+  "Find installed package of highest version with NAME."
+  (car (epl-find-installed-packages name)))
 
 (defun cask--uniq-dependencies (dependencies)
   "Return new list with all duplicates in DEPENDENCIES removed."
