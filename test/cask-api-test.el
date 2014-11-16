@@ -856,6 +856,16 @@
     (cask-add-dependency bundle 'package-b :version "0.0.1" :scope 'development)
     (cask-install bundle)))
 
+(ert-deftest cask-add-dependency-test/with-source ()
+  (cask-test/with-bundle
+      '((source localhost)
+	(source localhost2))
+    :packages '(("package-a" "0.0.1" :source "localhost")
+                ("package-b" "0.0.1" :source "localhost2"))
+    (cask-add-dependency bundle 'package-a :version "0.0.1" :source "localhost")
+    (cask-add-dependency bundle 'package-b :version "0.0.1" :source "localhost2")
+    (cask-install bundle)))
+
 
 ;;;; cask-add-source
 
