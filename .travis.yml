@@ -8,7 +8,6 @@ before_install:
   - cask
   - EMACS=$(evm bin emacs-24.3-bin) make start-server
 env:
-  - EVM_EMACS=emacs-23.4-bin
   - EVM_EMACS=emacs-24.1-bin
   - EVM_EMACS=emacs-24.2-bin
   - EVM_EMACS=emacs-24.3-bin
