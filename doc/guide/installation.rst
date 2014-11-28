@@ -24,8 +24,13 @@ To install Cask, run the following command:
 
    $ curl -fsSL https://raw.githubusercontent.com/cask/cask/master/go | python
 
-If you do not trust us, `inspect the script first
+There are many, many parties between the end user retrieving a file
+from a Git repositories and the author that wrote the original.
+Verifying the content of that script at least once is a good security
+practice regardless of how much the end user trusts the author. So do
+`inspect the script at least the first time before you use it
 <https://github.com/cask/cask/blob/master/go>`_.
+
 
 You can also clone the repository explicitly:
 
