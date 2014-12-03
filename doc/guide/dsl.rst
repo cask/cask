@@ -130,7 +130,7 @@ Dependencies
 
       .. _Sunrise Commander: http://www.emacswiki.org/emacs/Sunrise_Commander
 
-   `Org`
+   `org`
       An archive providing packages for `Org Mode`_, at
       http://orgmode.org/elpa/.
 
