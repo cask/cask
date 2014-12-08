@@ -67,7 +67,7 @@ Dependencies
 ============
 
 .. function:: depends-on package-name &optional minimum-version
-              depends-on package-name :git repourl &optional :ref hash :branch master :files patterns
+              depends-on package-name :fetcher repourl &optional :ref hash :branch name :files patterns
 
    Specify a dependency of this package.
 
@@ -77,11 +77,16 @@ Dependencies
    In the first variant, install the package from a package archive (see
    :function:`source`), optionally requiring a :var:`minimum-version`.
 
-   In the second variant, install the package from a Git repository.
-   :var:`repourl` is the Git URL of the repository to install the package from.
-   :var:`hash` and :var:`branch` specify the commit hash or branch name to
-   install from.  If both are omitted, default to the ``master``
-   branch. :var:`files` gives the files from the repository to include in the
+   In the second variant, install the package from a VCS repository.
+   Replace :var:`fetcher` with any of the following: ``:git``,
+   ``:bzr``, ``:hg``, ``:darcs``, ``:svn`` or ``:cvs``.
+   :var:`repourl` is the repository URL to install the package from.
+
+   :var:`ref` and :var:`branch` specify the commit hash or branch name
+   to install from.  If both are omitted, default to the ``master``
+   branch.
+
+   :var:`files` gives the files from the repository to include in the
    package, in the same format as :function:`files`.  If omitted, try to take
    the files from the :file:`Cask` file of the repository.
 
