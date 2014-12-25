@@ -568,7 +568,7 @@ Return list of updated packages."
               (cask--install-dependency bundle it)))
         (error
          (signal 'cask-failed-installation
-                 (list (car err) err (shut-up-current-output))))))))
+                 (list nil err (shut-up-current-output))))))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."

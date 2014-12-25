@@ -109,13 +109,13 @@
         (error "Package initialization failed: %s\nOutput:\n%s"
                message output)))
      (cask-failed-installation
-      (let* ((data (cdr err))
-             (dependency (cask-dependency-name (nth 0 data)))
-             (message (error-message-string (nth 1 data)))
-             (output (nth 2 data)))
-        (if dependency
-            (error "Dependency %s failed to install: %s\nOutput:\n%s"
-                   dependency message output)
+      (let ((data (cdr err)))
+        (if (nth 0 data)
+            (let ((name (cask-dependency-name (nth 0 data)))
+                  (message (error-message-string (nth 1 data)))
+                  (output (nth 2 data)))
+              (error "Dependency %s failed to install: %s\nOutput:\n%s"
+                     dependency message output))
           (error "Package installation failed: %s\nOutput:\n%s"
                  message output))))))
 
