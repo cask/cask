@@ -360,7 +360,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
        (signal 'cask-not-a-package nil))))
 
 (defun cask--eval (bundle forms &optional scope)
-  "Populare BUNDLE by evaluating FORMS in SCOPE.
+  "Populate BUNDLE by evaluating FORMS in SCOPE.
 
 SCOPE may be nil or 'development."
   (-each forms
