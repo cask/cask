@@ -44,6 +44,10 @@
   (lambda (content)
     (f-write-text content 'utf-8 (f-expand "Cask" cask-test/sandbox-path))))
 
+(Given "^I create a directory called \"\\([^\"]+\\)\"$"
+  (lambda (dirname)
+    (f-mkdir (f-expand dirname cask-test/sandbox-path))))
+
 (Given "^I create a file called \"\\([^\"]+\\)\" with content:$"
   (lambda (filename content)
     (f-write-text content 'utf-8 (f-expand filename cask-test/sandbox-path))))
@@ -74,6 +78,10 @@
 (Then "^I should see command output:$"
   (lambda (output)
     (should (s-contains? output cask-test/stdout))))
+
+(Then "^I should see command output pattern:$"
+  (lambda (pattern)
+    (should (s-matches? pattern cask-test/stdout))))
 
 (Then "^I should not see command error:$"
   (lambda (output)
