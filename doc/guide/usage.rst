@@ -28,6 +28,13 @@ If you are using Cask for your Emacs configuration, add this to your
    (require 'cask "~/.cask/cask.el")
    (cask-initialize)
 
+Or if you installed Cask via Homebrew:
+
+.. code-block:: cl
+
+   (require 'cask "/usr/local/share/emacs/site-lisp/cask.el")
+   (cask-initialize)
+
 To install all dependencies, run:
 
 .. code-block:: console
