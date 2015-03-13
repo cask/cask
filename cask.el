@@ -376,8 +376,12 @@ SCOPE may be nil or 'development."
            (setf (cask-bundle-description bundle) description)))
         (package-file
          (cl-destructuring-bind (_ filename) form
-           (let ((package (epl-package-from-file
-                           (f-expand filename (cask-bundle-path bundle)))))
+           (let ((package
+                  (condition-case err
+                      (epl-package-from-file
+                       (f-expand filename (cask-bundle-path bundle)))
+                    (epl-invalid-package
+                     (error "Unbalanced parens in Package-Requires in file %s" filename)))))
              (cask--from-epl-package bundle package))))
         (depends-on
          (cl-destructuring-bind (_ name &rest args) form
