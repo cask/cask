@@ -904,6 +904,12 @@ NAME-pkg.el or Cask file for the linking to be possible."
   (-when-let (path (cask-dependency-path bundle name))
     (f-symlink? path)))
 
+(defun extract-dependencies (dependencies)
+  "Return a list of (dep-name dep-version)"
+  (mapcar (lambda (x)
+            (list (cask-dependency-name x) (cask-dependency-version x)))
+          dependencies))
+
 (defun cask-package (bundle &optional target-dir)
   "Build an Elpa package of BUNDLE.
 
@@ -912,6 +918,7 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
   (cask--with-package bundle
     (let ((name (symbol-name (cask-bundle-name bundle)))
           (version (cask-bundle-version bundle))
+          (dependencies (extract-dependencies (cask-runtime-dependencies bundle)))
           (patterns (or (cask-bundle-patterns bundle)
                         package-build-default-files-spec))
           (path (cask-bundle-path bundle)))
@@ -919,7 +926,7 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
         (setq target-dir (f-expand cask-dist-path path)))
       (unless (f-dir? target-dir)
         (f-mkdir target-dir))
-      (package-build-package name version patterns path target-dir))))
+      (package-build-package name version patterns path target-dir dependencies))))
 
 (provide 'cask)
 
