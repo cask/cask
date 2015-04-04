@@ -298,6 +298,7 @@ Commands:
 
 (defun cask-cli/package (&optional target-dir)
   "Build package and put in TARGET-DIR or dist if not specified."
+  (cask-cli/pkg-file)
   (cask-package (cask-cli--bundle) target-dir))
 
 
