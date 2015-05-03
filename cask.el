@@ -182,7 +182,7 @@ the function `cask--with-environment'.")
   "List of supported fetchers.")
 
 (defconst cask-tmp-path
-  (f-expand "tmp" cask-directory))
+  (f-expand "cask" temporary-file-directory))
 
 (defconst cask-tmp-checkout-path
   (f-expand "checkout" cask-tmp-path))
