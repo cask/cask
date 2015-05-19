@@ -34,6 +34,8 @@
   (defvar cask-test/stdout)
   (defvar cask-test/stderr))
 
+(require 'shell-split-string)
+
 (defun cask-test/template (command)
   "Return COMMAND with placeholders replaced with values."
   (->> command
@@ -48,7 +50,7 @@
   (lambda (filename content)
     (f-write-text content 'utf-8 (f-expand filename cask-test/sandbox-path))))
 
-(When "^I run cask \"\\([^\"]*\\)\"$"
+(When "^I run cask \"\\(.*\\)\"$"
   (lambda (command)
     ;; Note: Since the Ecukes tests runs with Casks dependencies in
     ;; EMACSLOADPATH, these will also be available in the subprocess
@@ -56,7 +58,7 @@
     (setenv "EMACSLOADPATH" (s-join path-separator (--reject (s-matches? ".cask" it) load-path)))
     (with-temp-buffer
       (let* ((default-directory (f-full cask-test/sandbox-path))
-             (args (s-split " " (cask-test/template command)))
+             (args (shell-split-string (cask-test/template command)))
              (exit-code
               (apply
                'call-process

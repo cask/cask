@@ -75,6 +75,24 @@ Execute the system :var:`command` with the given :var:`arguments`, with a
 proper `$PATH` (see :ref:`cask path`) and `$EMACSLOADPATH` (see :ref:`cask
 load-path`).
 
+
+.. _cask eval:
+
+cask eval
+---------
+
+.. program:: cask eval
+
+::
+
+   cask [GLOBAL-OPTIONS] eval [FORM]
+
+Evaluate ``FORM`` as a lisp form with a proper `$PATH` (see :ref:`cask path`)
+and $EMACSLOADPATH (see :ref:`cask load-path`). The return value of the form
+is not printed directly: ``FORM`` must print to the standard out or error
+stream.            
+
+
 .. _cask help:
 
 cask help

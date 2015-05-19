@@ -15,4 +15,5 @@
  (depends-on "ert-runner")
  (depends-on "el-mock")
  (depends-on "noflet")
- (depends-on "ert-async"))
+ (depends-on "ert-async")
+ (depends-on "shell-split-string"))
