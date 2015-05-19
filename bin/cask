@@ -63,6 +63,9 @@ OSX_EMACSEN = [
     '/usr/local/bin/emacs',
 ]
 
+## An explicitly set Emacs location
+EMACS=None
+
 class UnsupportedEmacsVersionError(Exception):
     """An exception indicating an unsupported Emacs version.
 
@@ -240,10 +243,11 @@ def find_best_emacs():
 def get_cask_emacs():
     """Get the Emacs executable to use for Cask.
 
-    Try to use the command denoted by the environment variable ``$EMACS``.  If
-    the value of this variable does not refer to a real Emacs executable
-    (i.e. Cask is run from inside Emacs), automatically find a good Emacs for
-    the current platform (see ``find_best_emacs``).
+    If the --emacs command line option is given, use that. Otherwise, try to
+    use the command denoted by the environment variable ``$EMACS``. If the
+    value of this variable does not refer to a real Emacs executable (i.e.
+    Cask is run from inside Emacs), automatically find a good Emacs for the
+    current platform (see ``find_best_emacs``).
 
     Return the name or path for the Emacs command Cask shall use as string.
     Raise ``UnsupportedEmacsVersionError``, if the Emacs command does not meet
@@ -254,7 +258,7 @@ def get_cask_emacs():
     # compile.  In this case, $EMACS may be set as well to a rather
     # meaningless value.  If $INSIDE_EMACS is set, we just ignore the
     # value of $EMACS.
-    emacs = ENVB.get(b'EMACS') if b'INSIDE_EMACS' not in ENVB else None
+    emacs = EMACS or ENVB.get(b'EMACS') if b'INSIDE_EMACS' not in ENVB else None
     emacs = emacs or find_best_emacs()
     ensure_supported_emacs(emacs)
     return emacs
@@ -324,10 +328,21 @@ def main():
             exit_error(
                 'Python 2.6 required, yours is {0.major}.{0.minor}'.format(
                     sys.version_info))
+
+
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
+            ## never returns!
             exec_command(sys.argv[2:])
-        else:
-            exec_cask(sys.argv[1:])
+
+        ## special handling for --emacs/bin as this has to happen before
+        ## everything else, and we don't want the parsing in two places.
+        if len(sys.argv) > 1:
+            if sys.argv[1] == '--emacs':
+                global EMACS
+                EMACS = sys.argv[2]
+                sys.argv = sys.argv[2:]
+
+        exec_cask(sys.argv[1:])
     except OSError as error:
         exit_error(error)
     except UnsupportedEmacsVersionError as error:
