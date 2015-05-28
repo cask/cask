@@ -224,6 +224,20 @@ directory called bin in the root directory.
 The output is formatted as a colon path."
   (princ (concat (s-join path-separator (cask-exec-path (cask-cli--bundle))) "\n")))
 
+(defmacro cask-cli--with-package-path (&rest body)
+  "Execute BODY with `load-path' set according to the project."
+  (declare (debug t))
+  `(let ((load-path
+          (cask-load-path (cask-cli--bundle))))
+     (add-to-list 'load-path
+                  cask-cli--path)
+     ,@body))
+
+(defun cask-cli/eval (form)
+  "Eval FORM with the `load-path' set according to the project."
+  (cask-cli--with-package-path
+   (eval (read form))))
+
 (defun cask-cli/package-directory ()
   "Print current package installation directory."
   (princ (concat (cask-elpa-path (cask-cli--bundle)) "\n")))
@@ -365,6 +379,7 @@ Commands:
  (command "help [command]" cask-cli/help)
  (command "load-path" cask-cli/load-path)
  (command "exec-path" cask-cli/exec-path)
+ (command "eval <form>" cask-cli/eval)
  (command "path" cask-cli/exec-path)
  (command "package-directory" cask-cli/package-directory)
  (command "outdated" cask-cli/outdated)
