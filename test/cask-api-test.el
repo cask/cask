@@ -32,6 +32,12 @@
 
 (require 'cask)
 
+(message "test-helper.el: package--initialized %s" package--initialized)
+(message "test-helper.el: package-user-dir %s" package-user-dir)
+
+
+
+
 (eval-when-compile
   (defvar cask-test/link-path)
   (defvar cask-test/sandbox-path)

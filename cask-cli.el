@@ -346,6 +346,8 @@ Commands:
 
 ;;;; Commander schedule
 
+(message "in cask-cli.el: command-line-args: %s" command-line-args)
+
 (commander
  (name "cask")
  (description "Emacs dependency management made easy")

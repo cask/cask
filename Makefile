@@ -20,6 +20,9 @@ all: test
 
 test: unit ecukes
 
+install:
+	$(CASK) install
+
 unit:
 	$(CASK) exec ert-runner
 
