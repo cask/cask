@@ -919,7 +919,8 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
         (setq target-dir (f-expand cask-dist-path path)))
       (unless (f-dir? target-dir)
         (f-mkdir target-dir))
-      (package-build-package name version patterns path target-dir))))
+      (package-build-package name version patterns path
+                             (expand-file-name target-dir)))))
 
 (provide 'cask)
 
