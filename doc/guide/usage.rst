@@ -32,7 +32,7 @@ Or if you installed Cask via Homebrew:
 
 .. code-block:: cl
 
-   (require 'cask "/usr/local/share/emacs/site-lisp/cask.el")
+   (require 'cask "/usr/local/share/emacs/site-lisp/cask/cask.el")
    (cask-initialize)
 
 To install all dependencies, run:
@@ -90,7 +90,7 @@ cask eval
 Evaluate ``FORM`` as a lisp form with a proper `$PATH` (see :ref:`cask path`)
 and $EMACSLOADPATH (see :ref:`cask load-path`). The return value of the form
 is not printed directly: ``FORM`` must print to the standard out or error
-stream.            
+stream.
 
 
 .. _cask help:
