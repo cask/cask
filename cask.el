@@ -921,6 +921,9 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
         (f-mkdir target-dir))
       (package-build-package name version patterns path target-dir))))
 
+;; Edit `Cask' file using lisp-mode
+(add-to-list 'auto-mode-alist '("/Cask\\'" . lisp-mode))
+
 (provide 'cask)
 
 ;;; cask.el ends here
