@@ -266,7 +266,7 @@ def exec_command(command):
     ``command`` is a list of strings, containing the command to execute and its
     arguments.
 
-    Set ``$PATH`` and ``$EMACSLISPPATH`` to include the Cask package
+    Set ``$PATH`` and ``$EMACSLOADPATH`` to include the Cask package
     environment, and execute ``command``.
 
     This function replaces the current process.  It does **not** return.
