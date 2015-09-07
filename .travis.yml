@@ -1,13 +1,10 @@
 language: emacs-lisp
 before_install:
   - curl -fsSkL https://gist.github.com/rejeep/7736123/raw > travis.sh && source ./travis.sh
-  - evm install emacs-24.4-bin --skip
   - evm install $EVM_EMACS --use --skip
   - cask
-  - EMACS=$(evm bin emacs-24.4-bin) make start-server
+  - make start-server
 env:
-  - EVM_EMACS=emacs-24.1-bin
-  - EVM_EMACS=emacs-24.2-bin
   - EVM_EMACS=emacs-24.3-bin
   - EVM_EMACS=emacs-24.4-bin
   - EVM_EMACS=emacs-24.5-bin
