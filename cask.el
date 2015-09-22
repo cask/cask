@@ -359,6 +359,15 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
          (progn ,@body)
        (signal 'cask-not-a-package nil))))
 
+(defun cask--show-package-error (err filename)
+  (let ((cause (cl-caddr err)))
+    (cond ((string-match-p "ends here" cause)
+           (error "Package lacks a footer line in file %s" filename))
+          ((string-match-p "cask-cli.el\\'" cause)
+           (error "Unbalanced parens in Package-Requires in file %s" filename))
+          (t
+           (error "%s in file %s" cause filename)))))
+
 (defun cask--eval (bundle forms &optional scope)
   "Populate BUNDLE by evaluating FORMS in SCOPE.
 
@@ -381,7 +390,7 @@ SCOPE may be nil or 'development."
                       (epl-package-from-file
                        (f-expand filename (cask-bundle-path bundle)))
                     (epl-invalid-package
-                     (error "Unbalanced parens in Package-Requires in file %s" filename)))))
+                     (cask--show-package-error err filename)))))
              (cask--from-epl-package bundle package))))
         (depends-on
          (cl-destructuring-bind (_ name &rest args) form
