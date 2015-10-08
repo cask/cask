@@ -258,6 +258,15 @@ Return all directives in the Cask file as list."
                                  (cdr err)))))
       (nreverse forms))))
 
+(defmacro cask--with-file (bundle &rest body)
+  "If BUNDLE path has a Cask-file, yield BODY.
+
+If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
+  (declare (indent 1))
+  `(if (f-file? (cask-file ,bundle))
+       (progn ,@body)
+     (signal 'cask-no-cask-file (list (cask-file ,bundle)))))
+
 (defun cask--use-environment (bundle &rest args)
   "Use BUNDLE environment.
 
@@ -336,15 +345,6 @@ outside of package.el, for example `load-path'."
                ,@body)
            (setq cask-current-bundle (copy-cask-bundle ,bundle)))
        ,@body)))
-
-(defmacro cask--with-file (bundle &rest body)
-  "If BUNDLE path has a Cask-file, yield BODY.
-
-If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
-  (declare (indent 1))
-  `(if (f-file? (cask-file ,bundle))
-       (progn ,@body)
-     (signal 'cask-no-cask-file (list (cask-file ,bundle)))))
 
 (defmacro cask--with-package (bundle &rest body)
   "If BUNDLE is a package, yield BODY.
