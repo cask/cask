@@ -217,7 +217,7 @@ If VERSION is nil, the package is not loaded (it is \"disabled\")."
 (declare-function lm-commentary "lisp-mnt" (&optional file))
 (defvar url-http-end-of-headers)
 
-(defcustom package-archives '(("gnu" . "http://elpa.gnu.org/packages/"))
+(defcustom package-archives '(("gnu" . "https://elpa.gnu.org/packages/"))
   "An alist of archives from which to fetch.
 The default value points to the GNU Emacs package repository.
 
