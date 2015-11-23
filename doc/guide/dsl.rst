@@ -109,7 +109,7 @@ Dependencies
    Cask includes the following built-in package archives:
 
    `gnu`
-      The standard GNU ELPA archive at http://elpa.gnu.org/.
+      The standard GNU ELPA archive at https://elpa.gnu.org/.
 
       .. warning::
 
@@ -119,15 +119,15 @@ Dependencies
 
    `melpa-stable`
       An archive of stable versions built automatically from upstream
-      repositories, at http://melpa-stable.milkbox.net/.
+      repositories, at https://melpa-stable.milkbox.net/.
 
    `melpa`
       An archive of VCS snapshots built automatically from upstream
-      repositories, at http://melpa.org/.
+      repositories, at https://melpa.org/.
 
    `marmalade`
       An archive of packages uploaded by users and maintainers, at
-      http://marmalade-repo.org/.
+      https://marmalade-repo.org/.
 
    `SC`
       An archive providing packages for `Sunrise Commander`_, at
