@@ -30,6 +30,7 @@
 (require 'dash)
 (require 'espuds)
 (require 'ansi)
+(require 'noflet)
 
 (defvar cask-test/features-path
   (f-parent (f-parent load-file-name)))
