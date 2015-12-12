@@ -16,4 +16,6 @@
  (depends-on "el-mock")
  (depends-on "noflet")
  (depends-on "ert-async")
- (depends-on "shell-split-string"))
+ (depends-on "shell-split-string")
+ (depends-on "cask-package-toolset")
+ (depends-on "undercover"))
