@@ -2,6 +2,13 @@
 
 ![Cask](cask.png)
 
+[![Build Status](https://travis-ci.org/cask/cask.svg)](https://travis-ci.org/cask/cask)
+[![Coverage Status](https://coveralls.io/repos/cask/cask/badge.svg)](https://coveralls.io/r/cask/cask)
+[![MELPA](http://melpa.org/packages/cask-badge.svg)](http://melpa.org/#/cask)
+[![MELPA stable](http://stable.melpa.org/packages/cask-badge.svg)](http://stable.melpa.org/#/cask)
+[![Tag Version](https://img.shields.io/github/tag/cask/cask.svg)](https://github.com/cask/cask/tags)
+[![License](http://img.shields.io/:license-gpl3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0.html)
+
 Cask is a project management tool for Emacs that helps automate the
 package development cycle; development, dependencies, testing,
 building, packaging and more.
