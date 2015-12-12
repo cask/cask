@@ -10,7 +10,9 @@ env:
   - EVM_EMACS=emacs-24.4-travis
   - EVM_EMACS=emacs-24.5-travis
 script:
+  - emacs --version
   - make test
+
 after_failure:
   - cat test/servant/tmp/servant.log
 after_script:
