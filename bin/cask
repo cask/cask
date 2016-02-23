@@ -236,26 +236,48 @@ def find_best_emacs():
     else:
         return 'emacs'
 
+def inside_emacs_24():
+    """Whether Cask is running inside Emacs-24.
+
+    Emacs 24 is rather inconsistent in its use of the ``$EMACS`` and
+    ``$INSIDE_EMACS`` environment variables, so we try here to test if Cask is
+    being run inside Emacs (either in a shell or with ``M-x compile``).
+
+    Return ``True`` when running in Emacs 24, ``False`` otherwise.
+
+    """
+    ## are we inside Emacs at all
+    return (b'INSIDE_EMACS' in ENVB and
+            ## M-x compile in Emacs-24 sets INSIDE_EMACS to exactly 't'
+            (ENVB.get(b'INSIDE_EMACS') == 't' or
+             ## while M-x shell sets it to a string, starting with the
+             ## version number
+             ENVB.get(b'INSIDE_EMACS').startswith('24')))
+
+def get_emacs_from_env():
+    """Get the Emacs executable as specified by the environment.
+
+    Use the command given by the environment variable ``$CASK_EMACS`` if set.
+    Failing that use ``$EMACS``, unless the value of this variable does not
+    refer to a real Emacs executable (i.e. Cask is run from inside Emacs).
+
+    """
+    return (ENVB.get(b'CASK_EMACS') or
+            (ENVB.get(b'EMACS') if not inside_emacs_24() else None))
 
 def get_cask_emacs():
     """Get the Emacs executable to use for Cask.
 
-    Try to use the command denoted by the environment variable ``$EMACS``.  If
-    the value of this variable does not refer to a real Emacs executable
-    (i.e. Cask is run from inside Emacs), automatically find a good Emacs for
-    the current platform (see ``find_best_emacs``).
+    If an Emacs is defined by the environment (see ``get_emacs_from_env``) use
+    that, or automatically find a good Emacs for the current platform (see
+    ``find_best_emacs``).
 
     Return the name or path for the Emacs command Cask shall use as string.
     Raise ``UnsupportedEmacsVersionError``, if the Emacs command does not meet
     the minimum version requirements of Cask.
 
     """
-    # If $INSIDE_EMACS is set, Cask is called from within Emacs, e.g. M-x
-    # compile.  In this case, $EMACS may be set as well to a rather
-    # meaningless value.  If $INSIDE_EMACS is set, we just ignore the
-    # value of $EMACS.
-    emacs = ENVB.get(b'EMACS') if b'INSIDE_EMACS' not in ENVB else None
-    emacs = emacs or find_best_emacs()
+    emacs = get_emacs_from_env() or find_best_emacs()
     ensure_supported_emacs(emacs)
     return emacs
 
@@ -275,6 +297,12 @@ def exec_command(command):
     # Copy the environment and update the paths
     ENVB[b'EMACSLOADPATH'] = get_cask_path('load-path')
     ENVB[b'PATH'] = get_cask_path('path')
+
+    ## special handling for where we have a CASK_EMACS, we can use that and
+    ## pass it as the EMACS variable to the command
+    if (b'CASK_EMACS' in ENVB):
+        ENVB[b'EMACS'] = ENVB[b'CASK_EMACS']
+
     os.execvp(command[0], command)
 
 
