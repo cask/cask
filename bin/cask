@@ -275,7 +275,7 @@ def exec_command(command):
     # Copy the environment and update the paths
     ENVB[b'EMACSLOADPATH'] = get_cask_path('load-path')
     ENVB[b'PATH'] = get_cask_path('path')
-    os.execvp(command[0], command)
+    subprocess.call(command)
 
 
 def exec_cask(arguments):
@@ -292,7 +292,7 @@ def exec_cask(arguments):
     emacs = get_cask_emacs()
     cli = os.path.join(CASK_DIRECTORY, 'cask-cli.el')
     command = [emacs, '-Q', '--script', cli, '--'] + arguments
-    os.execvp(command[0], command)
+    subprocess.call(command)
 
 
 def exit_error(error):
