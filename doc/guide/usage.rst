@@ -52,6 +52,13 @@ the `emacs` command.  To pick a different Emacs, set the environment variable
 
    $ EMACS="emacs24.1" cask command
 
+Exceptionally, if you are launching :program:`cask` inside Emacs 24 either
+from an internal shell or `M-x compile`, then Emacs uses :envvar:`EMACS` in a
+way which conflicts with :program:`cask`, in which case you can use the
+environment variable :envvar:`CASK_EMACS` instead. With Emacs 25,
+:envvar:`EMACS` can be used as normal.
+
+
 Commands and options
 ====================
 
@@ -440,3 +447,8 @@ Environment variables
    - ``emacs``
 
    On other Unix variants, e.g. Linux, Cask will simply use ``emacs``.
+
+.. envvar:: CASK_EMACS
+
+   As EMACS, but takes precedence over it. This is most useful for launching
+   Cask inside Emacs which often resets EMACS to other values.
