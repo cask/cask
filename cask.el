@@ -402,8 +402,7 @@ SCOPE may be nil or 'development."
          (cl-destructuring-bind (_ &rest patterns) form
            (setf (cask-bundle-patterns bundle) patterns)))
         (development
-         (cl-destructuring-bind (_ . body) form
-           (cask--eval bundle body 'development)))
+         (cask--eval bundle (cdr form) 'development))
         (t
          (error "Unknown directive: %S" form))))))
 
