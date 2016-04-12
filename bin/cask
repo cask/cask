@@ -2,7 +2,7 @@
 # -*- coding: utf-8; -*-
 
 # Copyright (C) 2012, 2013, 2014 Johan Andersson
-# Copyright (C) 2013, 2014 Sebastian Wiesner
+# Copyright (C) 2013-2014, 2016 Sebastian Wiesner
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,6 +96,20 @@ class EmacsCommandError(Exception):
     The ``command`` attribute has the failed command as list, as given to
     ``subprocess``, and the ``real_error`` attribute stores the underlying
     exception.
+
+    """
+
+    def __init__(self, command, real_error):
+        Exception.__init__(self)
+        self.command = command
+        self.real_error = real_error
+
+
+class ExecCommandError(Exception):
+    """An exception indicating that ``cask exec`` failed.
+
+    The ``command`` attribute has the command to be executed.  The
+    ``real_error`` attribute holds the original exception.
 
     """
 
@@ -303,7 +317,10 @@ def exec_command(command):
     if (b'CASK_EMACS' in ENVB):
         ENVB[b'EMACS'] = ENVB[b'CASK_EMACS']
 
-    os.execvp(command[0], command)
+    try:
+        os.execvp(command[0], command)
+    except OSError as error:
+        raise ExecCommandError(command, error)
 
 
 def exec_cask(arguments):
@@ -369,6 +386,10 @@ def main():
     except EmacsCommandError as error:
         exit_error('Emacs command "{0}" failed: {1}'.format(
             error.command, error.real_error))
+    except ExecCommandError as error:
+        exit_error('Failed to execute {0}: {1}\n'
+                   'Did you run cask install?'.format(
+                       ' '.join(error.command), error.real_error))
 
 
 if __name__ == '__main__':
