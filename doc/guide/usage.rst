@@ -44,6 +44,11 @@ To install all dependencies, run:
 This will create a directory called `.cask` and install all dependencies into
 it.
 
+.. _finding_emacs:
+
+Finding Emacs
+-------------
+
 By default, packages are installed for the default Emacs, i.e. the one behind
 the `emacs` command.  To pick a different Emacs, set the environment variable
 :envvar:`EMACS` to the command name or executable path of the Emacs to use:
@@ -81,6 +86,21 @@ cask exec
 Execute the system :var:`command` with the given :var:`arguments`, with a
 proper `$PATH` (see :ref:`cask path`) and `$EMACSLOADPATH` (see :ref:`cask
 load-path`).
+
+
+.. _cask emacs:
+
+cask emacs
+----------
+
+.. program:: cask emacs
+
+::
+   cask [GLOBAL-OPTIONS] emacs [ARGUMENTS ...]
+
+Execute `emacs` with the given :var:`arguments`, with the appropriate
+environmment (see :ref:`cask exec`). The Emacs executable is that which cask
+would normally run in (see :ref:`finding_emacs`).
 
 
 .. _cask eval:

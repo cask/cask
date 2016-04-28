@@ -323,6 +323,21 @@ def exec_command(command):
         raise ExecCommandError(command, error)
 
 
+def exec_emacs(command):
+    """Execute Emacs with the proper Cask environment.
+
+    ``command`` is a list of strings, containing the arguments to pass to the
+    emacs process. The Emacs executable is choosen according to the normal
+    rules (see ``get_cask_emacs``). Set ``$PATH`` and ``$EMACSLOADPATH`` to
+    include the Cask package environment.
+
+    This function replaces the current process.  It does **not** return.
+
+    """
+    command.insert([get_cask_emacs()] + command)
+    exec_command(command)
+
+
 def exec_cask(arguments):
     """Execute the Cask CLI with the given ``arguments``.
 
@@ -369,8 +384,11 @@ def main():
             exit_error(
                 'Python 2.6 required, yours is {0.major}.{0.minor}'.format(
                     sys.version_info))
+        ## TODO: replace with a command line parser!
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
             exec_command(sys.argv[2:])
+        elif len(sys.argv) > 1 and sys.argv[1] == 'emacs':
+            exec_emacs(sys.argv[2:])
         else:
             exec_cask(sys.argv[1:])
     except OSError as error:
