@@ -69,7 +69,7 @@ Now create a virtualenv for the documentation, and install the requirements:
 
 Now you are set up to build the documentation.
 
-.. _virtualenv: http://virtualenv.readthedocs.org/en/latest/
+.. _virtualenv: https://virtualenv.pypa.io/
 
 Building
 --------
@@ -94,7 +94,7 @@ documentation:
 
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx-doc.org/
-.. _sphinxcontrib-emacs: http://sphinxcontrib-emacs.readthedocs.org/
+.. _sphinxcontrib-emacs: https://sphinxcontrib-emacs.readthedocs.io/
 
 Pull requests
 =============
