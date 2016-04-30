@@ -57,6 +57,13 @@ the `emacs` command.  To pick a different Emacs, set the environment variable
 
    $ EMACS="emacs24.1" cask command
 
+Note that installed dependencies are scoped on the version of Emacs. So when
+switching between versions you will have to install the dependencies for each:
+
+.. code-block:: console
+
+   $ EMACS="emacs24.5" cask install
+
 Exceptionally, if you are launching :program:`cask` inside Emacs 24 either
 from an internal shell or `M-x compile`, then Emacs uses :envvar:`EMACS` in a
 way which conflicts with :program:`cask`, in which case you can use the
