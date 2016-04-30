@@ -334,8 +334,7 @@ def exec_emacs(command):
     This function replaces the current process.  It does **not** return.
 
     """
-    command.insert([get_cask_emacs()] + command)
-    exec_command(command)
+    exec_command([get_cask_emacs()] + command)
 
 
 def exec_cask(arguments):
