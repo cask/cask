@@ -6,7 +6,8 @@ Feature: Eval
       """
       (package "super-project" "0.0.1" "Super project.")
       """
-    When I run cask "emacs -q --batch --eval '(print nil)'"
+    When I run cask "install"
+    And I run cask "emacs -q --batch --eval '(print nil)'"
     Then I should not see command error:
       """
       Wrong type argument: stringp, nil

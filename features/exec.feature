@@ -5,7 +5,8 @@ Feature: Exec
     Given this Cask file:
       """
       """
-    When I run cask "exec echo foo"
+    When I run cask "install"
+    And I run cask "exec echo foo"
     Then I should see command output:
       """
       foo
@@ -58,9 +59,25 @@ Feature: Exec
     Given this Cask file:
       """
       """
-    When I run cask "exec does-not-exist"
+    When I run cask "install"
+    And I run cask "exec does-not-exist"
     Then I should see command error:
       """
       cask exec: error: Failed to execute does-not-exist: [Errno 2] No such file or directory
       Did you run cask install?
+      """
+
+  Scenario: install has not been run
+    Given this Cask file:
+      """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
+
+      (depends-on "package-c" "0.0.1")
+      """
+    When I run cask "exec true"
+    Then I should see command error:
+      """
+      cask exec: error: Missing Packages
+      package-c
+      Do you need to run cask install?
       """

@@ -96,6 +96,7 @@ cask emacs
 .. program:: cask emacs
 
 ::
+
    cask [GLOBAL-OPTIONS] emacs [ARGUMENTS ...]
 
 Execute `emacs` with the given :var:`arguments`, with the appropriate
@@ -220,6 +221,19 @@ cask outdated
    cask [GLOBAL-OPTIONS] outdated
 
 Show all outdated dependencies.
+
+.. _cask missing:
+
+cask missing
+------------
+
+.. program:: cask missing
+
+::
+
+   cask [GLOBAL-OPTIONS] missing
+
+Show immediate dependencies which have not been installed.
 
 .. _cask pkg-file:
 

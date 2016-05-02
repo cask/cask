@@ -90,6 +90,19 @@ class MissingEmacsError(Exception):
         self.emacs = emacs
 
 
+class MissingPackageError(Exception):
+    """An exception indicating that one or more direct dependencies are missing.
+
+    The ```report``` attribute describes the missing dependencies in a
+    human-readable form.
+
+    """
+
+    def __init__(self, report):
+        Exception.__init__(self)
+        self.report = report
+
+
 class EmacsCommandError(Exception):
     """An exception indicating a failed Emacs command.
 
@@ -153,18 +166,35 @@ def format_version(version):
     return '.'.join(str(part) for part in version)
 
 
+def get_missing_packages():
+    """Get a report of the missing direct dependencies.
+
+    The report is a human-readable list of the any direct dependencies which are
+    required but not present. The empty string is returned if there are none.
+
+    """
+    process = subprocess.Popen([sys.executable, CASK, "missing"], stdout=subprocess.PIPE)
+    stdout, _ = process.communicate()
+
+    return stdout.rstrip()
+
+
 def get_cask_path(kind):
     """Get the Cask package environment path of the given ``kind``.
 
     ``kind`` is a string, denoting the kind of the path to get.  Cask supports
-    two different kinds, namely ``'path'`` for the executable path of the
-    package environment, and ``'load-path'`` for the Emacs Lisp load path of
-    the package environment.
+    three different kinds, namely ``'path'`` for the executable path of the
+    package environment, ``'load-path'`` for the Emacs Lisp load path of
+    the package environment and ``'package-directory'``.
 
     Return the path as string, which contains all directories of the path
     separated by path separators.
 
     """
+    missing = get_missing_packages()
+    if (missing):
+        raise MissingPackageError(missing)
+
     process = subprocess.Popen([sys.executable, CASK, kind], stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
     return stdout.rstrip()
@@ -400,6 +430,8 @@ def main():
         exit_error(
             'Emacs does not exist at {0}.  Did you install Emacs?'.format(
                 error.emacs))
+    except MissingPackageError as error:
+        exit_error("Missing Packages\n{}\nDo you need to run cask install?".format(error.report))
     except EmacsCommandError as error:
         exit_error('Emacs command "{0}" failed: {1}'.format(
             error.command, error.real_error))

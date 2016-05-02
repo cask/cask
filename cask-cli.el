@@ -87,6 +87,33 @@
           (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
           (princ (concat value "\n")))))))
 
+(defun cask-cli--missing-dependencies ()
+  "Return a list of direct dependencies that are missing."
+  (let ((bundle (cask-cli--bundle)))
+    (-remove
+     (lambda (dependency)
+       (let ((name (cask-dependency-name dependency)))
+         (or (epl-package-installed-p name)
+             (cask-linked-p bundle name))))
+     (cask-dependencies bundle))))
+
+(defun cask-cli--missing-dependencies-report (missing)
+  "Return a string report describing missing dependencies."
+  (->> missing
+       (-map #'cask-dependency-name)
+       (-map #'symbol-name)
+       (s-join "\n")))
+
+(defun cask-cli--dependencies-exist-or-error ()
+  "Check if all direct dependencies exist.
+
+Signal an error if not."
+  (-when-let (missing-dependencies (cask-cli--missing-dependencies))
+    ;; This error message should be the same as the one from bin/cask.
+    ;; Any changes need to be percolated.
+    (error "Missing Dependencies.\n%s\nRun cask install to update."
+           (cask-cli--missing-dependencies-report missing-dependencies))))
+
 
 ;;;; Commands
 
@@ -164,6 +191,7 @@ Git is available in `exec-path'."
 
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
+  (cask-cli--dependencies-exist-or-error)
   (cask-cli/with-handled-errors
     (-when-let (upgrades (cask-update (cask-cli--bundle)))
       (princ "Updated packages:\n")
@@ -213,6 +241,7 @@ will be for an Emacs package."
   "Print `load-path' for all packages and dependencies.
 
 The output is formatted as a colon path."
+  (cask-cli--dependencies-exist-or-error)
   (princ (concat (s-join path-separator (cask-load-path (cask-cli--bundle))) "\n")))
 
 (defun cask-cli/exec-path ()
@@ -222,6 +251,7 @@ A dependency will be included in this list of the package has a
 directory called bin in the root directory.
 
 The output is formatted as a colon path."
+  (cask-cli--dependencies-exist-or-error)
   (princ (concat (s-join path-separator (cask-exec-path (cask-cli--bundle))) "\n")))
 
 (defmacro cask-cli--with-package-path (&rest body)
@@ -235,6 +265,7 @@ The output is formatted as a colon path."
 
 (defun cask-cli/eval (form)
   "Eval FORM with the `load-path' set according to the project."
+  (cask-cli--dependencies-exist-or-error)
   (cask-cli--with-package-path
    (eval (read form))))
 
@@ -247,9 +278,16 @@ The output is formatted as a colon path."
 
 That is packages that have a more recent version available for
 installation."
+  (cask-cli--dependencies-exist-or-error)
   (-when-let (outdated (cask-outdated (cask-cli--bundle)))
     (princ "Outdated packages:\n")
     (-each outdated 'cask-cli--print-upgrade)))
+
+(defun cask-cli/missing ()
+  "Print a list of direct dependencies which are missing."
+  (-when-let (missing (cask-cli--missing-dependencies))
+    (princ (cask-cli--missing-dependencies-report missing))
+    (princ "\n")))
 
 (defun cask-cli/files ()
   "Print list of files specified in the files directive.
@@ -261,6 +299,7 @@ If no files directive or no files, do nothing."
 
 (defun cask-cli/build ()
   "Build all Elisp files in the files directive."
+  (cask-cli--dependencies-exist-or-error)
   (cask-build (cask-cli--bundle)))
 
 (defun cask-cli/clean-elc ()
@@ -383,6 +422,7 @@ Commands:
  (command "path" cask-cli/exec-path)
  (command "package-directory" cask-cli/package-directory)
  (command "outdated" cask-cli/outdated)
+ (command "missing" cask-cli/missing)
  (command "files" cask-cli/files)
  (command "build" cask-cli/build)
  (command "clean-elc" cask-cli/clean-elc)

@@ -85,6 +85,10 @@
   (lambda (output)
     (should-not (s-contains? output cask-test/stdout))))
 
+(Then "^I should see no command output$"
+  (lambda ()
+    (should (s-blank? cask-test/stdout))))
+
 (Then "^I should see usage information$"
   (lambda ()
     (should (s-contains? "USAGE: cask [COMMAND] [OPTIONS]" cask-test/stdout))))
