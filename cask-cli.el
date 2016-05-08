@@ -52,6 +52,9 @@
 (defvar cask-cli--path default-directory
   "Cask commands will execute in this path.")
 
+(defvar cask-cli--warn-as-error nil
+  "Consider warnings as error.")
+
 (defvar cask-cli--bundle-cache nil)
 
 (defun cask-cli--bundle ()
@@ -260,8 +263,14 @@ If no files directive or no files, do nothing."
       (princ (concat file "\n")))))
 
 (defun cask-cli/build ()
-  "Build all Elisp files in the files directive."
-  (cask-build (cask-cli--bundle)))
+  "Build all Elisp files in the files directive.
+
+Exit code is 1 if any of the files contained a compile error, 0
+otherwise."
+  (let ((result (cask-build (cask-cli--bundle) :warn-as-error cask-cli--warn-as-error)))
+    (if result
+        (kill-emacs 0)
+      (kill-emacs 1))))
 
 (defun cask-cli/clean-elc ()
   "Remove all byte compiled Elisp files in the files directive."
@@ -357,6 +366,10 @@ Commands:
   "Be verbose and do not hide output."
   (setq shut-up-ignore t))
 
+(defun cask-cli/warn-as-error ()
+  "Consider compiler warnings as errors."
+  (setq cask-cli--warn-as-error t))
+
 
 ;;;; Commander schedule
 
@@ -399,7 +412,8 @@ Commands:
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
- (option "--verbose" cask-cli/verbose))
+ (option "--verbose" cask-cli/verbose)
+ (option "--warn-as-error" cask-cli/warn-as-error))
 
 (provide 'cask-cli)
 

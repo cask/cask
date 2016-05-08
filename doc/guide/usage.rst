@@ -310,6 +310,16 @@ cask build
 Byte compile all Emacs Lisp files in the package.  The resulting byte code is
 written to the original path, with the extension replaced by ``.elc``.
 
+Exit code is ``1`` if any of the files contained a compile error,
+``0`` otherwise.
+
+.. option:: --warn-as-error
+
+   Consider compiler warnings as errors. This means that if a file
+   contains a warning and this flag is used, the exit code will be
+   ``1`` instead of ``0``.
+
+
 .. _cask clean-elc:
 
 cask clean-elc

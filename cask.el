@@ -833,17 +833,29 @@ URL is the url to the mirror."
                            (cask-bundle-sources bundle))))
     (setf (cask-bundle-sources bundle) sources)))
 
-(defun cask-build (bundle)
-  "Build BUNDLE Elisp files."
+(defun cask-build (bundle &rest args)
+  "Build BUNDLE Elisp files.
+
+Return t if all files were successfully built without errors,
+otherwise return nil.
+
+ARGS supports the following options:
+ - warn-as-error: If t, then warnings are considered errors."
   (cask--with-file bundle
     (require 'bytecomp)
-    (let ((load-path (cons (cask-path bundle) (cask-load-path bundle))))
+    (let ((was-successful t)
+          (load-path (cons (cask-path bundle) (cask-load-path bundle))))
       (-each (cask-files bundle)
         (lambda (path)
           (when (and (f-file? path) (f-ext? path "el"))
-            (if (fboundp 'byte-recompile-file)
-                (byte-recompile-file path 'force 0)
-              (byte-compile-file path nil))))))))
+            (let* ((byte-compile-error-on-warn (plist-get args :warn-as-error))
+                   (result
+                    (if (fboundp 'byte-recompile-file)
+                        (byte-recompile-file path 'force 0)
+                      (byte-compile-file path nil))))
+              (unless result
+                (setq was-successful nil))))))
+      was-successful)))
 
 (defun cask-clean-elc (bundle)
   "Remove BUNDLE Elisp byte compiled files."

@@ -928,6 +928,37 @@
     (cask-install bundle)
     (cask-build bundle)))
 
+(ert-deftest cask-build-test/return-value-no-error-or-warning ()
+  (cask-test/with-bundle '((files "foo.el"))
+    (f-write-text "(print \"Hello World!\")" 'utf-8 "foo.el")
+    (cask-install bundle)
+    (should (cask-build bundle))))
+
+(ert-deftest cask-build-test/return-value-with-warning ()
+  (cask-test/with-bundle '((files "foo.el" "bar.el"))
+    (f-write-text "(next-line 1)" 'utf-8 "foo.el")
+    (cask-install bundle)
+    (should (cask-build bundle))))
+
+(ert-deftest cask-build-test/return-value-with-warning-with-warn-as-error ()
+  (cask-test/with-bundle '((files "foo.el" "bar.el"))
+    (f-write-text "(next-line 1)" 'utf-8 "foo.el")
+    (cask-install bundle)
+    (should-not (cask-build bundle :warn-as-error t))))
+
+(ert-deftest cask-build-test/return-value-with-error ()
+  (cask-test/with-bundle '((files "foo.el"))
+    (f-write-text "(require 'does-not-exit)" 'utf-8 "foo.el")
+    (cask-install bundle)
+    (should-not (cask-build bundle))))
+
+(ert-deftest cask-build-test/return-value-multiple-files ()
+  (cask-test/with-bundle '((files "foo.el" "bar.el"))
+    (f-write-text "(print \"Hello World!\")" 'utf-8 "foo.el")
+    (f-write-text "(require 'does-not-exit)" 'utf-8 "bar.el")
+    (cask-install bundle)
+    (should-not (cask-build bundle))))
+
 
 ;;;; cask-clean-elc
 

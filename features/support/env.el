@@ -51,6 +51,7 @@
 
 (defvar cask-test/stderr)
 (defvar cask-test/stdout)
+(defvar cask-test/exit-code)
 
 (add-to-list 'load-path cask-test/root-path)
 
@@ -60,6 +61,7 @@
 (Before
  (setq cask-test/stderr "")
  (setq cask-test/stdout "")
+ (setq cask-test/exit-code nil)
 
  (when (f-dir? cask-test/sandbox-path)
    (f-delete cask-test/sandbox-path 'force))

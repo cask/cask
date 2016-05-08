@@ -32,7 +32,8 @@
   (defvar cask-test/sandbox-path)
   (defvar cask-test/bin-command)
   (defvar cask-test/stdout)
-  (defvar cask-test/stderr))
+  (defvar cask-test/stderr)
+  (defvar cask-test/exit-code))
 
 (require 'shell-split-string)
 
@@ -63,6 +64,7 @@
               (apply
                'call-process
                (append (list cask-test/bin-command nil (current-buffer) nil) args))))
+        (setq cask-test/exit-code exit-code)
         (let ((content (buffer-string)))
           (cond ((= exit-code 0)
                  (setq cask-test/stdout content))
@@ -96,6 +98,10 @@
 (Then "^package \"\\([^\"]+\\)\" should not be installed$"
   (lambda (package)
     (should-not (f-dir? (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" package)))))
+
+(Then "^last command exited with status code \"\\([^\"]+\\)\"$"
+  (lambda (exit-code)
+    (should (eq (string-to-number exit-code) cask-test/exit-code))))
 
 (provide 'cask-steps)
 
