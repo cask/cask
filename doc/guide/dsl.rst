@@ -119,7 +119,7 @@ Dependencies
 
    `melpa-stable`
       An archive of stable versions built automatically from upstream
-      repositories, at https://melpa-stable.milkbox.net/.
+      repositories, at https://stable.melpa.org/.
 
    `melpa`
       An archive of VCS snapshots built automatically from upstream
