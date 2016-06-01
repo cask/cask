@@ -103,6 +103,7 @@ cask emacs
 .. program:: cask emacs
 
 ::
+
    cask [GLOBAL-OPTIONS] emacs [ARGUMENTS ...]
 
 Execute `emacs` with the given :var:`arguments`, with the appropriate
