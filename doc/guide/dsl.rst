@@ -67,7 +67,7 @@ Dependencies
 ============
 
 .. function:: depends-on package-name &optional minimum-version
-              depends-on package-name :fetcher repourl &optional :ref hash :branch name :files patterns
+              depends-on package-name :fetcher repourl &optional :ref hash :branch name :files patterns :archive name
 
    Specify a dependency of this package.
 
@@ -89,6 +89,11 @@ Dependencies
    :var:`files` gives the files from the repository to include in the
    package, in the same format as :function:`files`.  If omitted, try to take
    the files from the :file:`Cask` file of the repository.
+
+   :var:`archive` pins the package to the given archive identified by `name`
+   by adding an entry to the Emacs variable ``package-pinned-packages``.
+   ``package-pinned-packages`` has been introduced in Emacs v24.4 therefore
+   the pinning feature is not supported by older version.
 
 .. function:: development &rest body
 
