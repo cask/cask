@@ -106,8 +106,10 @@ when fetcher is specified.
 
 `ref' The ref to use if fetcher.
 
-`branch' The branch to use if fetcher."
-  name version fetcher url files ref branch)
+`branch' The branch to use if fetcher.
+
+`archive' The archive to pin the dependency to."
+  name version fetcher url files ref branch archive)
 
 (cl-defstruct cask-source
   "Structure representing a package source.
@@ -792,6 +794,8 @@ ARGS is a plist with these optional arguments:
 
  `:branch' Fetcher branch to checkout.
 
+ `:archive' Pin package to archive.
+
 ARGS can also include any of the items in `cask-fetchers'.  The
 plist key is one of the items in the list and the value is the
 url to the fetcher source."
@@ -808,6 +812,12 @@ url to the fetcher source."
         (setf (cask-dependency-ref dependency) ref))
       (-when-let (branch (plist-get args :branch))
         (setf (cask-dependency-branch dependency) branch)))
+    (-when-let (archive (plist-get args :archive))
+      (setq package-pinned-packages
+            (add-to-list
+             'package-pinned-packages
+             `(,name . ,archive) package-pinned-packages))
+      (setf (cask-dependency-archive dependency) archive))
     (if (eq (plist-get args :scope) 'development)
         (push dependency (cask-bundle-development-dependencies bundle))
       (push dependency (cask-bundle-runtime-dependencies bundle)))))
