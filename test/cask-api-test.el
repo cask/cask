@@ -640,8 +640,9 @@
    (let ((archive (cask-dependency-archive
                    (car (cask-bundle-runtime-dependencies bundle)))))
      (cask-install bundle)
-     (should (equal archive "localhost"))
-     (should (equal package-pinned-packages '((package-a . "localhost")))))))
+     (when (boundp 'package-pinned-packages)
+       (should (equal archive "localhost"))
+       (should (equal package-pinned-packages '((package-a . "localhost"))))))))
 
 (ert-deftest cask-install-test/fetcher-git ()
   (cask-test/with-git-repo
