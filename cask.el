@@ -815,7 +815,7 @@ url to the fetcher source."
     (-when-let (archive (plist-get args :archive))
       (if (not (boundp 'package-pinned-packages))
           (princ "Archive pinning is only supported with Emacs v24.4+.\n")
-          (do
+          (progn
               (setq package-pinned-packages
                     (add-to-list
                      'package-pinned-packages
