@@ -794,7 +794,7 @@ ARGS is a plist with these optional arguments:
 
  `:branch' Fetcher branch to checkout.
 
- `:archive' Pin package to archive.
+ `:archive' Pin package to archive. Only supported by Emacs v24.4+.
 
 ARGS can also include any of the items in `cask-fetchers'.  The
 plist key is one of the items in the list and the value is the
@@ -813,11 +813,14 @@ url to the fetcher source."
       (-when-let (branch (plist-get args :branch))
         (setf (cask-dependency-branch dependency) branch)))
     (-when-let (archive (plist-get args :archive))
-      (setq package-pinned-packages
-            (add-to-list
-             'package-pinned-packages
-             `(,name . ,archive) package-pinned-packages))
-      (setf (cask-dependency-archive dependency) archive))
+      (if (not (boundp 'package-pinned-packages))
+          (princ "Archive pinning is only supported with Emacs v24.4+.\n")
+          (do
+              (setq package-pinned-packages
+                    (add-to-list
+                     'package-pinned-packages
+                     `(,name . ,archive) package-pinned-packages))
+              (setf (cask-dependency-archive dependency) archive))))
     (if (eq (plist-get args :scope) 'development)
         (push dependency (cask-bundle-development-dependencies bundle))
       (push dependency (cask-bundle-runtime-dependencies bundle)))))
