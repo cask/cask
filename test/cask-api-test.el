@@ -634,7 +634,7 @@
       (should (equal orig-load-path load-path)))))
 
 (ert-deftest cask-install-test/pin-archive ()
-  (when (boundp 'package-pinned-packages)
+  (when (not (boundp 'package-pinned-packages))
     (ert-skip
      "`package-pinned-packages' is not defined, we need Emacs v24.4+ to test the pinning feature."))
   (cask-test/with-bundle
