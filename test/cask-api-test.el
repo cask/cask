@@ -646,7 +646,7 @@
        (should (equal package-pinned-packages
                       '((package-a . "localhost"))))))
     (unless bound?
-      (makunbound package-pinned-packages))))
+      (makunbound 'package-pinned-packages))))
 
 (ert-deftest cask-install-test/fetcher-git ()
   (cask-test/with-git-repo
