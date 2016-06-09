@@ -86,6 +86,7 @@ Defaults to `error'."
 (define-error 'cask-failed-initialization "Failed initialization" 'cask-error)
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
 (define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
+(define-error 'cask-no-pinning "Package pinning is only supported with Emacs v24.4+." 'cask-error)
 
 (cl-defstruct cask-dependency
   "Structure representing a dependency.
@@ -813,14 +814,13 @@ url to the fetcher source."
       (-when-let (branch (plist-get args :branch))
         (setf (cask-dependency-branch dependency) branch)))
     (-when-let (archive (plist-get args :archive))
-      (if (not (boundp 'package-pinned-packages))
-          (princ "Archive pinning is only supported with Emacs v24.4+.\n")
-          (progn
-              (setq package-pinned-packages
-                    (add-to-list
-                     'package-pinned-packages
-                     `(,name . ,archive) package-pinned-packages))
-              (setf (cask-dependency-archive dependency) archive))))
+      (unless (boundp 'package-pinned-packages)
+        (signal 'cask-no-pinning nil))
+      (setq package-pinned-packages
+            (add-to-list
+             'package-pinned-packages
+             `(,name . ,archive) package-pinned-packages))
+      (setf (cask-dependency-archive dependency) archive))
     (if (eq (plist-get args :scope) 'development)
         (push dependency (cask-bundle-development-dependencies bundle))
       (push dependency (cask-bundle-runtime-dependencies bundle)))))
