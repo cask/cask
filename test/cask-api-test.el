@@ -634,17 +634,17 @@
       (should (equal orig-load-path load-path)))))
 
 (ert-deftest cask-install-test/pin-archive ()
-  (when (not (boundp 'package-pinned-packages))
-    (ert-skip
-     "`package-pinned-packages' is not defined, we need Emacs v24.4+ to test the pinning feature."))
-  (cask-test/with-bundle
-   '((source localhost)
-     (depends-on "package-a" "0.0.1" :archive "localhost"))
-   (let ((archive (cask-dependency-archive
-                   (car (cask-bundle-runtime-dependencies bundle)))))
-     (cask-install bundle)
-     (should (equal archive "localhost"))
-     (should (equal package-pinned-packages '((package-a . "localhost")))))))
+  (if  (not (boundp 'package-pinned-packages))
+    (princ "`package-pinned-packages' is not defined, we need Emacs v24.4+ to test the pinning feature.\n")
+    (cask-test/with-bundle
+     '((source localhost)
+       (depends-on "package-a" "0.0.1" :archive "localhost"))
+     (let ((archive (cask-dependency-archive
+                     (car (cask-bundle-runtime-dependencies bundle)))))
+       (cask-install bundle)
+       (should (equal archive "localhost"))
+       (should (equal package-pinned-packages
+                      '((package-a . "localhost"))))))))
 
 (ert-deftest cask-install-test/fetcher-git ()
   (cask-test/with-git-repo
