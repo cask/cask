@@ -816,10 +816,7 @@ url to the fetcher source."
     (-when-let (archive (plist-get args :archive))
       (unless (boundp 'package-pinned-packages)
         (signal 'cask-no-pinning nil))
-      (setq package-pinned-packages
-            (add-to-list
-             'package-pinned-packages
-             `(,name . ,archive) package-pinned-packages))
+      (add-to-list 'package-pinned-packages `(,name . ,archive))
       (setf (cask-dependency-archive dependency) archive))
     (if (eq (plist-get args :scope) 'development)
         (push dependency (cask-bundle-development-dependencies bundle))
