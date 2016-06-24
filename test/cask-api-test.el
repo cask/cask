@@ -646,20 +646,17 @@
                        '((package-a . "localhost"))))))))
 
 (ert-deftest cask-install-test/pin-archive-no-package-pinned-packages ()
-  (let ((bound? (boundp 'package-pinned-packages)))
+  (let ((package-pinned-packages nil))
     (makunbound 'package-pinned-packages)
     (should-error
      (condition-case err
          (progn
            (cask--eval
             (make-cask-bundle)
-            '((depends-on "package-a" "0.0.1" :archive "localhost")))
-           (when bound? (setq package-pinned-packages nil)))
+            '((depends-on "package-a" "0.0.1" :archive "localhost"))))
        (error
         (signal (car err) (cdr err))))
-     :type 'cask-no-pinning)
-    (when bound?
-      (setq package-pinned-packages nil))))
+     :type 'cask-no-pinning)))
 
 (ert-deftest cask-install-test/fetcher-git ()
   (cask-test/with-git-repo
