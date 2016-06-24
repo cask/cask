@@ -39,7 +39,10 @@
 (defun cask-test/template (command)
   "Return COMMAND with placeholders replaced with values."
   (->> command
-    (s-replace "{{EMACS-VERSION}}" emacs-version)
+    (s-replace "{{EMACS-VERSION}}"
+               (format "%s.%s"
+                       emacs-major-version
+                       emacs-minor-version))
     (s-replace "{{EMACS}}" (executable-find (or (getenv "EMACS") "emacs")))))
 
 (Given "^this Cask file:$"
@@ -88,14 +91,21 @@
 (Then "^I should see usage information$"
   (lambda ()
     (should (s-contains? "USAGE: cask [COMMAND] [OPTIONS]" cask-test/stdout))))
-
 (Then "^package \"\\([^\"]+\\)\" should be installed$"
   (lambda (package)
-    (should (f-dir? (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" package)))))
+    (should (f-dir? (f-join cask-test/sandbox-path ".cask"
+                            (format "%s.%s"
+                                    emacs-major-version
+                                    emacs-minor-version)
+                            "elpa" package)))))
 
 (Then "^package \"\\([^\"]+\\)\" should not be installed$"
   (lambda (package)
-    (should-not (f-dir? (f-join cask-test/sandbox-path ".cask" emacs-version "elpa" package)))))
+    (should-not (f-dir? (f-join cask-test/sandbox-path ".cask"
+                                (format "%s.%s"
+                                        emacs-major-version
+                                        emacs-minor-version)
+                                "elpa" package)))))
 
 (provide 'cask-steps)
 
