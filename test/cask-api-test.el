@@ -634,19 +634,16 @@
       (should (equal orig-load-path load-path)))))
 
 (ert-deftest cask-install-test/pin-archive ()
-  (let ((bound? (boundp 'package-pinned-packages)))
-    (setq package-pinned-packages nil)
+  (let ((package-pinned-packages nil))
     (cask-test/with-bundle
-     '((source localhost)
-       (depends-on "package-a" "0.0.1" :archive "localhost"))
-     (let ((archive (cask-dependency-archive
-                     (car (cask-bundle-runtime-dependencies bundle)))))
-       (cask-install bundle)
-       (should (equal archive "localhost"))
-       (should (equal package-pinned-packages
-                      '((package-a . "localhost"))))))
-    (unless bound?
-      (makunbound 'package-pinned-packages))))
+        '((source localhost)
+          (depends-on "package-a" "0.0.1" :archive "localhost"))
+      (let ((archive (cask-dependency-archive
+                      (car (cask-bundle-runtime-dependencies bundle)))))
+        (cask-install bundle)
+        (should (equal archive "localhost"))
+        (should (equal package-pinned-packages
+                       '((package-a . "localhost"))))))))
 
 (ert-deftest cask-install-test/pin-archive-no-package-pinned-packages ()
   (let ((bound? (boundp 'package-pinned-packages)))
