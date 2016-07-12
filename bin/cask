@@ -263,10 +263,10 @@ def inside_emacs_24():
     ## are we inside Emacs at all
     return (b'INSIDE_EMACS' in ENVB and
             ## M-x compile in Emacs-24 sets INSIDE_EMACS to exactly 't'
-            (ENVB.get(b'INSIDE_EMACS') == 't' or
+            (ENVB.get(b'INSIDE_EMACS') == b't' or
              ## while M-x shell sets it to a string, starting with the
              ## version number
-             ENVB.get(b'INSIDE_EMACS').startswith('24')))
+             ENVB.get(b'INSIDE_EMACS').startswith(b'24')))
 
 def get_emacs_from_env():
     """Get the Emacs executable as specified by the environment.
