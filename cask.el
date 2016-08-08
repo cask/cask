@@ -927,7 +927,8 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
           (patterns (or (cask-bundle-patterns bundle)
                         package-build-default-files-spec))
           (path (cask-bundle-path bundle)))
-      (unless target-dir
+      (if target-dir
+          (setq target-dir (f-expand target-dir))
         (setq target-dir (f-expand cask-dist-path path)))
       (unless (f-dir? target-dir)
         (f-mkdir target-dir))
