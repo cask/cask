@@ -314,6 +314,9 @@ Commands:
   "Build package and put in TARGET-DIR or dist if not specified."
   (cask-package (cask-cli--bundle) target-dir))
 
+(defun cask-cli/emacs ()
+  "Execute emacs with the appropriate environmment.")
+
 
 ;;;; Options
 
@@ -388,6 +391,7 @@ Commands:
  (command "clean-elc" cask-cli/clean-elc)
  (command "link [*]" cask-cli/link)
  (command "package [target-dir]" cask-cli/package)
+ (command "emacs [*]" cask-cli/emacs)
 
  (option "--proxy <host>" cask-cli/cask-proxy)
  (option "--http-proxy <host>" cask-cli/cask-http-proxy)
