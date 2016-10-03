@@ -561,7 +561,7 @@ This function return a `cask-bundle' object."
           (-snoc (--map (list (cask-dependency-name it) t)
                         (cask--runtime-dependencies bundle))
                  'all)))
-    (when (f-same? (epl-package-dir) (epl-default-package-dir))
+    (when (equal (epl-package-dir) (epl-default-package-dir))
       (cask--use-environment bundle :activate t))
     bundle))
 
