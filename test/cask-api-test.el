@@ -500,7 +500,7 @@
 ;;;; cask-file
 
 (ert-deftest cask-file-test ()
-  (cask-test/with-bundle nil
+  (cask-test/with-bundle 'empty
     (should (f-same? (cask-file bundle) (f-expand "Cask" cask-test/sandbox-path)))))
 
 
