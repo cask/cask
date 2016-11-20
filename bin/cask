@@ -385,7 +385,10 @@ def main():
                     sys.version_info))
         ## TODO: replace with a command line parser!
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
-            exec_command(sys.argv[2:])
+            if len(sys.argv) == 2:
+                exec_cask(['help'])
+            else:
+                exec_command(sys.argv[2:])
         elif len(sys.argv) > 1 and sys.argv[1] == 'emacs':
             exec_emacs(sys.argv[2:])
         else:
