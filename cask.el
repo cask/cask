@@ -142,7 +142,10 @@ dependencies that are required for local development.
 
 `patterns' List of files patterns.
 
-`sources' List of `cask-source' objects."
+`sources' List of `cask-source' objects.
+
+`runtime-dependencies' and `development-dependencies' are stored in reverse
+order (compared to the Cask file)."
   name version description runtime-dependencies
   development-dependencies path patterns sources)
 
@@ -402,8 +405,7 @@ SCOPE may be nil or 'development."
          (cl-destructuring-bind (_ &rest patterns) form
            (setf (cask-bundle-patterns bundle) patterns)))
         (development
-         (cl-destructuring-bind (_ . body) form
-           (cask--eval bundle body 'development)))
+         (cask--eval bundle (cdr form) 'development))
         (t
          (error "Unknown directive: %S" form))))))
 
@@ -467,19 +469,24 @@ returns an `epl-package' object."
                    package-function))))))
      dependencies))))
 
+(defun cask--dependencies-1 (dependencies deep find-function)
+  "Return DEPENDENCIES, optionally DEEP, using FIND-FUNCTION.
+This is a helper for `cask--runtime-dependencies' and
+`cask--development-dependencies'."
+  (reverse
+   (if deep
+       (cask--compute-dependencies dependencies find-function)
+     dependencies)))
+
 (defun cask--runtime-dependencies (bundle &optional deep)
   "Return runtime dependencies for BUNDLE, optionally DEEP."
-  (let ((dependencies (cask-bundle-runtime-dependencies bundle)))
-    (if deep
-        (cask--compute-dependencies dependencies 'cask--find-available-package)
-      dependencies)))
+  (cask--dependencies-1 (cask-bundle-runtime-dependencies bundle) deep
+                        'cask--find-available-package))
 
 (defun cask--development-dependencies (bundle &optional deep)
   "Return development dependencies for BUNDLE, optionally DEEP."
-  (let ((dependencies (cask-bundle-development-dependencies bundle)))
-    (if deep
-        (cask--compute-dependencies dependencies 'cask--find-available-package)
-      dependencies)))
+  (cask--dependencies-1 (cask-bundle-development-dependencies bundle) deep
+                        'cask--find-available-package))
 
 (defun cask--dependencies (bundle &optional deep)
   "Return dependencies for BUNDLE, optionally DEEP."
@@ -488,10 +495,8 @@ returns an `epl-package' object."
 
 (defun cask--installed-dependencies (bundle &optional deep)
   "Return installed dependencies for BUNDLE, optionally DEEP."
-  (let ((dependencies (cask--dependencies bundle)))
-    (if deep
-        (cask--compute-dependencies dependencies 'cask--find-installed-package)
-      dependencies)))
+  (cask--dependencies-1 (cask--dependencies bundle) deep
+                        'cask--find-installed-package))
 
 (defun cask--install-dependency (bundle dependency)
   "In BUNDLE, install DEPENDENCY.
@@ -556,7 +561,8 @@ This function return a `cask-bundle' object."
   "Initialize packages under PROJECT-PATH or `user-emacs-directory'.
 
 This function return a `cask-bundle' object."
-  (let* ((bundle (cask-setup (or project-path user-emacs-directory)))
+  (let* ((bundle
+          (cask-setup (or project-path user-emacs-directory)))
          (package-load-list
           (-snoc (--map (list (cask-dependency-name it) t)
                         (cask--runtime-dependencies bundle))
