@@ -337,6 +337,13 @@ def exec_emacs(command):
     exec_command([get_cask_emacs()] + command)
 
 
+def exec_emacs_with_cask(command):
+    ENVB[b'CASK_DIRECTORY'] = CASK_DIRECTORY
+    exec_command([get_cask_emacs(), "--load"] +
+                 ["{}/cask-init.el".format(CASK_DIRECTORY)] +
+                 command)
+
+
 def exec_cask(arguments):
     """Execute the Cask CLI with the given ``arguments``.
 
@@ -391,6 +398,8 @@ def main():
                 exec_command(sys.argv[2:])
         elif len(sys.argv) > 1 and sys.argv[1] == 'emacs':
             exec_emacs(sys.argv[2:])
+        elif len(sys.argv) > 1 and sys.argv[1] == "emacs-with-cask":
+            exec_emacs_with_cask(sys.argv[2:])
         else:
             exec_cask(sys.argv[1:])
     except OSError as error:
