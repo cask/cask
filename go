@@ -20,81 +20,73 @@
 # Boston, MA 02110-1301, USA.
 
 """
-Install Cask
+Cask bootstrap script
 """
 
 from __future__ import unicode_literals, print_function
 
-import os
 import sys
 import errno
+
+from sys import stdout, stderr, exit
+from os.path import isdir, expanduser, join as pjoin
 from subprocess import CalledProcessError, check_call
 
 
-HOME = os.path.expanduser('~')
-TARGET_DIRECTORY = os.path.join(HOME, '.cask')
+#-----------------------------------------------------------------------------
 REPOSITORY = 'https://github.com/cask/cask.git'
 ISSUE_TRACKER = 'https://github.com/cask/cask/issues'
+TARGET_DIRECTORY = pjoin(expanduser('~'), '.cask')
 
+#-----------------------------------------------------------------------------
+# utility functions
+ok_fmt  = '\033[32m{0}\033[0m' if stdout.isatty() else '{0}'
+nok_fmt = '\033[31m{0}\033[0m' if stderr.isatty() else '{0}'
 
-class CaskGoError(Exception):
-    pass
+info  = lambda x: print(ok_fmt.format(x))
 
+def error(msg):
+    print(nok_fmt.format(msg), file=stderr)
+    exit(1)
 
-OKGREEN = '\033[32m'
-FAIL = '\033[31m'
-ENDC = '\033[0m'
+#-----------------------------------------------------------------------------
+def install(installdir, source):
+    if isdir(installdir):
+        error('Directory %r exists. Has cask already been installed?' % installdir)
 
-
-def success(s):
-    print(OKGREEN + s + ENDC)
-    sys.exit(0)
-
-
-def fail(s):
-    print(FAIL + s + ENDC, file=sys.stderr)
-    sys.exit(1)
-
-
-def bootstrap_cask(target_directory):
-    cask = os.path.join(target_directory, 'bin', 'cask')
     try:
-        check_call([sys.executable, cask, 'upgrade-cask'])
+        cmd = ['git', 'clone', source, installdir]
+        check_call(cmd)
     except CalledProcessError:
-        raise CaskGoError('Cask could not be bootstrapped. Try again later, '
-                          'or report an issue at {0}'.format(ISSUE_TRACKER))
+        msg = 'Cask could not be installed. Try again later or report the issue at %s'
+        error(msg % ISSUE_TRACKER)
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            error('Error installing cask - please install \'git\' first.')
 
+#-----------------------------------------------------------------------------
+def bootstrap(installdir):
+    cask = pjoin(installdir, 'bin', 'cask')
 
-def install_cask(target_directory):
-    if os.path.isdir(target_directory):
-        raise CaskGoError(
-            'Directory {0} exists. Is Cask already installed?'.format(
-                target_directory))
-    else:
-        try:
-            check_call(['git', 'clone', REPOSITORY, target_directory])
-        except CalledProcessError:
-            raise CaskGoError('Cask could not be installed. Try again '
-                              'later, or report an issue at {0}'.format(
-                                  ISSUE_TRACKER))
-        except OSError as error:
-            if error.errno == errno.ENOENT:
-                raise CaskGoError('git executable not found.  Please install Git')
-            else:
-                raise
-
-
-def main():
     try:
-        install_cask(TARGET_DIRECTORY)
-        bootstrap_cask(TARGET_DIRECTORY)
-        success("""\
-Successfully installed Cask!  Now, add the cask binary to your $PATH:
-  export PATH="{0}/bin:$PATH\"""".format(TARGET_DIRECTORY))
-    except CaskGoError as error:
-        fail('{0!s}'.format(error))
+        cmd = [sys.executable, cask, 'upgrade-cask']
+        check_call(cmd)
+    except CalledProcessError:
+        msg = 'Cask could not be bootstrapped. Try again later, or report an issue at %s'
+        error(msg % ISSUE_TRACKER)
 
+#-----------------------------------------------------------------------------
+def main(installdir, source):
+    info('Installing cask into %r ...' % installdir)
+    install(installdir, source)
+
+    info('\nBootstrapping installation ...')
+    bootstrap(installdir)
+
+    info('\nSuccess! You may now add cask to your $PATH with:')
+    print('  export PATH="%s/bin:$PATH"' % installdir)
+    exit(0)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main(TARGET_DIRECTORY, REPOSITORY)
