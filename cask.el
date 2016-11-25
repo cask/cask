@@ -190,6 +190,132 @@ the function `cask--with-environment'.")
 (defconst cask-tmp-packages-path
   (f-expand "packages" cask-tmp-path))
 
+;;;; Package Build Patches
+
+(defun pb/merge-package-info (pkg-info name version dependencies)
+  "Return a version of PKG-INFO updated with NAME, VERSION and info from CONFIG.
+If PKG-INFO is nil, an empty one is created."
+  (let* ((merged (or (copy-sequence pkg-info)
+                     (vector name nil "No description available." version))))
+    (aset merged 0 name)
+    (aset merged 3 version)
+    (when dependencies (aset merged 1 dependencies))
+
+    merged))
+
+(defun package-build-package (package-name version file-specs source-dir target-dir &optional dependencies)
+  "Create PACKAGE-NAME with VERSION.
+
+The information in FILE-SPECS is used to gather files from
+SOURCE-DIR.
+
+The resulting package will be stored as a .el or .tar file in
+TARGET-DIR, depending on whether there are multiple files.
+
+Argument FILE-SPECS is a list of specs for source files, which
+should be relative to SOURCE-DIR.  The specs can be wildcards,
+and optionally specify different target paths.  They extended
+syntax is currently only documented in the MELPA README.  You can
+simply pass `package-build-default-files-spec' in most cases.
+
+DEPENDENCIES is a list of dependencies to override the dependencies 
+extraced from pkg file or single file header.
+
+Returns the archive entry for the package."
+  (when (symbolp package-name)
+    (setq package-name (symbol-name package-name)))
+  (let ((files (package-build-expand-file-specs source-dir file-specs)))
+    (unless (equal file-specs package-build-default-files-spec)
+      (when (equal files (package-build-expand-file-specs
+                          source-dir package-build-default-files-spec nil t))
+        (pb/message "Note: %s :files spec is equivalent to the default."
+                    package-name)))
+    (cond
+     ((not version)
+      (error "Unable to check out repository for %s" package-name))
+     ((= 1 (length files))
+      (pb/build-single-file-package package-name version (caar files) source-dir target-dir dependencies))
+     ((< 1 (length  files))
+      (pb/build-multi-file-package package-name version files source-dir target-dir dependencies))
+     (t (error "Unable to find files matching recipe patterns")))))
+
+(defun pb/build-single-file-package (package-name version file source-dir target-dir dependencies)
+  (let* ((pkg-source (expand-file-name file source-dir))
+         (pkg-target (expand-file-name
+                      (concat package-name "-" version ".el")
+                      target-dir))
+         (pkg-info (pb/merge-package-info
+                    (pb/get-package-info pkg-source)
+                    package-name
+                    version
+                    dependencies)))
+    (unless (string-equal (downcase (concat package-name ".el"))
+                          (downcase (file-name-nondirectory pkg-source)))
+      (error "Single file %s does not match package name %s"
+             (file-name-nondirectory pkg-source) package-name))
+    (when (file-exists-p pkg-target)
+      (delete-file pkg-target))
+    (copy-file pkg-source pkg-target)
+    (let ((enable-local-variables nil)
+          (make-backup-files nil))
+      (with-current-buffer (find-file pkg-target)
+        (pb/update-or-insert-version version)
+        (pb/ensure-ends-here-line pkg-source)
+        (write-file pkg-target nil)
+        (condition-case err
+            (pb/package-buffer-info-vec)
+          (error
+           (pb/message "Warning: %S" err)))
+        (kill-buffer)))
+
+    (pb/write-pkg-readme target-dir
+                         (pb/find-package-commentary pkg-source)
+                         package-name)
+    (pb/archive-entry pkg-info 'single)))
+
+(defun pb/build-multi-file-package (package-name version files source-dir target-dir dependencies)
+  (let* ((tmp-dir (file-name-as-directory (make-temp-file package-name t)))
+         (pkg-dir-name (concat package-name "-" version))
+         (pkg-tmp-dir (expand-file-name pkg-dir-name tmp-dir))
+         (pkg-file (concat package-name "-pkg.el"))
+         (pkg-file-source (or (pb/find-source-file pkg-file files)
+                              pkg-file))
+         (file-source (concat package-name ".el"))
+         (pkg-source (or (pb/find-source-file file-source files)
+                         file-source))
+         (pkg-info (pb/merge-package-info
+                    (let ((default-directory source-dir))
+                      (or (pb/get-pkg-file-info pkg-file-source)
+                          ;; some packages (like magit) provide name-pkg.el.in
+                          (pb/get-pkg-file-info
+                           (expand-file-name (concat pkg-file ".in")
+                                             (file-name-directory pkg-source)))
+                          (pb/get-package-info pkg-source)))
+                    package-name
+                    version
+                    dependencies)))
+    (pb/copy-package-files files source-dir pkg-tmp-dir)
+    (pb/write-pkg-file (expand-file-name pkg-file
+                                         (file-name-as-directory pkg-tmp-dir))
+                       pkg-info)
+
+    (pb/generate-info-files files source-dir pkg-tmp-dir)
+    (pb/generate-dir-file files pkg-tmp-dir)
+
+    (let ((default-directory tmp-dir))
+      (pb/create-tar (expand-file-name (concat package-name "-" version ".tar")
+                                       target-dir)
+                     pkg-dir-name))
+
+    (let ((default-directory source-dir))
+      (pb/write-pkg-readme target-dir
+                           (pb/find-package-commentary pkg-source)
+                           package-name))
+
+    (delete-directory pkg-tmp-dir t nil)
+    (pb/archive-entry pkg-info 'tar)))
+
+
 
 ;;;; Internal functions
 
@@ -915,6 +1041,13 @@ NAME-pkg.el or Cask file for the linking to be possible."
   (-when-let (path (cask-dependency-path bundle name))
     (f-symlink? path)))
 
+(defun extract-dependencies (dependencies)
+  "Return a list of (dep-name dep-version)"
+  (mapcar (lambda (x)
+            (list (cask-dependency-name x) (cask-dependency-version x)))
+          dependencies))
+
+
 (defun cask-package (bundle &optional target-dir)
   "Build an Elpa package of BUNDLE.
 
@@ -923,6 +1056,7 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
   (cask--with-package bundle
     (let ((name (symbol-name (cask-bundle-name bundle)))
           (version (cask-bundle-version bundle))
+          (dependencies (extract-dependencies (cask-runtime-dependencies bundle)))
           (patterns (or (cask-bundle-patterns bundle)
                         package-build-default-files-spec))
           (path (cask-bundle-path bundle)))
@@ -931,7 +1065,7 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
         (setq target-dir (f-expand cask-dist-path path)))
       (unless (f-dir? target-dir)
         (f-mkdir target-dir))
-      (package-build-package name version patterns path target-dir))))
+      (package-build-package name version patterns path target-dir dependencies))))
 
 (provide 'cask)
 
