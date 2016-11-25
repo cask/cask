@@ -107,7 +107,8 @@ The items in the list are on the form (package version)."
            (f-mkdir cask-test/sandbox-path)
            (f-mkdir cask-test/link-path)
            ,@body)
-       (epl-reset))))
+       (epl-reset)
+       (setq package-pinned-packages nil))))
 
 (defmacro cask-test/with-bundle (&optional forms &rest body)
   "Write FORMS to sandbox Cask-file and yield BODY.
@@ -122,7 +123,8 @@ asserted that only those packages are installed"
   (declare (indent 1))
   `(cask-test/with-sandbox
     (let ((cask-source-mapping
-           (cons (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping)))
+           (cons (cons 'localhost "http://127.0.0.1:9191/packages/")
+		 (cons (cons 'localhost2 "http://127.0.0.1:9191/packages/") cask-source-mapping))))
       (when ,forms
         (let ((cask-file (f-expand "Cask" cask-test/sandbox-path)))
           (cask-test/write-forms ,forms cask-file)))

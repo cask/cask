@@ -106,8 +106,10 @@ when fetcher is specified.
 
 `ref' The ref to use if fetcher.
 
-`branch' The branch to use if fetcher."
-  name version fetcher url files ref branch)
+`branch' The branch to use if fetcher.
+
+`source' The source to install the package from."
+  name version fetcher url files ref branch source)
 
 (cl-defstruct cask-source
   "Structure representing a package source.
@@ -504,9 +506,11 @@ is signaled."
           (let ((package-path (cask--checkout-and-package-dependency dependency)))
             (epl-install-file package-path))
         (-if-let (package (cask--find-available-package name))
-            (epl-package-install package)
-          (unless (epl-built-in-p name)
-            (signal 'cask-missing-dependency (list dependency))))))))
+		 (progn (-when-let (source (cask-dependency-source dependency))
+				   (setq package-pinned-packages (cons (cons name source) package-pinned-packages)))
+			(epl-package-install package))
+		 (unless (epl-built-in-p name)
+		   (signal 'cask-missing-dependency (list dependency))))))))
 
 (defun cask--delete-dependency (bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
@@ -609,17 +613,17 @@ to install, and ERR is the original error data."
       :force t
       :refresh t
       (-each (cask--dependencies bundle)
-        (lambda (dependency)
-          (shut-up
-            (condition-case err
-                (cask--install-dependency bundle dependency)
-              (cask-missing-dependency
-               (push dependency missing-dependencies))
-              (error
-               (signal 'cask-failed-installation
-                       (list dependency err (shut-up-current-output))))))))
-      (when missing-dependencies
-        (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
+	     (lambda (dependency)
+	       (shut-up
+		(condition-case err
+		    (cask--install-dependency bundle dependency)
+		(cask-missing-dependency
+		 (push dependency missing-dependencies))
+		(error
+		 (signal 'cask-failed-installation
+			 (list dependency err (shut-up-current-output))))))))
+    (when missing-dependencies
+      (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
 (defun cask-caskify (bundle &optional dev-mode)
   "Create Cask-file for BUNDLE path.
@@ -792,6 +796,8 @@ ARGS is a plist with these optional arguments:
 
  `:branch' Fetcher branch to checkout.
 
+ `:source' Source to install the package from.
+
 ARGS can also include any of the items in `cask-fetchers'.  The
 plist key is one of the items in the list and the value is the
 url to the fetcher source."
@@ -800,6 +806,8 @@ url to the fetcher source."
       (setf (cask-dependency-version dependency) version))
     (-when-let (files (plist-get args :files))
       (setf (cask-dependency-files dependency) files))
+    (-when-let (source (plist-get args :source))
+	       (setf (cask-dependency-source dependency) source))
     (-when-let (fetcher (--first (-contains? cask-fetchers it) args))
       (setf (cask-dependency-fetcher dependency) fetcher)
       (let ((url (plist-get args fetcher)))
