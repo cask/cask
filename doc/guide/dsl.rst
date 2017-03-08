@@ -38,6 +38,16 @@ Package metadata
    library headers of :var:`file`.  See :infonode:`(elisp)Library Headers` for
    details about library headers
 
+.. function:: package-descriptor file
+
+   Declare all package metadata directly by specifiying a package descriptor
+   contained in file with name given by :var:`file`
+
+   See `Multi-file Packages`_ for examples on defining packages with the
+   :function:`define-package` function.
+
+   .. _Multi-file Packages: https://www.gnu.org/software/emacs/manual/html_node/elisp/Multi_002dfile-Packages.html
+
 Package contents
 ================
 

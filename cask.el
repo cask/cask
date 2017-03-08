@@ -392,6 +392,15 @@ SCOPE may be nil or 'development."
                     (epl-invalid-package
                      (cask--show-package-error err filename)))))
              (cask--from-epl-package bundle package))))
+        (package-descriptor
+         (cl-destructuring-bind (_ filename) form
+           (let ((package
+                  (condition-case err
+                      (epl-package-from-descriptor-file
+                       (f-expand filename (cask-bundle-path bundle)))
+                    (epl-invalid-package
+                     (cask--show-package-error err filename)))))
+             (cask--from-epl-package bundle package))))
         (depends-on
          (cl-destructuring-bind (_ name &rest args) form
            (when (stringp (car args))
