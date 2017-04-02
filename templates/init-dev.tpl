@@ -1,7 +1,7 @@
 (source gnu)
 (source melpa)
 
-(package-file "TODO")
+(package-file "%s")
 
 (development
  (depends-on "f")
