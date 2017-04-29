@@ -399,7 +399,7 @@ Commands:
  (option "--no-proxy" cask-cli/cask-no-proxy)
 
  (option "--version" cask-cli/cask-version)
- (option "-h [command], --help [command]" cask-cli/help)
+ (option "-h, --help" "Display usage information" cask-cli/help)
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
