@@ -384,6 +384,8 @@ def main():
                 'Python 2.6 required, yours is {0.major}.{0.minor}'.format(
                     sys.version_info))
         ## TODO: replace with a command line parser!
+        if len(sys.argv) > 1 and sys.argv[1][0] == '-':
+            exit_error('Options must follow commands')
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
             if len(sys.argv) == 2:
                 exec_cask(['help'])
