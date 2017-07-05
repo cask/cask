@@ -40,9 +40,8 @@
   "Return COMMAND with placeholders replaced with values."
   (->> command
     (s-replace "{{EMACS-VERSION}}"
-               (format "%s.%s"
-                       emacs-major-version
-                       emacs-minor-version))
+               (format "%s"
+                       emacs-version))
     (s-replace "{{EMACS}}" (executable-find (or (getenv "EMACS") "emacs")))))
 
 (Given "^this Cask file:$"
@@ -94,17 +93,15 @@
 (Then "^package \"\\([^\"]+\\)\" should be installed$"
   (lambda (package)
     (should (f-dir? (f-join cask-test/sandbox-path ".cask"
-                            (format "%s.%s"
-                                    emacs-major-version
-                                    emacs-minor-version)
+                            (format "%s"
+                                    emacs-version)
                             "elpa" package)))))
 
 (Then "^package \"\\([^\"]+\\)\" should not be installed$"
   (lambda (package)
     (should-not (f-dir? (f-join cask-test/sandbox-path ".cask"
-                                (format "%s.%s"
-                                        emacs-major-version
-                                        emacs-minor-version)
+                                (format "%s"
+                                        emacs-version)
                                 "elpa" package)))))
 
 (provide 'cask-steps)
