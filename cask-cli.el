@@ -284,7 +284,7 @@ f.el, you will require the local package instead of the one
 fetched from the Elpa mirror.  Now you add the desired function
 to f.el and use your library to try it out.
 
-COMMAND-OR-NAME can be one of: delete, list a link name.
+COMMAND-OR-NAME can be one of: delete, list or a link name.
 ARG is sent to some of the commands.
 
 Commands:
