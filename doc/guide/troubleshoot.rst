@@ -29,4 +29,4 @@ Please include Cask output with the :std:option:`cask --verbose` and
 :std:option:`cask --debug` options set, to give us as much information as
 possible.
 
-.. _report an issue: http://cask.github.io/github.com/cask/cask/issues/new
+.. _report an issue: https://github.com/cask/cask/issues/new
