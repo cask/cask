@@ -379,6 +379,14 @@ def main():
 
     """
     try:
+        # Special handling for emacs on travis with evm and buggy pyenv, see
+        # cask issue #399.
+        if ENVB.get(b'TRAVIS', b'') == b'true':
+            paths = ENVB[b'PATH'].split(b':')
+            if len(paths) > 0 and paths[0] == b'/usr/bin':
+                ENVB[b'PATH'] = ':'.join(paths[1:])
+
+
         if sys.version_info[:2] < (2, 6):
             exit_error(
                 'Python 2.6 required, yours is {0.major}.{0.minor}'.format(
