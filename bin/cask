@@ -317,6 +317,13 @@ def exec_command(command):
     if (b'CASK_EMACS' in ENVB):
         ENVB[b'EMACS'] = ENVB[b'CASK_EMACS']
 
+    # Special handling for emacs on travis with evm and buggy pyenv, see cask
+    # issue #399.
+    if ENVB.get(b'TRAVIS', b'') == b'true':
+        paths = ENVB[b'PATH'].split(b':')
+        if len(paths) > 0 and paths[0] == b'/usr/bin':
+            ENVB[b'PATH'] = ':'.join(paths[1:])
+
     try:
         os.execvp(command[0], command)
     except OSError as error:
