@@ -72,14 +72,6 @@
                 (t
                  (setq cask-test/stderr content))))))))
 
-(When "^\"\\([^\"]+\\)\" is prepended to $PATH$"
-  (lambda (path)
-    (setenv "PATH" (s-concat path ":" (getenv "PATH")))))
-
-(When "I set environment variable \"\\([^\"]+\\)\" to \"\\([^\"]+\\)\""
-  (lambda (var value)
-    (setenv var value)))
-
 (Then "^I should see command error:$"
   (lambda (output)
     (should (s-contains? output cask-test/stderr))))
@@ -88,10 +80,6 @@
   (lambda (output)
     (should (s-contains? output cask-test/stdout))))
 
-(Then "^I should see command output matching \"\\([^\"]+\\)\"$"
-  (lambda (regex)
-    (should (s-matches? regex cask-test/stdout))))
-
 (Then "^I should not see command error:$"
   (lambda (output)
     (should-not (s-contains? output cask-test/stderr))))
@@ -99,10 +87,6 @@
 (Then "^I should not see command output:$"
   (lambda (output)
     (should-not (s-contains? output cask-test/stdout))))
-
-(Then "^I should not see command output matching \"\\(.*\\)\"$"
-  (lambda (regex)
-    (should-not (s-matches? regex cask-test/stdout))))
 
 (Then "^I should see usage information$"
   (lambda ()

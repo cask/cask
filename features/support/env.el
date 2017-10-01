@@ -52,17 +52,10 @@
 (defvar cask-test/stderr)
 (defvar cask-test/stdout)
 
-(defvar cask-initial-$PATH)
-(defvar cask-initial-$TRAVIS)
-
 (add-to-list 'load-path cask-test/root-path)
 
 (unless (require 'ert nil t)
   (require 'ert (f-expand "ert" cask-test/vendor-path)))
-
-(Setup
- (setq cask-initial-$PATH (getenv "PATH"))
- (setq cask-initial-$TRAVIS (getenv "TRAVIS")))
 
 (Before
  (setq cask-test/stderr "")
@@ -70,10 +63,7 @@
 
  (when (f-dir? cask-test/sandbox-path)
    (f-delete cask-test/sandbox-path 'force))
- (f-mkdir cask-test/sandbox-path)
-
- (setenv "PATH" cask-initial-$PATH)
- (setenv "TRAVIS" cask-initial-$TRAVIS))
+ (f-mkdir cask-test/sandbox-path))
 
 (Fail
  (-when-let (stdout (s-presence cask-test/stdout))
