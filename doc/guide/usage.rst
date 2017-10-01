@@ -453,6 +453,10 @@ The following options are available on all Cask commands:
 
    Show all output from `package.el`.
 
+.. option:: --load-path <directory>
+
+   Add :file:`directory` to Emacs load-path before running command.
+
 Environment variables
 =====================
 

@@ -360,6 +360,10 @@ Commands:
   "Be verbose and do not hide output."
   (setq shut-up-ignore t))
 
+(defun cask-cli/add-load-path (path)
+  "Add PATH to `load-path' before running command."
+  (add-to-list 'load-path (f-expand path)))
+
 
 ;;;; Commander schedule
 
@@ -403,7 +407,8 @@ Commands:
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
- (option "--verbose" cask-cli/verbose))
+ (option "--verbose" cask-cli/verbose)
+ (option "--load-path <path>" cask-cli/add-load-path))
 
 (provide 'cask-cli)
 
