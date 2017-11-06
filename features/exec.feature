@@ -74,12 +74,3 @@ Feature: Exec
     When I run cask "exec sh -c 'echo $PATH'"
     Then I should not see command output matching "^/usr/bin:"
     Then I should see command output matching ":/usr/bin:"
-
-  Scenario: With a path starting with /usr/bin, but not on Travis
-    Given this Cask file:
-      """
-      """
-    When I set environment variable "TRAVIS" to "blah"
-    When "/usr/bin" is prepended to $PATH
-    When I run cask "exec sh -c 'echo $PATH'"
-    Then I should see command output matching "^/usr/bin:"
