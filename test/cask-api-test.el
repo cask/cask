@@ -398,9 +398,8 @@
   (cask-test/with-bundle nil
     (let ((actual (cask-elpa-path bundle))
           (expected (f-join cask-test/sandbox-path
-                            (format ".cask/%s.%s/elpa"
-                                    emacs-major-version
-                                    emacs-minor-version))))
+                            (format ".cask/%s/elpa"
+                                    emacs-version))))
       (should (string= actual expected)))))
 
 
