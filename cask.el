@@ -916,7 +916,7 @@ NAME-pkg.el or Cask file for the linking to be possible."
     (f-symlink? path)))
 
 (defun cask-package (bundle &optional target-dir)
-  "Build an Elpa package of BUNDLE.
+  "Build an ELPA package of BUNDLE.
 
 Put package in TARGET-DIR if specified.  If not specified, put in
 a directory specified by `cask-dist-path' in the BUNDLE path."
