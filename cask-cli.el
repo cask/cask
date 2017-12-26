@@ -396,7 +396,7 @@ Commands:
  (option "--proxy <host>" cask-cli/cask-proxy)
  (option "--http-proxy <host>" cask-cli/cask-http-proxy)
  (option "--https-proxy <host>" cask-cli/cask-https-proxy)
- (option "--no-proxy" cask-cli/cask-no-proxy)
+ (option "--no-proxy <host>" cask-cli/cask-no-proxy)
 
  (option "--version" cask-cli/cask-version)
  (option "-h [command], --help [command]" cask-cli/help)
