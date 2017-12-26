@@ -320,7 +320,7 @@ This function returns the path to the package file."
          (config (cask--dependency-to-package-build-config dependency))
          (files (cask--dependency-files dependency)))
     (let ((version (package-build-checkout name config path)))
-      (package-build-package name version files path cask-tmp-packages-path)
+      (package-build-package (symbol-name name) version files path cask-tmp-packages-path)
       (let ((pattern (format "%s-%s.*" name version)))
         (car (f-glob pattern cask-tmp-packages-path))))))
 
