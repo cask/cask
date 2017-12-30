@@ -33,7 +33,6 @@ from __future__ import print_function, unicode_literals
 
 import sys
 import os
-import locale
 import re
 import subprocess
 import errno
@@ -62,6 +61,7 @@ OSX_EMACSEN = [
     # Homebrew'ed Emacs
     '/usr/local/bin/emacs',
 ]
+
 
 class UnsupportedEmacsVersionError(Exception):
     """An exception indicating an unsupported Emacs version.
@@ -250,6 +250,7 @@ def find_best_emacs():
     else:
         return 'emacs'
 
+
 def inside_emacs_24():
     """Whether Cask is running inside Emacs-24.
 
@@ -260,13 +261,14 @@ def inside_emacs_24():
     Return ``True`` when running in Emacs 24, ``False`` otherwise.
 
     """
-    ## are we inside Emacs at all
+    # are we inside Emacs at all
     return (b'INSIDE_EMACS' in ENVB and
-            ## M-x compile in Emacs-24 sets INSIDE_EMACS to exactly 't'
+            # M-x compile in Emacs-24 sets INSIDE_EMACS to exactly 't'
             (ENVB.get(b'INSIDE_EMACS') == b't' or
-             ## while M-x shell sets it to a string, starting with the
-             ## version number
+             # while M-x shell sets it to a string, starting with the
+             # version number
              ENVB.get(b'INSIDE_EMACS').startswith(b'24')))
+
 
 def get_emacs_from_env():
     """Get the Emacs executable as specified by the environment.
@@ -278,6 +280,7 @@ def get_emacs_from_env():
     """
     return (ENVB.get(b'CASK_EMACS') or
             (ENVB.get(b'EMACS') if not inside_emacs_24() else None))
+
 
 def get_cask_emacs():
     """Get the Emacs executable to use for Cask.
@@ -312,8 +315,8 @@ def exec_command(command):
     ENVB[b'EMACSLOADPATH'] = get_cask_path('load-path')
     ENVB[b'PATH'] = get_cask_path('path')
 
-    ## special handling for where we have a CASK_EMACS, we can use that and
-    ## pass it as the EMACS variable to the command
+    # special handling for where we have a CASK_EMACS, we can use that and
+    # pass it as the EMACS variable to the command
     if (b'CASK_EMACS' in ENVB):
         ENVB[b'EMACS'] = ENVB[b'CASK_EMACS']
 
@@ -386,12 +389,11 @@ def main():
             if len(paths) > 0 and paths[0] == b'/usr/bin':
                 ENVB[b'PATH'] = ':'.join(paths[1:])
 
-
         if sys.version_info[:2] < (2, 6):
             exit_error(
                 'Python 2.6 required, yours is {0.major}.{0.minor}'.format(
                     sys.version_info))
-        ## TODO: replace with a command line parser!
+        # TODO: replace with a command line parser!
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
             if len(sys.argv) == 2:
                 exec_cask(['help'])
@@ -408,9 +410,8 @@ def main():
             format_version(error.expected_version),
             format_version(error.actual_version)))
     except MissingEmacsError as error:
-        exit_error(
-            'Emacs does not exist at {0}.  Did you install Emacs?'.format(
-                error.emacs))
+        exit_error('Emacs does not exist at {0}.  Did you install Emacs?'.format(
+            error.emacs))
     except EmacsCommandError as error:
         exit_error('Emacs command "{0}" failed: {1}'.format(
             error.command, error.real_error))
