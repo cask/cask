@@ -818,8 +818,14 @@
 (ert-deftest cask-files-test/no-files-directive-with-files ()
   (cask-test/with-bundle 'empty
     (f-touch "package-a.el")
-    (f-touch "package-b.el")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-b.el")))))
+    (f-touch "package-a.info")
+    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info")))))
+
+(ert-deftest cask-files-test/no-files-directive-with-files-and-excluded-files ()
+  (cask-test/with-bundle 'empty
+    (f-touch "package-a.el")
+    (f-touch "foo")
+    (should (-same-items? (cask-files bundle) '("package-a.el")))))
 
 (ert-deftest cask-files-test/with-files-directive ()
   (cask-test/with-bundle
@@ -828,6 +834,22 @@
     (f-touch "package-b.el")
     (f-touch "package-c.el")
     (should (-same-items? (cask-files bundle) '("package-a.el" "package-b.el")))))
+
+(ert-deftest cask-files-test/with-defaults-files-directive-with-files ()
+  (cask-test/with-bundle
+      '((files :defaults))
+    (f-touch "package-a.el")
+    (f-touch "package-a.info")
+    (f-touch "foo")
+    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info")))))
+
+(ert-deftest cask-files-test/with-defaults-and-more-files-directive-with-files ()
+  (cask-test/with-bundle
+      '((files :defaults "foo"))
+    (f-touch "package-a.el")
+    (f-touch "package-a.info")
+    (f-touch "foo")
+    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info" "foo")))))
 
 
 ;;;; cask-add-dependency
