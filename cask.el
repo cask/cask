@@ -778,8 +778,15 @@ If no such dependency exist, return nil."
 This is done by expanding the patterns in the BUNDLE path.  Files
 in the list are relative to the path."
   (cask--with-file bundle
-    (let ((path (cask-bundle-path bundle))
-          (patterns (or (cask-bundle-patterns bundle) package-build-default-files-spec)))
+    (let* ((path (cask-bundle-path bundle))
+           (file-list (cask-bundle-patterns bundle))
+           ;; stolen from `package-build--config-file-list'
+           (patterns (cond ((null file-list)
+                            package-build-default-files-spec)
+                           ((eq :defaults (car file-list))
+                            (append package-build-default-files-spec (cdr file-list)))
+                           (t
+                            file-list))))
       (-map 'car (ignore-errors (package-build-expand-file-specs path patterns))))))
 
 (defun cask-add-dependency (bundle name &rest args)

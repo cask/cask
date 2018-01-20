@@ -50,7 +50,9 @@ Package contents
    Each :var:`pattern` in :var:`patterns` is either a simple glob pattern as
    string or an expression :varcode:`({target} {pattern}...)`.  In the former
    case, all files matching the pattern (relative to the directory of the
-   :file:`Cask` file) are included at the *top-level* of the package.
+   :file:`Cask` file) are included at the *top-level* of the package. ``:defaults``
+   may be used as the first pattern to explicitly include the default patterns.
+   This allows subsequent patterns to append to the defaults.
 
    In the latter case, :var:`target` is the *unqualified* target directory
    within the package, each :var:`pattern` describes the contents of the package
