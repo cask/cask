@@ -632,7 +632,7 @@ configuration template is used."
     ;; If there's only a single .el file, use that as the package-file.
     (when dev-mode
       (let* ((files (f-files (cask-path bundle)))
-             (el-files (--filter (s-ends-with? ".el" it) files))
+             (el-files (--filter (f-ext? it "el") files))
              (package-file (if (equal (length el-files) 1)
                                (f-filename (-first-item el-files))
                              "TODO")))
