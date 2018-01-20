@@ -631,10 +631,9 @@ configuration template is used."
          (cask--template-get (if dev-mode "init-dev.tpl" "init.tpl"))))
     ;; If there's only a single .el file, use that as the package-file.
     (when dev-mode
-      (let* ((files (f-files (cask-path bundle)))
-             (el-files (--filter (f-ext? it "el") files))
-             (package-file (if (equal (length el-files) 1)
-                               (f-filename (-first-item el-files))
+      (let* ((files (f--files (cask-path bundle) (f-ext? it "el")))
+             (package-file (if (equal (length files) 1)
+                               (f-filename (-first-item files))
                              "TODO")))
         (setq init-content (format init-content package-file))))
     (if (f-file? cask-file)
