@@ -59,6 +59,8 @@ nitpick_ignore = [
     ('el:function', 'version-to-list'),
     # Ignore references to standard environment variables
     ('std:envvar', 'PATH'),
+    ('std:envvar', '%PATH%'),
+    ('std:envvar', 'Path'),
 ]
 
 html_title = '{0} {1}'.format(project, release)
