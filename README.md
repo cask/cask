@@ -2,6 +2,8 @@
 
 ![Cask](cask.png)
 
+[![Build Status](https://travis-ci.org/cask/cask.svg?branch=master)](https://travis-ci.org/cask/cask)
+
 Cask is a project management tool for Emacs that helps automate the
 package development cycle; development, dependencies, testing,
 building, packaging and more.
