@@ -748,7 +748,7 @@ If DEEP is t, all dependencies recursively will be returned."
            (-map
             (lambda (dependency)
               (list (cask-dependency-name dependency)
-                    (cask-dependency-version dependency)))
+            	    (or (cask-dependency-version dependency) "0")))
             (cask--runtime-dependencies bundle))))
       (pp-to-string `(define-package ,name ,version ,description ',dependencies)))))
 
