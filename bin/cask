@@ -321,9 +321,12 @@ def exec_command(command):
         ENVB[b'EMACS'] = ENVB[b'CASK_EMACS']
 
     try:
-        subprocess.call(command, shell=(sys.platform == 'win32'))
+        result = subprocess.check_call(command, shell=(sys.platform == 'win32'))
     except OSError as error:
         raise ExecCommandError(command, error)
+    except subprocess.CalledProcessError as error:
+        result = error.returncode
+    sys.exit(result)
 
 
 def exec_emacs(command):
@@ -354,7 +357,11 @@ def exec_cask(arguments):
     emacs = get_cask_emacs()
     cli = os.path.join(CASK_DIRECTORY, 'cask-cli.el')
     command = [emacs, '-Q', '--script', cli, '--'] + arguments
-    subprocess.call(command)
+    try:
+        result = subprocess.check_call(command)
+    except subprocess.CalledProcessError as error:
+        result = error.returncode
+    sys.exit(result)
 
 
 def exit_error(error):
