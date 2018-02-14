@@ -31,11 +31,17 @@ due to the lack of a corresponding function in Emacs.
 from __future__ import print_function, unicode_literals
 
 
+import ctypes
 import sys
 import os
 import re
 import subprocess
 import errno
+
+
+if sys.platform == 'win32':
+    import ctypes.wintypes
+    import msvcrt
 
 
 # The Cask executable and directories
@@ -381,6 +387,14 @@ def main():
     package environment, or delegate to the Cask CLI.
 
     """
+    if sys.platform == 'win32':
+        kernel32 = ctypes.windll.kernel32
+        handle = msvcrt.get_osfhandle(sys.stdout.fileno())
+        mode = ctypes.wintypes.DWORD()
+        kernel32.GetConsoleMode(handle, ctypes.byref(mode))
+        # ENABLE_VIRTUAL_TERMINAL_PROCESSING is 0x0004 according to
+        # https://docs.microsoft.com/en-us/windows/console/setconsolemode
+        kernel32.SetConsoleMode(handle, mode.value | 4)
     try:
         # Special handling for emacs on travis with evm and buggy pyenv, see
         # cask issue #399.
