@@ -393,13 +393,17 @@ SCOPE may be nil or 'development."
                      (cask--show-package-error err filename)))))
              (cask--from-epl-package bundle package))))
         (package-descriptor
-         (cl-destructuring-bind (_ filename) form
-           (let ((package
-                  (condition-case err
+         (cl-destructuring-bind (_ &optional filename) form
+           (let* ((descriptor-filename
+                   (or filename (let ((pkg-files (f-glob "*-pkg.el" (s-chop-suffix "/" (cask-bundle-path bundle)))))
+                                  (if (car pkg-files) (f-filename (car pkg-files))
+                                    (error "No -pkg.el file found for package descriptor")))))
+                  (package
+                   (condition-case err
                       (epl-package-from-descriptor-file
-                       (f-expand filename (cask-bundle-path bundle)))
+                       (f-expand descriptor-filename (cask-bundle-path bundle)))
                     (epl-invalid-package
-                     (cask--show-package-error err filename)))))
+                     (cask--show-package-error err descriptor-filename)))))
              (cask--from-epl-package bundle package))))
         (depends-on
          (cl-destructuring-bind (_ name &rest args) form
