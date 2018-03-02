@@ -16,17 +16,26 @@ Scenario: When no filename is specified.
   (source "localhost" "http://127.0.0.1:9191/packages/")
   (package-descriptor)
   """
-  And a file named "superpackage-pkg.el"
-    """
+  When I create a file called "superpackage-pkg.el" with content:
+  """
     (define-package "super-package" "1.2.3" "A Package that is really super."
      '((package-a "0.0.1")))
-    """
-
-  When I run cask "build"
-  Then it builds a package named "superpackage"
+  """
 
   When I run cask "install"
-  Then package "package-a" should be installed
+  Then package "package-a-0.0.1" should be installed
+
+Scenario: When no filename is specified and there is no -pkg.el file.
+  Given this Cask file:
+  """
+  (package-descriptor)
+  """
+
+  When I run cask "install"
+  Then I should see command error:
+  """
+  No -pkg.el file found for package descriptor
+  """
 
 Scenario: When a package descriptor file is explicitly specified
   Given this Cask file:
@@ -34,14 +43,23 @@ Scenario: When a package descriptor file is explicitly specified
   (source "localhost" "http://127.0.0.1:9191/packages/")
   (package-descriptor "unconventionally-named.el")
   """
-  And this file named "unconventionally-named.el"
+  When I create a file called "unconventionally-named.el" with content:
   """
   (define-package "super-package" "1.2.3" "A Package that is really super."
     '((package-a "0.0.1")))
   """
 
-  When I run cask "build"
-  Then it builds a package named "superpackage"
+  When I run cask "install"
+  Then package "package-a-0.0.1" should be installed
+
+Scenario: When a package descriptor file is explicitly specified but the file does not exist.
+  Given this Cask file:
+  """
+  (package-descriptor "unconventionally-named.el")
+  """
 
   When I run cask "install"
-  Then package "package-a" should be installed
+  Then I should see command error:
+  """
+  No such file or directory
+  """
