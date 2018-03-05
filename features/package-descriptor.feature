@@ -61,5 +61,5 @@ Scenario: When a package descriptor file is explicitly specified but the file do
   When I run cask "install"
   Then I should see command error:
   """
-  No such file or directory
+  such file or directory
   """
