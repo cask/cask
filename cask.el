@@ -415,7 +415,7 @@ SCOPE may be nil or 'development."
         (package-descriptor
          (cl-destructuring-bind (_ &optional filename) form
            (let* ((descriptor-filename
-                   (or filename (let ((pkg-files (f-glob "*-pkg.el" (s-chop-suffix "/" (cask-bundle-path bundle)))))
+                   (or filename (let ((pkg-files (f-glob "*-pkg.el" (cask-bundle-path bundle))))
                                   (if (car pkg-files) (f-filename (car pkg-files))
                                     (error "No -pkg.el file found for package descriptor")))))
                   (package
