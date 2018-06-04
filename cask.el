@@ -339,7 +339,7 @@ This function returns the path to the package file."
         (package-build-working-dir cask-tmp-checkout-path)
         (package-build-archive-dir cask-tmp-packages-path) )
     (let ((version (package-build--checkout rcp)))
-      (package-build-package rcp version)
+      (package-build--package rcp version)
       (let ((pattern (format "%s-%s.*" name version)))
         (--first (s-match ".*\\.\\(tar\\|el\\)" it)
                  (f-glob pattern cask-tmp-packages-path))))))
@@ -984,7 +984,7 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
                   :dir path))
             (package-build-working-dir path)
             (package-build-archive-dir target-dir))
-        (package-build-package rcp version)))))
+        (package-build--package rcp version)))))
 
 (provide 'cask)
 
