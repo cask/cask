@@ -315,7 +315,7 @@ Commands:
   (cask-package (cask-cli--bundle) target-dir))
 
 (defun cask-cli/emacs ()
-  "Execute emacs with the appropriate environmment.")
+  "Execute emacs with the appropriate environment.")
 
 
 ;;;; Options
