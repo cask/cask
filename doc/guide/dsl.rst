@@ -34,13 +34,13 @@ Package metadata
 
    The package name will be the name of the given :var:`file`, sans directory
    and extension.  The description is taken from the very first line of
-   :var:`file`.  The version and the runtime dependencies are taken from the
+   :var:`file`.  The version and the run-time dependencies are taken from the
    library headers of :var:`file`.  See :infonode:`(elisp)Library Headers` for
    details about library headers
 
 .. function:: package-descriptor file
 
-   Declare all package metadata directly by specifiying a package descriptor
+   Declare all package metadata directly by specifying a package descriptor
    contained in file with name given by :var:`file`
 
    See `Multi-file Packages`_ for examples on defining packages with the

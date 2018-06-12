@@ -4,7 +4,7 @@
 
 This document provides guidelines and information on contributing to Cask.
 
-Cask is on Github_, and a discussion group is available at
+Cask is on GitHub_, and a discussion group is available at
 https://groups.google.com/forum/#!forum/cask-dev.
 
 .. _github: https://github.com/cask/cask

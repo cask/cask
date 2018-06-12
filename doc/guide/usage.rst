@@ -49,7 +49,7 @@ it.
 Finding Emacs
 -------------
 
-By default, packages are installed for the default Emacs, i.e. the one behind
+By default, packages are installed for the default Emacs, i.e., the one behind
 the `emacs` command.  To pick a different Emacs, set the environment variable
 :envvar:`EMACS` to the command name or executable path of the Emacs to use:
 
@@ -107,7 +107,7 @@ cask emacs
    cask [GLOBAL-OPTIONS] emacs [ARGUMENTS ...]
 
 Execute `emacs` with the given :var:`arguments`, with the appropriate
-environmment (see :ref:`cask exec`). The Emacs executable is that which cask
+environment (see :ref:`cask exec`). The Emacs executable is that which cask
 would normally run in (see :ref:`finding_emacs`).
 
 
@@ -198,7 +198,7 @@ cask list
 
    cask [GLOBAL-OPTIONS] list
 
-List all runtime and development dependencies.
+List all run-time and development dependencies.
 
 .. _cask load-path:
 
