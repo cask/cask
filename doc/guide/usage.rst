@@ -64,11 +64,14 @@ switching between versions you will have to install the dependencies for each:
 
    $ EMACS="emacs24.5" cask install
 
-Exceptionally, if you are launching :program:`cask` inside Emacs 24 either
-from an internal shell or `M-x compile`, then Emacs uses :envvar:`EMACS` in a
-way which conflicts with :program:`cask`, in which case you can use the
-environment variable :envvar:`CASK_EMACS` instead. With Emacs 25,
-:envvar:`EMACS` can be used as normal.
+
+There are, unfortunately, circumstances under which Emacs itself
+resets the :envvar:`EMACS` variable in a way which conflicts with
+:program:`cask`, in which case you can use the environment variable
+:envvar:`CASK_EMACS` instead. Specifically, this problem effects:
+Emacs-24, for `M-x compile`, `M-x shell` or `M-x term`, for Emacs-25
+and Emacs-26 only for `M-x term`.
+
 
 
 Commands and options
@@ -479,4 +482,4 @@ Environment variables
 .. envvar:: CASK_EMACS
 
    As EMACS, but takes precedence over it. This is most useful for launching
-   Cask inside Emacs which often resets EMACS to other values.
+   Cask inside Emacs which sometimes resets EMACS to other values.
