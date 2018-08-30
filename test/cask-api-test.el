@@ -442,6 +442,16 @@
     (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
       (should (equal (cons path exec-path) (cask-exec-path bundle))))))
 
+(ert-deftest cask-exec-path-test/local-executable-files ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (files "bin/executable"))
+    (f-mkdir "bin")
+    (f-touch "bin/executable")
+    (chmod "bin/executable" 755)
+    (let ((path (f-join (cask-path bundle) "bin/")))
+      (should (equal (cons path exec-path) (cask-exec-path bundle))))))
+
 
 ;;;; cask-load-path
 
