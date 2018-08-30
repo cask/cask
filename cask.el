@@ -527,20 +527,27 @@ returns an `epl-package' object."
         (cask--compute-dependencies dependencies 'cask--find-installed-package)
       dependencies)))
 
-(defun cask--install-dependency (bundle dependency)
+(defun cask--install-dependency (bundle dependency index)
   "In BUNDLE, install DEPENDENCY.
 
 If dependency does not exist, the error `cask-missing-dependency'
 is signaled."
   (let ((name (cask-dependency-name dependency)))
+    (princ (format "Installing [%d/%d] %s... " (1+ index) (length (cask--dependencies bundle)) name))
+    (when (cask-linked-p bundle name)
+      (princ "linked\n"))
+    (when (epl-package-installed-p name)
+      (princ "present\n"))
     (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
+      (princ "fetching\e[F\n")
       (if (cask-dependency-fetcher dependency)
           (let ((package-path (cask--checkout-and-package-dependency dependency)))
             (epl-install-file package-path))
         (-if-let (package (cask--find-available-package name))
             (epl-package-install package)
           (unless (epl-built-in-p name)
-            (signal 'cask-missing-dependency (list dependency))))))))
+            (signal 'cask-missing-dependency (list dependency)))))
+      (princ (format "\e[KInstalling [%d/%d] %s... done\n" (1+ index) (length (cask--dependencies bundle)) name)))))
 
 (defun cask--delete-dependency (bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
@@ -612,7 +619,7 @@ Return list of updated packages."
               (epl-upgrade)
             (--each (cask--fetcher-dependencies bundle)
               (cask--delete-dependency bundle it)
-              (cask--install-dependency bundle it)))
+              (cask--install-dependency bundle it it-index)))
         (error
          (signal 'cask-failed-installation
                  (list (car err) err (shut-up-current-output))))))))
@@ -642,11 +649,11 @@ to install, and ERR is the original error data."
     (cask--with-environment bundle
       :force t
       :refresh t
-      (-each (cask--dependencies bundle)
-        (lambda (dependency)
+      (-each-indexed (cask--dependencies bundle)
+        (lambda (index dependency)
           (shut-up
             (condition-case err
-                (cask--install-dependency bundle dependency)
+                (cask--install-dependency bundle dependency index)
               (cask-missing-dependency
                (push dependency missing-dependencies))
               (error
