@@ -64,14 +64,22 @@ Package contents
    may be used as the first pattern to explicitly include the default patterns.
    This allows subsequent patterns to append to the defaults.
 
-   In the latter case, :var:`target` is the *unqualified* target directory
-   within the package, each :var:`pattern` describes the contents of the package
-   under the :var:`target` directory recursively.
+   In the latter case, :var:`target` is the *unqualified* target
+   directory within the package, each :var:`pattern` describes the
+   contents of the package under the :var:`target` directory
+   recursively.  The :var:`pattern` is relative to the package root.
 
    Hence, the pattern `("*.el" ("resources" ("snippets" "*.snippet")))` would
    include all `.el` files from the project root in the package root, and all
    `.snippet` files from the project root in the directory `resources/snippets`
    under the package root.
+
+   If the files to be included already are in a subdirectory this
+   needs to also be included in the pattern.  For example, if the
+   development version of the package has the snippets under
+   :file:`snippets/` instead of in the project root the files pattern
+   would be `("*.el" ("resources" ("snippets" "snippets/*.snippet")))`
+
 
    .. _MELPA recipe: https://github.com/milkypostman/melpa#recipe-format
 
