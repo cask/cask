@@ -200,6 +200,18 @@
                           (make-cask-dependency :name 'package-b :version "0.0.1"))))
       (should-be-same-dependencies actual expected))))
 
+(ert-deftest cask-dependencies-test/with-duplicated-dependenies ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "package-c" "0.0.1")
+        (depends-on "package-d" "0.0.1")
+        (development
+         (depends-on "package-d" "0.0.2")))
+    (let ((actual (cask-dependencies bundle))
+          (expected (list (make-cask-dependency :name 'package-c :version "0.0.1")
+                          (make-cask-dependency :name 'package-d :version "0.0.1"))))
+      (should-be-same-dependencies actual expected))))
+
 (ert-deftest cask-dependencies-test/deep ()
   (cask-test/with-bundle
       '((source localhost)

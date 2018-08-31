@@ -516,8 +516,9 @@ returns an `epl-package' object."
 
 (defun cask--dependencies (bundle &optional deep)
   "Return dependencies for BUNDLE, optionally DEEP."
-  (append (cask--runtime-dependencies bundle deep)
-          (cask--development-dependencies bundle deep)))
+  (cask--uniq-dependencies
+   (append (cask--runtime-dependencies bundle deep)
+           (cask--development-dependencies bundle deep))))
 
 (defun cask--installed-dependencies (bundle &optional deep)
   "Return installed dependencies for BUNDLE, optionally DEEP."
