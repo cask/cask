@@ -203,6 +203,19 @@ the function `cask--with-environment'.")
 
 ;;;; Internal functions
 
+(defmacro cask-print (&rest body)
+  "Print messages to `standard-output'.
+
+The body of this macro is automatically wrapped with
+`with-ansi' for easier colored output.
+
+If `cask-cli--silent' is non-nil, do not print anything."
+  `(when (and (boundp 'cask-cli--silent)
+              (not cask-cli--silent))
+     (princ
+      (with-ansi
+       ,@body))))
+
 (defun cask--find-unbalanced-parenthesis (bundle)
   "Find unbalanced parenthesis for Cask file in BUNDLE."
   (with-temp-buffer
@@ -338,9 +351,9 @@ This function returns the path to the package file."
         (rcp (cask--dependency-to-package-build-recipe dependency))
         (package-build-working-dir cask-tmp-checkout-path)
         (package-build-archive-dir cask-tmp-packages-path) )
-    (princ "cloning\e[F\n")
+    (cask-print "cloning\e[F\n")
     (let ((version (package-build--checkout rcp)))
-      (princ "building\e[F\n")
+      (cask-print "building\e[F\n")
       (package-build--package rcp version)
       (let ((pattern (format "%s-%s.*" name version)))
         (--first (s-match ".*\\.\\(tar\\|el\\)" it)
@@ -536,30 +549,28 @@ If dependency does not exist, the error `cask-missing-dependency'
 is signaled."
   (let ((name (cask-dependency-name dependency))
         (version (cask-dependency-version dependency)))
-    (princ
-     (with-ansi
-      (format "  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
-      " " (green "%s" name) " "
-      "(" (yellow "%s" (or version "latest")) ")... "))
+    (cask-print
+     (format "  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+     " " (green "%s" name) " "
+     "(" (yellow "%s" (or version "latest")) ")... ")
     (when (cask-linked-p bundle name)
-      (princ "linked\n"))
+      (cask-print "linked\n"))
     (when (epl-package-installed-p name)
-      (princ "already present\n"))
+      (cask-print "already present\n"))
     (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
       (if (cask-dependency-fetcher dependency)
           (let ((package-path (cask--checkout-and-package-dependency dependency)))
             (epl-install-file package-path))
         (-if-let (package (cask--find-available-package name))
             (progn
-              (princ "downloading\e[F\n")
+              (cask-print "downloading\e[F\n")
               (epl-package-install package))
           (unless (epl-built-in-p name)
             (signal 'cask-missing-dependency (list dependency)))))
-      (princ
-       (with-ansi
-        (format "\e[K  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
-        " " (green "%s" name) " "
-        "(" (yellow "%s" (or version "latest")) ")... done\n")))))
+      (cask-print
+       (format "\e[K  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+       " " (green "%s" name) " "
+       "(" (yellow "%s" (or version "latest")) ")... done\n"))))
 
 (defun cask--delete-dependency (bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
@@ -658,12 +669,12 @@ If a dependency failed to install, signal a
 . ERR)', where DEPENDENCY is the `cask-dependency' which failed
 to install, and ERR is the original error data."
   (let (missing-dependencies)
-    (princ (with-ansi (green "Loading package information... ")))
+    (cask-print (green "Loading package information... "))
     (cask--with-environment bundle
       :force t
       :refresh t
-      (princ (with-ansi (green "done") "\n"))
-      (princ (with-ansi (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0)))
+      (cask-print (green "done") "\n")
+      (cask-print (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0))
       (-each-indexed (cask--dependencies bundle)
         (lambda (index dependency)
           (shut-up
