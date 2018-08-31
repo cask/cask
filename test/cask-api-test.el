@@ -475,6 +475,17 @@
                 load-path)
         (cask-load-path bundle))))))
 
+(ert-deftest cask-load-path-test/hierarchical ()
+  (cask-test/with-bundle
+      '((files "package-a.el" "foo/package-b.el"))
+    (f-touch "package-a.el")
+    (f-mkdir "foo")
+    (f-touch "foo/package-b.el")
+    (should
+     (-same-items?
+      (append (-map 'f-expand (list "./" "foo/")) load-path)
+      (cask-load-path bundle)))))
+
 (ert-deftest cask-load-path-test/without-initialized-environment ()
   (cask-test/with-bundle
       '((source localhost)
