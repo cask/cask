@@ -9,7 +9,7 @@
 ;; Version: 0.8.4
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
-;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2"))
+;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2") (ansi "0.4.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -338,7 +338,9 @@ This function returns the path to the package file."
         (rcp (cask--dependency-to-package-build-recipe dependency))
         (package-build-working-dir cask-tmp-checkout-path)
         (package-build-archive-dir cask-tmp-packages-path) )
+    (princ "cloning\e[F\n")
     (let ((version (package-build--checkout rcp)))
+      (princ "building\e[F\n")
       (package-build--package rcp version)
       (let ((pattern (format "%s-%s.*" name version)))
         (--first (s-match ".*\\.\\(tar\\|el\\)" it)
@@ -532,22 +534,32 @@ returns an `epl-package' object."
 
 If dependency does not exist, the error `cask-missing-dependency'
 is signaled."
-  (let ((name (cask-dependency-name dependency)))
-    (princ (format "Installing [%d/%d] %s... " (1+ index) (length (cask--dependencies bundle)) name))
+  (let ((name (cask-dependency-name dependency))
+        (version (cask-dependency-version dependency)))
+    (princ
+     (with-ansi
+      (format "  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+      " " (green "%s" name) " "
+      "(" (yellow "%s" (or version "latest")) ")... "))
     (when (cask-linked-p bundle name)
       (princ "linked\n"))
     (when (epl-package-installed-p name)
-      (princ "present\n"))
+      (princ "already present\n"))
     (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
-      (princ "fetching\e[F\n")
       (if (cask-dependency-fetcher dependency)
           (let ((package-path (cask--checkout-and-package-dependency dependency)))
             (epl-install-file package-path))
         (-if-let (package (cask--find-available-package name))
-            (epl-package-install package)
+            (progn
+              (princ "downloading\e[F\n")
+              (epl-package-install package))
           (unless (epl-built-in-p name)
             (signal 'cask-missing-dependency (list dependency)))))
-      (princ (format "\e[KInstalling [%d/%d] %s... done\n" (1+ index) (length (cask--dependencies bundle)) name)))))
+      (princ
+       (with-ansi
+        (format "\e[K  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+        " " (green "%s" name) " "
+        "(" (yellow "%s" (or version "latest")) ")... done\n")))))
 
 (defun cask--delete-dependency (bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
@@ -646,9 +658,12 @@ If a dependency failed to install, signal a
 . ERR)', where DEPENDENCY is the `cask-dependency' which failed
 to install, and ERR is the original error data."
   (let (missing-dependencies)
+    (princ (with-ansi (green "Loading package information... ")))
     (cask--with-environment bundle
       :force t
       :refresh t
+      (princ (with-ansi (green "done") "\n"))
+      (princ (with-ansi (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0)))
       (-each-indexed (cask--dependencies bundle)
         (lambda (index dependency)
           (shut-up
