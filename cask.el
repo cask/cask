@@ -559,12 +559,13 @@ is signaled."
       (cask-print "already present\n"))
     (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
       (if (cask-dependency-fetcher dependency)
-          (let ((package-path (cask--checkout-and-package-dependency dependency)))
-            (epl-install-file package-path))
+          (shut-up
+            (let ((package-path (cask--checkout-and-package-dependency dependency)))
+              (epl-install-file package-path)))
         (-if-let (package (cask--find-available-package name))
             (progn
               (cask-print "downloading\e[F\n")
-              (epl-package-install package))
+              (shut-up (epl-package-install package)))
           (unless (epl-built-in-p name)
             (signal 'cask-missing-dependency (list dependency)))))
       (cask-print
@@ -677,14 +678,13 @@ to install, and ERR is the original error data."
       (cask-print (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0))
       (-each-indexed (cask--dependencies bundle)
         (lambda (index dependency)
-          (shut-up
-            (condition-case err
-                (cask--install-dependency bundle dependency index)
-              (cask-missing-dependency
-               (push dependency missing-dependencies))
-              (error
-               (signal 'cask-failed-installation
-                       (list dependency err (shut-up-current-output))))))))
+          (condition-case err
+              (cask--install-dependency bundle dependency index)
+            (cask-missing-dependency
+             (push dependency missing-dependencies))
+            (error
+             (signal 'cask-failed-installation
+                     (list dependency err (shut-up-current-output)))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
