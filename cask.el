@@ -556,7 +556,7 @@ is signaled."
     (when (cask-linked-p bundle name)
       (cask-print "linked\n"))
     (when (epl-package-installed-p name)
-      (cask-print "already present\n"))
+      (cask-print (bold (black "already present")) "\n"))
     (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
       (if (cask-dependency-fetcher dependency)
           (shut-up
