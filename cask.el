@@ -712,6 +712,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
+     (-map 'expand-file-name (-uniq (-map 'f-parent (-filter 'f-executable-p (cask-files bundle)))))
      (-select
       'f-dir?
       (-map
