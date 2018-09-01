@@ -685,6 +685,20 @@
                 ("package-d" "0.0.1")
                 ("package-f" "0.0.1"))
     (cask-test/link bundle 'package-c "package-c-0.0.1")
+    (cask-install bundle)
+    (should (f-symlink? (cask-dependency-path bundle 'package-c)))))
+
+(ert-deftest cask-install-test/install-missing ()
+  "If a package is installed but its dependncies are not, install
+the missing dependencies."
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "package-c" "0.0.1"))
+    :packages '(("package-c" "0.0.1")
+                ("package-d" "0.0.1")
+                ("package-f" "0.0.1"))
+    (cask-install bundle)
+    (f-delete (cask-dependency-path bundle 'package-d) 'force)
     (cask-install bundle)))
 
 (ert-deftest cask-install-test/intact-load-path ()

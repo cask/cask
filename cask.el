@@ -515,18 +515,49 @@ returns an `epl-package' object."
                    package-function))))))
      dependencies))))
 
+(defun cask--dependency-to-epl-package (dependency)
+  "Convert cask DEPENDENCY to `epl-package'."
+  (epl-package-create
+   :name (cask-dependency-name dependency)
+   :description
+    (if (fboundp 'package-desc-name)
+        (package-desc-create
+         :name (cask-dependency-name dependency)
+         :version (version-to-list (or (cask-dependency-version dependency) "0"))
+         :reqs nil)
+      (vector (version-to-list (or (cask-dependency-version dependency) "0")) nil ""))))
+
+(defun cask--find-package (bundle name)
+  "In BUNDLE, find package NAME.
+
+Return any package which can be installed from an archive or one
+which is linked locally and thus also available or one which will
+be fetched from vcs."
+  (or (cask--find-available-package name)
+      (when (cask-linked-p bundle name)
+        (let ((link-bundle (cask-setup (cask-dependency-path bundle name))))
+          (epl-package-from-descriptor-file
+           (cask-define-package-file link-bundle))))
+      (-when-let (dep (cask-find-dependency bundle name))
+        (when (cask-dependency-fetcher dep)
+          (cask--dependency-to-epl-package dep)))))
+
 (defun cask--runtime-dependencies (bundle &optional deep)
   "Return runtime dependencies for BUNDLE, optionally DEEP."
   (let ((dependencies (cask-bundle-runtime-dependencies bundle)))
     (if deep
-        (cask--compute-dependencies dependencies 'cask--find-available-package)
+        (cask--compute-dependencies
+         dependencies
+         (lambda (name) (cask--find-package bundle name)))
       dependencies)))
 
 (defun cask--development-dependencies (bundle &optional deep)
   "Return development dependencies for BUNDLE, optionally DEEP."
   (let ((dependencies (cask-bundle-development-dependencies bundle)))
     (if deep
-        (cask--compute-dependencies dependencies 'cask--find-available-package)
+        (cask--compute-dependencies
+         dependencies
+         (lambda (name) (cask--find-package bundle name)))
       dependencies)))
 
 (defun cask--dependencies (bundle &optional deep)
@@ -557,7 +588,7 @@ is signaled."
       (cask-print "linked\n"))
     (when (epl-package-installed-p name)
       (cask-print (bold (black "already present")) "\n"))
-    (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
+    (when (cask--dependency-installable-p bundle dependency)
       (if (cask-dependency-fetcher dependency)
           (shut-up
             (let ((package-path (cask--checkout-and-package-dependency dependency)))
@@ -655,6 +686,20 @@ Return list of updated packages."
     :refresh t
     (epl-find-upgrades)))
 
+(defun cask--dependency-installable-p (bundle dependency)
+  "Return non-nil if DEPENDENCY is installable.
+
+An installable dependency is one which is not already present or
+locally linked with \"cask link\"."
+  (let ((name (cask-dependency-name dependency)))
+    (not (or (epl-package-installed-p name) (cask-linked-p bundle name)))))
+
+(defun cask--get-dependencies-to-install (bundle)
+  "Return all the dependencies which need to be installed."
+  (let ((dependencies (cask--dependencies bundle 'deep)))
+    (-filter (lambda (dep) (cask--dependency-installable-p bundle dep))
+             dependencies)))
+
 (defun cask-install (bundle)
   "Install BUNDLE dependencies.
 
@@ -669,22 +714,31 @@ If a dependency failed to install, signal a
 `cask-failed-installation' error, whose data is a `(DEPENDENCY
 . ERR)', where DEPENDENCY is the `cask-dependency' which failed
 to install, and ERR is the original error data."
-  (let (missing-dependencies)
-    (cask-print (green "Loading package information... "))
-    (cask--with-environment bundle
-      :force t
-      :refresh t
-      (cask-print (green "done") "\n")
-      (cask-print (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0))
-      (-each-indexed (cask--dependencies bundle)
+  (cask-print (green "Loading package information... "))
+  (cask--with-environment bundle
+    :force t
+    :refresh t
+    (cask-print (green "done") "\n")
+    (cask-print (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0))
+    (let* ((to-install (cask--get-dependencies-to-install bundle))
+           (missing-dependencies
+            (-reject
+             (lambda (dep)
+               (or (not (cask--dependency-installable-p bundle dep))
+                   (--any-p (eq (cask-dependency-name dep)
+                                (cask-dependency-name it))
+                            to-install)))
+             (cask--dependencies bundle))))
+      (-each-indexed to-install
         (lambda (index dependency)
-          (condition-case err
-              (cask--install-dependency bundle dependency index)
-            (cask-missing-dependency
-             (push dependency missing-dependencies))
-            (error
-             (signal 'cask-failed-installation
-                     (list dependency err (shut-up-current-output)))))))
+          (shut-up
+            (condition-case err
+                (cask--install-dependency bundle dependency index)
+              (cask-missing-dependency
+               (push dependency missing-dependencies))
+              (error
+               (signal 'cask-failed-installation
+                       (list dependency err (shut-up-current-output))))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
