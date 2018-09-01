@@ -970,18 +970,19 @@ NAME-pkg.el or Cask file for the linking to be possible."
                           (cask-define-package-file link-bundle))
           (error "Link source %s does not have a Cask or %s-pkg.el file"
                  source name)))
-      (when (cask--initialized-p bundle)
-        (let ((link-path
-               (f-expand
-                (format "%s-%s"
-                        (cask-package-name link-bundle)
-                        (cask-package-version link-bundle))
-                (cask-elpa-path bundle))))
-          (when (f-exists? link-path)
-            (f-delete link-path 'force))
-          (-when-let (dependency-path (cask-dependency-path bundle name))
-            (f-delete dependency-path 'force))
-          (f-symlink source link-path))))))
+      (unless (cask--initialized-p bundle)
+        (make-directory (cask-elpa-path bundle) 'parents))
+      (let ((link-path
+             (f-expand
+              (format "%s-%s"
+                      (cask-package-name link-bundle)
+                      (cask-package-version link-bundle))
+              (cask-elpa-path bundle))))
+        (when (f-exists? link-path)
+          (f-delete link-path 'force))
+        (-when-let (dependency-path (cask-dependency-path bundle name))
+          (f-delete dependency-path 'force))
+        (f-symlink source link-path)))))
 
 (defun cask-link-delete (bundle name)
   "Delete BUNDLE link with NAME."

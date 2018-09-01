@@ -1078,6 +1078,16 @@
                         ("package-d-0.0.1" ,package-d-path))))
         (should (-same-items? actual expected))))))
 
+(ert-deftest cask-links-test/with-links-no-init ()
+  "Should initialize the elpa directory automatically."
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "package-c" "0.0.1"))
+    (let ((package-c-path (cask-test/link bundle 'package-c "package-c-0.0.1")))
+      (let ((actual (cask-links bundle))
+            (expected `(("package-c-0.0.1" ,package-c-path))))
+        (should (-same-items? actual expected))))))
+
 
 ;;;; cask-link
 
