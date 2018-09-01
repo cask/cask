@@ -128,16 +128,18 @@ asserted that only those packages are installed"
           (cask-test/write-forms ,forms cask-file)))
       (let (cask-current-bundle (bundle (cask-setup cask-test/sandbox-path)))
         ,@body
-        (-when-let (expected-packages ,(plist-get body :packages))
-          (let ((actual-packages (cask-test/installed-packages bundle)))
-            (should (-same-items? (-map 'car expected-packages) (-map 'car actual-packages)))
-            (-each expected-packages
-              (lambda (expected-package)
-                (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
-                  (let ((actual-package-version (cadr actual-package))
-                        (expected-package-version (cadr expected-package)))
-                    (when expected-package-version
-                      (should (string= actual-package-version expected-package-version)))))))))))))
+        ,(when (plist-member body :packages)
+           `(let ((expected-packages ,(plist-get body :packages))
+                  (actual-packages (cask-test/installed-packages bundle)))
+              (should (-same-items? (-map 'car expected-packages) (-map 'car actual-packages)))
+              (-each expected-packages
+                (lambda (expected-package)
+                  (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
+                    (let ((actual-package-version (cadr actual-package))
+                          (expected-package-version (cadr expected-package)))
+                      (when expected-package-version
+                        (should (string= actual-package-version expected-package-version)))))))))
+        ))))
 
 (defun cask-test/install (bundle)
   "Install BUNDLE and then reset the environment."
