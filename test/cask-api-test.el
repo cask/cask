@@ -991,7 +991,7 @@
       '((files "foo.el"))
     (f-touch "foo.el")
     (f-touch "bar.el")
-    (cask-build bundle)
+    (shut-up (cask-build bundle))
     (should (f-file? "foo.el"))
     (should (f-file? "foo.el"))
     (should (f-file? "bar.el"))
@@ -1001,7 +1001,7 @@
   (cask-test/with-bundle 'empty
     (f-touch "foo.el")
     (f-touch "bar.el")
-    (cask-build bundle)
+    (shut-up (cask-build bundle))
     (should (f-file? "foo.el"))
     (should (f-file? "foo.el"))
     (should (f-file? "bar.el"))
@@ -1013,7 +1013,7 @@
                            (depends-on "package-a" "0.0.1"))
     (f-write-text "(require 'package-a)" 'utf-8 "foo.el")
     (cask-install bundle)
-    (cask-build bundle)))
+    (shut-up (cask-build bundle))))
 
 
 ;;;; cask-clean-elc
