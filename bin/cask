@@ -43,9 +43,6 @@ CASK = os.path.realpath(os.path.abspath(sys.argv[0]))
 CASK_BIN_DIRECTORY = os.path.dirname(CASK)
 CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
 
-# Get the byte-string process environment
-ENVB = getattr(os, 'environb', os.environ)
-
 # Regular expression to extract the version number from emacs --version
 VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)$', re.MULTILINE)
 
@@ -167,7 +164,7 @@ def get_cask_path(kind):
     """
     process = subprocess.Popen([sys.executable, CASK, kind], stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
-    return stdout.rstrip()
+    return stdout.decode(sys.getfilesystemencoding()).rstrip()
 
 
 def get_emacs_version(emacs):
@@ -262,12 +259,12 @@ def inside_emacs_24():
 
     """
     # are we inside Emacs at all
-    return (b'INSIDE_EMACS' in ENVB and
+    return ('INSIDE_EMACS' in os.environ and
             # M-x compile in Emacs-24 sets INSIDE_EMACS to exactly 't'
-            (ENVB.get(b'INSIDE_EMACS') == b't' or
+            (os.environ.get('INSIDE_EMACS') == 't' or
              # while M-x shell sets it to a string, starting with the
              # version number
-             ENVB.get(b'INSIDE_EMACS').startswith(b'24')))
+             os.environ.get('INSIDE_EMACS').startswith('24')))
 
 
 def get_emacs_from_env():
@@ -278,8 +275,8 @@ def get_emacs_from_env():
     refer to a real Emacs executable (i.e. Cask is run from inside Emacs).
 
     """
-    return (ENVB.get(b'CASK_EMACS') or
-            (ENVB.get(b'EMACS') if not inside_emacs_24() else None))
+    return (os.environ.get('CASK_EMACS') or
+            (os.environ.get('EMACS') if not inside_emacs_24() else None))
 
 
 def get_cask_emacs():
@@ -312,13 +309,13 @@ def exec_command(command):
 
     """
     # Copy the environment and update the paths
-    ENVB[b'EMACSLOADPATH'] = get_cask_path('load-path')
-    ENVB[b'PATH'] = get_cask_path('path')
+    os.environ['EMACSLOADPATH'] = get_cask_path('load-path')
+    os.environ['PATH'] = get_cask_path('path')
 
     # special handling for where we have a CASK_EMACS, we can use that and
     # pass it as the EMACS variable to the command
-    if (b'CASK_EMACS' in ENVB):
-        ENVB[b'EMACS'] = ENVB[b'CASK_EMACS']
+    if ('CASK_EMACS' in os.environ):
+        os.environ['EMACS'] = os.environ['CASK_EMACS']
 
     try:
         os.execvp(command[0], command)
@@ -384,10 +381,10 @@ def main():
     try:
         # Special handling for emacs on travis with evm and buggy pyenv, see
         # cask issue #399.
-        if ENVB.get(b'TRAVIS', b'') == b'true':
-            paths = ENVB[b'PATH'].split(b':')
-            if len(paths) > 0 and paths[0] == b'/usr/bin':
-                ENVB[b'PATH'] = ':'.join(paths[1:])
+        if os.environ.get('TRAVIS', '') == 'true':
+            paths = os.environ['PATH'].split(':')
+            if len(paths) > 0 and paths[0] == '/usr/bin':
+                os.environ['PATH'] = ':'.join(paths[1:])
 
         if sys.version_info[:2] < (2, 6):
             exit_error(
