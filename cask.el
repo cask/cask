@@ -9,7 +9,7 @@
 ;; Version: 0.8.4
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
-;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2"))
+;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2") (ansi "0.4.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -203,6 +203,19 @@ the function `cask--with-environment'.")
 
 ;;;; Internal functions
 
+(defmacro cask-print (&rest body)
+  "Print messages to `standard-output'.
+
+The body of this macro is automatically wrapped with
+`with-ansi' for easier colored output.
+
+If `cask-cli--silent' is non-nil, do not print anything."
+  `(when (and (boundp 'cask-cli--silent)
+              (not cask-cli--silent))
+     (princ
+      (with-ansi
+       ,@body))))
+
 (defun cask--find-unbalanced-parenthesis (bundle)
   "Find unbalanced parenthesis for Cask file in BUNDLE."
   (with-temp-buffer
@@ -338,7 +351,9 @@ This function returns the path to the package file."
         (rcp (cask--dependency-to-package-build-recipe dependency))
         (package-build-working-dir cask-tmp-checkout-path)
         (package-build-archive-dir cask-tmp-packages-path) )
+    (cask-print "cloning\e[F\n")
     (let ((version (package-build--checkout rcp)))
+      (cask-print "building\e[F\n")
       (package-build--package rcp version)
       (let ((pattern (format "%s-%s.*" name version)))
         (--first (s-match ".*\\.\\(tar\\|el\\)" it)
@@ -527,20 +542,36 @@ returns an `epl-package' object."
         (cask--compute-dependencies dependencies 'cask--find-installed-package)
       dependencies)))
 
-(defun cask--install-dependency (bundle dependency)
+(defun cask--install-dependency (bundle dependency index)
   "In BUNDLE, install DEPENDENCY.
 
 If dependency does not exist, the error `cask-missing-dependency'
 is signaled."
-  (let ((name (cask-dependency-name dependency)))
+  (let ((name (cask-dependency-name dependency))
+        (version (cask-dependency-version dependency)))
+    (cask-print
+     (format "  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+     " " (green "%s" name) " "
+     "(" (yellow "%s" (or version "latest")) ")... ")
+    (when (cask-linked-p bundle name)
+      (cask-print "linked\n"))
+    (when (epl-package-installed-p name)
+      (cask-print (bold (black "already present")) "\n"))
     (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
       (if (cask-dependency-fetcher dependency)
-          (let ((package-path (cask--checkout-and-package-dependency dependency)))
-            (epl-install-file package-path))
+          (shut-up
+            (let ((package-path (cask--checkout-and-package-dependency dependency)))
+              (epl-install-file package-path)))
         (-if-let (package (cask--find-available-package name))
-            (epl-package-install package)
+            (progn
+              (cask-print "downloading\e[F\n")
+              (shut-up (epl-package-install package)))
           (unless (epl-built-in-p name)
-            (signal 'cask-missing-dependency (list dependency))))))))
+            (signal 'cask-missing-dependency (list dependency)))))
+      (cask-print
+       (format "\e[K  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+       " " (green "%s" name) " "
+       "(" (yellow "%s" (or version "latest")) ")... done\n"))))
 
 (defun cask--delete-dependency (bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
@@ -612,7 +643,7 @@ Return list of updated packages."
               (epl-upgrade)
             (--each (cask--fetcher-dependencies bundle)
               (cask--delete-dependency bundle it)
-              (cask--install-dependency bundle it)))
+              (cask--install-dependency bundle it it-index)))
         (error
          (signal 'cask-failed-installation
                  (list (car err) err (shut-up-current-output))))))))
@@ -639,19 +670,21 @@ If a dependency failed to install, signal a
 . ERR)', where DEPENDENCY is the `cask-dependency' which failed
 to install, and ERR is the original error data."
   (let (missing-dependencies)
+    (cask-print (green "Loading package information... "))
     (cask--with-environment bundle
       :force t
       :refresh t
-      (-each (cask--dependencies bundle)
-        (lambda (dependency)
-          (shut-up
-            (condition-case err
-                (cask--install-dependency bundle dependency)
-              (cask-missing-dependency
-               (push dependency missing-dependencies))
-              (error
-               (signal 'cask-failed-installation
-                       (list dependency err (shut-up-current-output))))))))
+      (cask-print (green "done") "\n")
+      (cask-print (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0))
+      (-each-indexed (cask--dependencies bundle)
+        (lambda (index dependency)
+          (condition-case err
+              (cask--install-dependency bundle dependency index)
+            (cask-missing-dependency
+             (push dependency missing-dependencies))
+            (error
+             (signal 'cask-failed-installation
+                     (list dependency err (shut-up-current-output)))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 

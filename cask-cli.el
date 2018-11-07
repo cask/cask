@@ -49,6 +49,9 @@
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
+(defvar cask-cli--silent nil
+  "If Cask should suppress logging.")
+
 (defvar cask-cli--path default-directory
   "Cask commands will execute in this path.")
 
@@ -357,8 +360,12 @@ Commands:
   (setq debug-on-error t))
 
 (defun cask-cli/verbose ()
-  "Be verbose and do not hide output."
+  "Be verbose and show debug output."
   (setq shut-up-ignore t))
+
+(defun cask-cli/silent ()
+  "Be silent and do not print anything."
+  (setq cask-cli--silent t))
 
 
 ;;;; Commander schedule
@@ -403,7 +410,8 @@ Commands:
  (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
- (option "--verbose" cask-cli/verbose))
+ (option "--verbose" cask-cli/verbose)
+ (option "--silent" cask-cli/silent))
 
 (provide 'cask-cli)
 
