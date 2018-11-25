@@ -171,7 +171,8 @@ Slots:
     (melpa        . "https://melpa.org/packages/")
     (melpa-stable . "https://stable.melpa.org/packages/")
     (marmalade    . "https://marmalade-repo.org/packages/")
-    (org          . "http://orgmode.org/elpa/"))
+    (SC           . "http://joseito.republika.pl/sunrise-commander/")
+    (org          . "https://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
 (defconst cask-filename "Cask"
