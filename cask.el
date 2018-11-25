@@ -171,7 +171,7 @@ Slots:
     (melpa        . "https://melpa.org/packages/")
     (melpa-stable . "https://stable.melpa.org/packages/")
     (marmalade    . "https://marmalade-repo.org/packages/")
-    (org          . "http://orgmode.org/elpa/"))
+    (org          . "https://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
 (defconst cask-filename "Cask"
