@@ -15,7 +15,7 @@ not work with Emacs 23 and below, or with other flavours of Emacs, e.g. XEmacs.
    Windows support for Cask requires additional work (see
    :ref:`windows setup`).
 
-Manual installation
+Manual Installation
 ===================
 
 To install Cask, run the following command:
@@ -36,8 +36,8 @@ To upgrade a manual installation, use:
 
    $ cask upgrade-cask
 
-Package managers
-================
+OS X Installation
+===============
 
 Cask is available in Homebrew_, so OS X users can just use:
 
@@ -47,10 +47,7 @@ Cask is available in Homebrew_, so OS X users can just use:
 
 .. _Homebrew: http://brew.sh/
 
-Setup
-=====
-
-Add Cask to your `$PATH`:
+You may need to add Cask to your `$PATH`:
 
 .. code-block:: bash
 
