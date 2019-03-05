@@ -561,6 +561,7 @@ is signaled."
       (if (cask-dependency-fetcher dependency)
           (shut-up
             (let ((package-path (cask--checkout-and-package-dependency dependency)))
+              (epl-refresh)
               (epl-install-file package-path)))
         (-if-let (package (cask--find-available-package name))
             (progn
