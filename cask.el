@@ -171,7 +171,6 @@ Slots:
     (melpa        . "https://melpa.org/packages/")
     (melpa-stable . "https://stable.melpa.org/packages/")
     (marmalade    . "https://marmalade-repo.org/packages/")
-    (SC           . "http://joseito.republika.pl/sunrise-commander/")
     (org          . "http://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
