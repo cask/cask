@@ -141,12 +141,6 @@ Dependencies
       An archive of packages uploaded by users and maintainers, at
       https://marmalade-repo.org/.
 
-   `SC`
-      An archive providing packages for `Sunrise Commander`_, at
-      http://joseito.republika.pl/sunrise-commander/.
-
-      .. _Sunrise Commander: http://www.emacswiki.org/emacs/Sunrise_Commander
-
    `org`
       An archive providing packages for `Org Mode`_, at
       http://orgmode.org/elpa/.
