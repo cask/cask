@@ -96,12 +96,9 @@ The items in the list are on the form (package version)."
   "Run BODY in a sandboxed environment."
   `(f-with-sandbox (list cask-test/sandbox-path
                          cask-test/cvs-repo-path
-                         cask-tmp-path)
+                         temporary-file-directory)
      (unwind-protect
-         (let* ((default-directory cask-test/sandbox-path)
-                (cask-tmp-path (f-expand "tmp" cask-test/sandbox-path))
-                (cask-tmp-checkout-path (f-expand "checkout" cask-tmp-path))
-                (cask-tmp-packages-path (f-expand "packages" cask-tmp-path)))
+         (let* ((default-directory cask-test/sandbox-path))
            (when (f-dir? cask-test/sandbox-path)
              (f-delete cask-test/sandbox-path 'force))
            (f-mkdir cask-test/sandbox-path)
