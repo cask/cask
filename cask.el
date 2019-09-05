@@ -190,15 +190,6 @@ the function `cask--with-environment'.")
   '(:git :bzr :hg :darcs :svn :cvs)
   "List of supported fetchers.")
 
-(defconst cask-tmp-path
-  (f-expand "cask" temporary-file-directory))
-
-(defconst cask-tmp-checkout-path
-  (f-expand "checkout" cask-tmp-path))
-
-(defconst cask-tmp-packages-path
-  (f-expand "packages" cask-tmp-path))
-
 
 ;;;; Internal functions
 
@@ -340,23 +331,25 @@ ARGS is the initialization slots."
   (let ((constructor (intern (format "package-%s-recipe" fetcher))))
     (apply constructor name :name name args)))
 
-(defun cask--checkout-and-package-dependency (dependency)
-  "Checkout and package DEPENDENCY.
-
-This function returns the path to the package file."
-  (--each (list cask-tmp-path cask-tmp-checkout-path cask-tmp-packages-path)
-    (unless (f-dir? it) (f-mkdir it)))
-  (let ((name (symbol-name (cask-dependency-name dependency)))
-        (rcp (cask--dependency-to-package-build-recipe dependency))
-        (package-build-working-dir cask-tmp-checkout-path)
-        (package-build-archive-dir cask-tmp-packages-path) )
-    (cask-print "cloning\e[F\n")
-    (let ((version (package-build--checkout rcp)))
-      (cask-print "building\e[F\n")
-      (package-build--package rcp version)
-      (let ((pattern (format "%s-%s.*" name version)))
-        (--first (s-match ".*\\.\\(tar\\|el\\)" it)
-                 (f-glob pattern cask-tmp-packages-path))))))
+(defun cask--checkout-and-install-dependency (dependency)
+  "Checkout and install DEPENDENCY."
+  (let* ((dir (make-temp-file "cask" t))
+	 (name (symbol-name (cask-dependency-name dependency)))
+	 (rcp (cask--dependency-to-package-build-recipe dependency))
+	 (package-build-working-dir (f-expand "checkout" dir))
+	 (package-build-archive-dir (f-expand "packages" dir)))
+    (unwind-protect
+	(progn
+	  (f-mkdir package-build-working-dir)
+	  (f-mkdir package-build-archive-dir)
+	  (cask-print "cloning\e[F\n")
+	  (let* ((version (package-build--checkout rcp))
+		 (pattern (format "%s-%s.*" name version)))
+	    (package-build--package rcp version)
+	    (epl-install-file
+	     (--first (s-match ".*\\.\\(tar\\|el\\)" it)
+		      (f-glob pattern package-build-archive-dir)))))
+      (delete-directory dir t))))
 
 (defmacro cask--with-environment (bundle &rest body)
   "Switch to BUNDLE environment and yield BODY.
@@ -559,8 +552,7 @@ is signaled."
     (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
       (if (cask-dependency-fetcher dependency)
           (shut-up
-            (let ((package-path (cask--checkout-and-package-dependency dependency)))
-              (epl-install-file package-path)))
+            (cask--checkout-and-install-dependency dependency))
         (-if-let (package (cask--find-available-package name))
             (progn
               (cask-print "downloading\e[F\n")
