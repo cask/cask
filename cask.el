@@ -684,7 +684,7 @@ to install, and ERR is the original error data."
              (push dependency missing-dependencies))
             (error
              (signal 'cask-failed-installation
-                     (list dependency err (shut-up-current-output)))))))
+                     (list dependency err))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
 
