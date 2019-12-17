@@ -363,6 +363,14 @@ Commands:
   "Be verbose and show debug output."
   (setq shut-up-ignore t))
 
+;;; TODO: Allow tracing an arbitrary prefix.
+(defun cask-cli/trace ()
+  "Trace cask function calls."
+  (require 'cask-trace (expand-file-name "cask-trace" cask-directory))
+  (cask-trace-prefix "cask-")
+  (setq cask-trace-entry-p t)
+  (setq cask-trace-exit-p t))
+
 (defun cask-cli/silent ()
   "Be silent and do not print anything."
   (setq cask-cli--silent t))
@@ -411,6 +419,7 @@ Commands:
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
  (option "--verbose" cask-cli/verbose)
+ (option "--trace" cask-cli/trace)
  (option "--silent" cask-cli/silent))
 
 (provide 'cask-cli)
