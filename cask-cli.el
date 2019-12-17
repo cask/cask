@@ -370,8 +370,8 @@ Commands:
   (cask-trace-prefix "cask-")
   (cask-trace-prefix "f-")
   (cask-trace-prefix "package-")
-  ;; FIX: These 2 don't seem to be traceable on Windows.
-  (dolist (f '(error signal))
+  ;; FIX: `error' and `signal' don't seem to be traceable on Windows.
+  (dolist (f '(error signal get-buffer-process write-region))
     (trace-function f))
   (setq cask-trace-entry-p t)
   (setq cask-trace-exit-p t))
