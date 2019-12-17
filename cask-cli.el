@@ -363,16 +363,15 @@ Commands:
   "Be verbose and show debug output."
   (setq shut-up-ignore t))
 
-;;; TODO: Allow tracing an arbitrary prefix.
-(defun cask-cli/trace ()
-  "Trace cask function calls."
+;; On macOS at least, `error' and `signal' can be traced, which is very useful.
+(defun cask-cli/trace (&rest prefixes)
+  "Trace functions whose name starts with one of PREFIXES.
+If PREFIXES are not specified, 'cask-' functions will be traced."
   (require 'cask-trace (expand-file-name "cask-trace" cask-directory))
-  (cask-trace-prefix "cask-")
-  (cask-trace-prefix "f-")
-  (cask-trace-prefix "package-")
-  ;; FIX: `error' and `signal' don't seem to be traceable on Windows.
-  (dolist (f '(error signal get-buffer-process write-region))
-    (trace-function f))
+  (if prefixes
+      (dolist (prefix prefixes)
+        (cask-trace-prefix prefix))
+    (cask-trace-prefix "cask-"))
   (setq cask-trace-entry-p t)
   (setq cask-trace-exit-p t))
 
@@ -424,7 +423,7 @@ Commands:
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
  (option "--verbose" cask-cli/verbose)
- (option "--trace" cask-cli/trace)
+ (option "--trace [*]" cask-cli/trace)
  (option "--silent" cask-cli/silent))
 
 (provide 'cask-cli)
