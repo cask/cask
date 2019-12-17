@@ -368,6 +368,11 @@ Commands:
   "Trace cask function calls."
   (require 'cask-trace (expand-file-name "cask-trace" cask-directory))
   (cask-trace-prefix "cask-")
+  (cask-trace-prefix "f-")
+  (cask-trace-prefix "package-")
+  ;; FIX: These 2 don't seem to be traceable on Windows.
+  (dolist (f '(error signal))
+    (trace-function f))
   (setq cask-trace-entry-p t)
   (setq cask-trace-exit-p t))
 
