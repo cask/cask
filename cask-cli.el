@@ -368,12 +368,11 @@ Commands:
   "Trace functions whose name starts with one of PREFIXES.
 If PREFIXES are not specified, 'cask-' functions will be traced."
   (require 'cask-trace (expand-file-name "cask-trace" cask-directory))
+  (cask-trace-print-entry t)
+  (cask-trace-print-exit t)
   (if prefixes
-      (dolist (prefix prefixes)
-        (cask-trace-prefix prefix))
-    (cask-trace-prefix "cask-"))
-  (setq cask-trace-entry-p t)
-  (setq cask-trace-exit-p t))
+      (mapc #'cask-trace-prefix prefixes)
+    (cask-trace-prefix "cask-")))
 
 (defun cask-cli/silent ()
   "Be silent and do not print anything."
