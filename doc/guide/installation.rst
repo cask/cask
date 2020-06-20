@@ -28,7 +28,7 @@ You can also clone the repository explicitly:
 
 .. code-block:: console
 
-   $ git clone https://github.com/cask/cask.git
+   $ git clone https://github.com/cask/cask.git ~/.cask
 
 To upgrade a manual installation, use:
 
