@@ -53,7 +53,7 @@
             package-alist
             package-archive-contents
             (package-user-dir cask-bootstrap-dir))
-        (package-initialize)
+        (unless package--initialized (package-initialize))
         (condition-case nil
             (mapc 'require cask-bootstrap-packages)
           (error
