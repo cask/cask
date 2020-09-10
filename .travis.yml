@@ -1,18 +1,61 @@
-language: generic
+# https://github.com/purcell/nix-emacs-ci
+# https://nixos.wiki/wiki/Nix_on_Travis
+language: nix
+
+cache:
+  directories:
+  - $HOME/nix.store
+
 sudo: false
+
+os: linux
+dist: bionic
+
+env:
+  - EMACS_CI=emacs-24-3
+  - EMACS_CI=emacs-24-4
+  - EMACS_CI=emacs-24-5
+  - EMACS_CI=emacs-25-1
+  - EMACS_CI=emacs-25-2
+  - EMACS_CI=emacs-25-3
+  - EMACS_CI=emacs-26-1
+  - EMACS_CI=emacs-26-2
+  - EMACS_CI=emacs-26-3
+  - EMACS_CI=emacs-27-1
+  - EMACS_CI=emacs-snapshot
+
 before_install:
-  - curl -fsSkL https://gist.github.com/rejeep/ebcd57c3af83b049833b/raw > x.sh && source ./x.sh
-  - evm install $EVM_EMACS --use --skip
+  - sudo mkdir -p /etc/nix
+  - echo "substituters = https://cache.nixos.org/ file://$HOME/nix.store" | sudo tee -a /etc/nix/nix.conf > /dev/null
+  - echo 'require-sigs = false' | sudo tee -a /etc/nix/nix.conf > /dev/null
+
+before_cache:
+  - mkdir -p $HOME/nix.store
+  - nix copy --to file://$HOME/nix.store -f default.nix buildInputs
+
+before_script:
+  - sudo mkdir -p /etc/nix && echo 'sandbox = true' | sudo tee /etc/nix/nix.conf
+
+install:
+  # The default "emacs" executable on the $PATH will now be the version named by $EMACS_CI
+  - bash <(curl https://raw.githubusercontent.com/purcell/nix-emacs-ci/master/travis-install)
+  - emacs --version
+  - export PATH=$TRAVIS_BUILD_DIR/bin:$PATH
   - cask
   - make start-server
-env:
-  - EVM_EMACS=emacs-24.3-travis
-  - EVM_EMACS=emacs-24.4-travis
-  - EVM_EMACS=emacs-24.5-travis
-  - EVM_EMACS=emacs-25.1-travis
+
 script:
+  - export PATH=$TRAVIS_BUILD_DIR/bin:$PATH
   - make test
+
 after_failure:
   - cat test/servant/tmp/servant.log
+
 after_script:
+  - export PATH=$TRAVIS_BUILD_DIR/bin:$PATH
   - make stop-server
+
+allow_failures:
+  - os: linux
+    dist: bionic
+    env: EMACS_CI=emacs-snapshot
