@@ -9,22 +9,28 @@ function Exec-Command($cmd) {
         $Env:EMACSLOADPATH = "$(Exec-Cask load-path)"
         $Env:Path = "$(Exec-Cask path)"
         & $cmd @args
+        $script:exitStatus = $?
    } finally {
         $Env:EMACSLOADPATH = $emacsLoadPath
         $Env:Path = $path
     }
 }
 
-function Exec-Emacs {
-    Exec-Command emacs @args
-}
-
+$exitStatus = $true
 $caskCmd = $args[0]
 
+# For behavior when accessing nonexistent indices, see:
+# https://docs.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-arrays#off-by-one-errors
+
 if ($caskCmd -eq "emacs") {
-    Exec-Emacs $args[1..($args.Count - 1)]
+    $rest = $args[1..$args.Length]
+    Exec-Command $args[0] @rest
 } elseif ($caskCmd -eq "exec") {
-    Exec-Command $args[1..($args.Count - 1)]
+    $rest = $args[2..$args.Length]
+    Exec-Command $args[1] @rest
 } else {
     Exec-Cask $args
 }
+
+# Return $? of $true for nonzero [int] or $false
+if (-not $exitStatus) {throw "Bad exit"}
