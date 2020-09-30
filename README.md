@@ -1,4 +1,4 @@
-# Cask
+# Cask - The most amazing project 
 
 ![Cask](cask.png)
 
