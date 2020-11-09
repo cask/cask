@@ -54,18 +54,18 @@
             package-archive-contents
             (package-user-dir cask-bootstrap-dir))
         (package-initialize)
-        (condition-case nil
-            (mapc 'require cask-bootstrap-packages)
-          (error
-           (add-to-list 'package-archives (cons "gnu" "https://elpa.gnu.org/packages/"))
-           (add-to-list 'package-archives (cons "melpa" "https://melpa.org/packages/"))
-           (package-refresh-contents)
-           (mapc
-            (lambda (package)
-              (unless (package-installed-p package)
-                (package-install package)))
-            cask-bootstrap-packages)
-           (mapc 'require cask-bootstrap-packages))))
+        (mapc
+         (lambda (package)
+           (condition-case nil
+               (require package)
+             (error
+              (unless package-archives
+                (add-to-list 'package-archives (cons "gnu" "https://elpa.gnu.org/packages/"))
+                (add-to-list 'package-archives (cons "melpa" "https://stable.melpa.org/packages/"))
+                (package-refresh-contents))
+              (package-install package)
+              (require package))))
+         cask-bootstrap-packages))
     (setq load-path orig-load-path)))
 
 (provide 'cask-bootstrap)
