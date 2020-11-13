@@ -47,6 +47,13 @@
 (unless (require 'package nil :noerror)
   (require 'package (expand-file-name "package-legacy" cask-directory)))
 
+(when (version< emacs-version "25.1")
+  ;; Use vendored package-build package (and package-recipe) because its newer
+  ;; versions require Emacs25.1+
+  (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
+  (require 'package-build (expand-file-name "package-build-legacy" cask-directory)))
+
+
 (let ((orig-load-path load-path))
   (unwind-protect
       (let (package-archives
