@@ -179,10 +179,13 @@ asserted that only those packages are installed"
 
 The fixture with name FIXTURE-NAME will be copied to
 `cask-test/link-path' and will be the link source."
-  (f-copy (f-expand fixture-name cask-test/fixtures-path) cask-test/link-path)
-  (let ((link-path (f-expand fixture-name cask-test/link-path)))
-    (cask-link bundle name link-path)
-    link-path))
+  (let ((from (f-expand fixture-name cask-test/fixtures-path))
+        (to cask-test/link-path))
+    (unless (f-dir? (f-expand (f-filename from) to))
+      (f-copy from (f-slash to)))
+    (let ((link-path (f-expand fixture-name cask-test/link-path)))
+      (cask-link bundle name link-path)
+      link-path)))
 
 (defun should-be-same-dependencies (actual expected)
   "Assert that the dependencies ACTUAL and EXPECTED are same."

@@ -44,7 +44,7 @@
 (ert-deftest cask-setup-test/cask-file ()
   (cask-test/with-sandbox
    (f-copy (f-join cask-test/fixtures-path "package-b-0.0.1")
-           cask-test/sandbox-path)
+           (f-slash cask-test/sandbox-path))
    (let ((bundle (cask-setup (f-expand "package-b-0.0.1" cask-test/sandbox-path))))
      (should (string= (cask-package-name bundle) "package-b"))
      (should (string= (cask-package-version bundle) "0.0.1"))
@@ -53,7 +53,7 @@
 (ert-deftest cask-setup-test/define-package-file ()
   (cask-test/with-sandbox
    (f-copy (f-join cask-test/fixtures-path "package-c-0.0.1")
-           cask-test/sandbox-path)
+           (f-slash cask-test/sandbox-path))
    (let ((bundle (cask-setup (f-expand "package-c-0.0.1" cask-test/sandbox-path))))
      (should (string= (cask-package-name bundle) "package-c"))
      (should (string= (cask-package-version bundle) "0.0.1"))

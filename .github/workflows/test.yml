@@ -1,0 +1,52 @@
+## test.yml
+
+name: Main workflow
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs_version:
+          - '24.1'
+          - '24.2'
+          - '24.3'
+          - '24.4'
+          - '24.5'
+          - '25.1'
+          - '25.2'
+          - '25.3'
+          - '26.1'
+          - '26.2'
+          - '26.3'
+          - '27.1'
+          - 'snapshot'
+        include:
+          - emacs_version: 'snapshot'
+            allow_failure: true
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+    - uses: conao3/setup-cask@master
+
+    - name: Prepare
+      if: matrix.allow_failure != true
+      run: 'cask && make start-server'
+
+    - name: Run tests
+      if: matrix.allow_failure != true
+      id: test
+      run: 'make test'
+
+    - name: Run tests (allow failure)
+      if: matrix.allow_failure == true
+      run: 'make test || true'
+
+    - name: Run if test failed
+      if: failure() && steps.test.outcome == 'failure'
+      run: 'cat test/servant/tmp/servant.log'
