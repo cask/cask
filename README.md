@@ -3,6 +3,8 @@
 ![Cask](cask.png)
 
 [![Build Status](https://travis-ci.org/cask/cask.svg?branch=master)](https://travis-ci.org/cask/cask)
+[![MELPA](https://melpa.org/packages/cask-badge.svg)](https://melpa.org/#/cask)
+[![MELPA Stable](https://stable.melpa.org/packages/cask-badge.svg)](https://stable.melpa.org/#/cask)
 
 Cask is a project management tool for Emacs that helps automate the
 package development cycle; development, dependencies, testing,
