@@ -60,6 +60,8 @@
             package-alist
             package-archive-contents
             (package-user-dir cask-bootstrap-dir))
+        (when (not (version< emacs-version "27"))
+            (setq package--initialized nil))
         (package-initialize)
         (mapc
          (lambda (package)
