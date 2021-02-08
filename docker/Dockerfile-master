@@ -1,4 +1,4 @@
-FROM silex/emacs:26.3-dev
+FROM silex/emacs:master-dev
 
 RUN apt update \
     && apt install -y python3 \
