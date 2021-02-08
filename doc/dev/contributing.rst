@@ -109,3 +109,25 @@ request`_ with your changes.
    pull request on `master`.
 
 .. _pull request: https://github.com/cask/cask/pulls
+
+Docker image (Optional)
+=======================
+
+If you need clean Emacs environment, you can use Docker image.
+
+Usage
+-----
+
+.. code-block:: console
+
+   $ cd cask
+   $ docker build -t cask-27.1 -f docker/Dockerfile-27.1 .
+   $ docker run -it --rm -b $PWD:/cask cask-27.1 bash
+   $ cask
+
+Generate
+--------
+
+You can use Dockerfile template file and generate from it.
+
+Just edit ``Dockerfile.mustache`` using mustache grammar and exec ``generate-dockerfile``.
