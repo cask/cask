@@ -761,9 +761,9 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
 
 (defun cask-elpa-path (bundle)
   "Return full path to BUNDLE elpa directory."
-  (f-expand (format ".cask/%s/elpa"
-                    cask-bootstrap-emacs-version)
-            (cask-bundle-path bundle)))
+  (f-expand
+   (format ".cask/%s.%s/elpa" emacs-major-version emacs-minor-version)
+   (cask-bundle-path bundle)))
 
 (defun cask-runtime-dependencies (bundle &optional deep)
   "Return BUNDLE's runtime dependencies.

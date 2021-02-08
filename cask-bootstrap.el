@@ -29,12 +29,11 @@
 
 (defvar cask-directory)
 
-(defconst cask-bootstrap-emacs-version
-  (format "%s.%s" emacs-major-version emacs-minor-version))
 
 (defconst cask-bootstrap-dir
   (expand-file-name
-   (locate-user-emacs-file (format ".cask/%s/bootstrap" cask-bootstrap-emacs-version)))
+   (locate-user-emacs-file
+    (format ".cask/%s.%s/bootstrap" emacs-major-version emacs-minor-version)))
   "Path to Cask bootstrap directory.")
 
 (defconst cask-bootstrap-packages
