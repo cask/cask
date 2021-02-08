@@ -20,7 +20,7 @@ git clone https://github.com/cask/cask ~/.cask
 PATH=$HOME/.cask/bin:$PATH
 
 # If you want to make it permanent
-echo 'PATH=$HOME/.cask/bin:$PATH' >> .bashrc
+echo 'PATH=$HOME/.cask/bin:$PATH' >> ~/.bashrc
 ```
 
 Or if you are on a Mac, you can install Cask via Homebrew:
