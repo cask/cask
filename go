@@ -31,19 +31,19 @@ import errno
 from subprocess import CalledProcessError, check_call
 
 
-HOME = os.path.expanduser('~')
-TARGET_DIRECTORY = os.path.join(HOME, '.cask')
-REPOSITORY = 'https://github.com/cask/cask.git'
-ISSUE_TRACKER = 'https://github.com/cask/cask/issues'
+HOME = os.path.expanduser("~")
+TARGET_DIRECTORY = os.path.join(HOME, ".cask")
+REPOSITORY = "https://github.com/cask/cask.git"
+ISSUE_TRACKER = "https://github.com/cask/cask/issues"
 
 
 class CaskGoError(Exception):
     pass
 
 
-OKGREEN = '\033[32m'
-FAIL = '\033[31m'
-ENDC = '\033[0m'
+OKGREEN = "\033[32m"
+FAIL = "\033[31m"
+ENDC = "\033[0m"
 
 
 def success(s):
@@ -57,29 +57,32 @@ def fail(s):
 
 
 def bootstrap_cask(target_directory):
-    cask = os.path.join(target_directory, 'bin', 'cask')
+    cask = os.path.join(target_directory, "bin", "cask")
     try:
-        check_call([sys.executable, cask, 'upgrade-cask'])
+        check_call([sys.executable, cask, "upgrade-cask"])
     except CalledProcessError:
-        raise CaskGoError('Cask could not be bootstrapped. Try again later, '
-                          'or report an issue at {0}'.format(ISSUE_TRACKER))
+        raise CaskGoError(
+            "Cask could not be bootstrapped. Try again later, "
+            "or report an issue at {0}".format(ISSUE_TRACKER)
+        )
 
 
 def install_cask(target_directory):
     if os.path.isdir(target_directory):
         raise CaskGoError(
-            'Directory {0} exists. Is Cask already installed?'.format(
-                target_directory))
+            "Directory {0} exists. Is Cask already installed?".format(target_directory)
+        )
     else:
         try:
-            check_call(['git', 'clone', REPOSITORY, target_directory])
+            check_call(["git", "clone", REPOSITORY, target_directory])
         except CalledProcessError:
-            raise CaskGoError('Cask could not be installed. Try again '
-                              'later, or report an issue at {0}'.format(
-                                  ISSUE_TRACKER))
+            raise CaskGoError(
+                "Cask could not be installed. Try again "
+                "later, or report an issue at {0}".format(ISSUE_TRACKER)
+            )
         except OSError as error:
             if error.errno == errno.ENOENT:
-                raise CaskGoError('git executable not found.  Please install Git')
+                raise CaskGoError("git executable not found.  Please install Git")
             else:
                 raise
 
@@ -109,14 +112,17 @@ def main():
         install_cask(TARGET_DIRECTORY)
         bootstrap_cask(TARGET_DIRECTORY)
         print(FAIL + notice + ENDC, file=sys.stderr)
-        success("""\
+        success(
+            """\
 Successfully installed Cask!  Now, add the cask binary to your $PATH:
-  export PATH="{0}/bin:$PATH\"""".format(TARGET_DIRECTORY))
+  export PATH="{0}/bin:$PATH\"""".format(
+                TARGET_DIRECTORY
+            )
+        )
     except CaskGoError as error:
         print(FAIL + notice + ENDC, file=sys.stderr)
-        fail('{0!s}'.format(error))
+        fail("{0!s}".format(error))
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
