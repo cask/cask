@@ -1,4 +1,4 @@
-;;; cask.el --- Cask: Project management for Emacs package development  -*- lexical-binding: t; -*-
+;;; cask.el --- Cask: Project management for package development  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012-2014 Johan Andersson
 ;; Copyright (C) 2013 Sebastian Wiesner <swiesner@lunaryorn.com>
@@ -9,7 +9,7 @@
 ;; Version: 0.8.5
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
-;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2") (ansi "0.4.1"))
+;; Package-Requires: ((emacs "24.1") (s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2") (ansi "0.4.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -205,7 +205,7 @@ the function `cask--with-environment'.")
 (defmacro cask-print (&rest body)
   "Print messages to `standard-output'.
 
-The body of this macro is automatically wrapped with
+The BODY of this macro is automatically wrapped with
 `with-ansi' for easier colored output.
 
 If `cask-cli--silent' is non-nil, do not print anything."
@@ -319,7 +319,7 @@ ARGS is a plist with these additional options:
   (--select (cask-dependency-fetcher it) (cask--dependencies bundle)))
 
 (defun cask--has-fetcher-dependency-p (bundle)
-  "Return true if BUNDLE has any fetcher dependencies."
+  "Return t if BUNDLE has any fetcher dependencies."
   (> (length (cask--fetcher-dependencies bundle)) 0))
 
 (defun cask--dependency-to-package-build-recipe (dependency)
@@ -394,6 +394,8 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
        (signal 'cask-not-a-package nil))))
 
 (defun cask--show-package-error (err filename)
+  "Show package error.
+ERR is error object, FILENAME is the name of related file."
   (let ((cause (cl-caddr err)))
     (cond ((string-match-p "ends here" cause)
            (error "Package lacks a footer line in file %s" filename))
@@ -461,7 +463,7 @@ SCOPE may be nil or 'development."
     (f-read-text template-file 'utf-8)))
 
 (defun cask--initialized-p (bundle)
-  "Return true if BUNDLE is initialized.
+  "Return t if BUNDLE is initialized.
 
 The BUNDLE is initialized when the elpa directory exists."
   (f-dir? (cask-elpa-path bundle)))
@@ -545,7 +547,8 @@ returns an `epl-package' object."
   "In BUNDLE, install DEPENDENCY.
 
 If dependency does not exist, the error `cask-missing-dependency'
-is signaled."
+is signaled.
+INDEX is the current install index."
   (let ((name (cask-dependency-name dependency))
         (version (cask-dependency-version dependency)))
     (cask-print
@@ -797,7 +800,7 @@ If DEEP is t, all dependencies recursively will be returned."
     (cask--installed-dependencies bundle deep)))
 
 (defun cask-has-dependency (bundle name)
-  "Return true if BUNDLE contain link with NAME, false otherwise."
+  "Return t if BUNDLE contain link with NAME, false otherwise."
   (not (null (cask-find-dependency bundle name))))
 
 (defun cask-find-dependency (bundle name)
@@ -994,7 +997,7 @@ NAME-pkg.el or Cask file for the linking to be possible."
         (error "Package %s not linked" name)))))
 
 (defun cask-linked-p (bundle name)
-  "Return true if BUNDLE has link with NAME."
+  "Return t if BUNDLE has link with NAME."
   (-when-let (path (cask-dependency-path bundle name))
     (f-symlink? path)))
 
