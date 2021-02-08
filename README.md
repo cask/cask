@@ -16,13 +16,17 @@ configuration.
 To install Cask, run this command:
 
 ```bash
-$ curl -fsSL https://raw.githubusercontent.com/cask/cask/master/go | python
+git clone https://github.com/cask/cask ~/.cask
+PATH=$HOME/.cask/bin:$PATH
+
+# If you want to make it permanent
+echo 'PATH=$HOME/.cask/bin:$PATH' >> .bashrc
 ```
 
 Or if you are on a Mac, you can install Cask via Homebrew:
 
 ```bash
-$ brew install cask
+brew install cask
 ```
 
 See <http://cask.readthedocs.io/> for more information and
