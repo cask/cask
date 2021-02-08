@@ -9,7 +9,7 @@
 ;; Version: 0.8.5
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
-;; Package-Requires: ((s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2") (ansi "0.4.1"))
+;; Package-Requires: ((emacs "24.1") (s "1.8.0") (dash "2.2.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2") (ansi "0.4.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
