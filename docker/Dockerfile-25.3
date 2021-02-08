@@ -6,7 +6,7 @@ RUN apt update \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-WORKDIR /work
+WORKDIR /cask
 ENV PATH /cask/bin:$PATH
 
 CMD ["bash"]

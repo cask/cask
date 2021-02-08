@@ -150,6 +150,7 @@ Build images.
     docker build -t cask-26.2 -f docker/Dockerfile-26.2 .
     docker build -t cask-26.3 -f docker/Dockerfile-26.3 .
     docker build -t cask-27.1 -f docker/Dockerfile-27.1 .
+    docker build -t cask-head -f docker/Dockerfile-master .
 
 Run docker image for Cask-self debugging.
 
@@ -166,6 +167,7 @@ Run docker image for Cask-self debugging.
     docker run -it --rm -v $PWD:/cask cask-26.2 bash
     docker run -it --rm -v $PWD:/cask cask-26.3 bash
     docker run -it --rm -v $PWD:/cask cask-27.1 bash
+    docker run -it --rm -v $PWD:/cask cask-head bash
 
 Run docker image for using Cask for wild other packages.
 - Assume that cask has been forked to $HOME/dev/forks/cask.
@@ -184,3 +186,4 @@ Run docker image for using Cask for wild other packages.
     docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.2 bash
     docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.3 bash
     docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-27.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-head bash
