@@ -27,8 +27,7 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (defvar cask-directory))
+(defvar cask-directory)
 
 (defconst cask-bootstrap-emacs-version
   (format "%s.%s"
