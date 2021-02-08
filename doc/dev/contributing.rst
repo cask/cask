@@ -122,7 +122,7 @@ Usage
 
    $ cd cask
    $ docker build -t cask-27.1 -f docker/Dockerfile-27.1 .
-   $ docker run -it --rm -b $PWD:/cask cask-27.1 bash
+   $ docker run -it --rm -v $PWD:/cask cask-27.1 bash
    $ cask
 
 Generate
@@ -131,3 +131,56 @@ Generate
 You can use Dockerfile template file and generate from it.
 
 Just edit ``Dockerfile.mustache`` using mustache grammar and exec ``generate-dockerfile``.
+
+Misc
+----
+
+Build images.
+
+.. code-block:: console
+    docker build -t cask-24.1 -f docker/Dockerfile-24.1 .
+    docker build -t cask-24.2 -f docker/Dockerfile-24.2 .
+    docker build -t cask-24.3 -f docker/Dockerfile-24.3 .
+    docker build -t cask-24.4 -f docker/Dockerfile-24.4 .
+    docker build -t cask-24.5 -f docker/Dockerfile-24.5 .
+    docker build -t cask-25.1 -f docker/Dockerfile-25.1 .
+    docker build -t cask-25.2 -f docker/Dockerfile-25.2 .
+    docker build -t cask-25.3 -f docker/Dockerfile-25.3 .
+    docker build -t cask-26.1 -f docker/Dockerfile-26.1 .
+    docker build -t cask-26.2 -f docker/Dockerfile-26.2 .
+    docker build -t cask-26.3 -f docker/Dockerfile-26.3 .
+    docker build -t cask-27.1 -f docker/Dockerfile-27.1 .
+
+Run docker image for Cask-self debugging.
+
+.. code-block:: console
+    docker run -it --rm -v $PWD:/cask cask-24.1 bash
+    docker run -it --rm -v $PWD:/cask cask-24.2 bash
+    docker run -it --rm -v $PWD:/cask cask-24.3 bash
+    docker run -it --rm -v $PWD:/cask cask-24.4 bash
+    docker run -it --rm -v $PWD:/cask cask-24.5 bash
+    docker run -it --rm -v $PWD:/cask cask-25.1 bash
+    docker run -it --rm -v $PWD:/cask cask-25.2 bash
+    docker run -it --rm -v $PWD:/cask cask-25.3 bash
+    docker run -it --rm -v $PWD:/cask cask-26.1 bash
+    docker run -it --rm -v $PWD:/cask cask-26.2 bash
+    docker run -it --rm -v $PWD:/cask cask-26.3 bash
+    docker run -it --rm -v $PWD:/cask cask-27.1 bash
+
+Run docker image for using Cask for wild other packages.
+- Assume that cask has been forked to $HOME/dev/forks/cask.
+- Assume that the current directory is the folder where the ``Cask`` file.
+
+.. code-block:: console
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.2 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.3 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.4 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.5 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-25.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-25.2 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-25.3 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.2 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.3 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-27.1 bash
