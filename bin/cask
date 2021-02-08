@@ -36,6 +36,7 @@ import os
 import re
 import subprocess
 import errno
+import platform
 
 
 # The Cask executable and directories
@@ -43,8 +44,47 @@ CASK = os.path.realpath(os.path.abspath(sys.argv[0]))
 CASK_BIN_DIRECTORY = os.path.dirname(CASK)
 CASK_DIRECTORY = os.path.dirname(CASK_BIN_DIRECTORY)
 
+
+class EnvbShim():
+    """Python3 does not support environb on Windows. This shim should
+    work-around that limitation."""
+
+    def __init__(self, environ):
+        self.environ = environ
+
+    def _fix_key(self, key):
+        if type(key) is bytes:
+            key = str(key, 'utf8')
+        elif type(key) is not str:
+            key = str(key)
+        return key
+
+    def __getitem__(self, key):
+        key = self._fix_key(key)
+        return self.environ[key]
+
+    def __setitem__(self, key, value):
+        key = self._fix_key(key)
+        self.environ[key] = value
+
+    def get(self, key, default=None):
+        key = self._fix_key(key)
+        return self.environ.get(key, default)
+
+    def __contains__(self, key):
+        key = self._fix_key(key)
+        return key in self.environ
+
+
+def getEnvb():
+    alt = EnvbShim(os.environ) \
+        if sys.version_info[0] > 2 and platform.system() == 'Windows' \
+        else os.environ
+    return getattr(os, 'environb', alt)
+
+
 # Get the byte-string process environment
-ENVB = getattr(os, 'environb', os.environ)
+ENVB = getEnvb()
 
 # Regular expression to extract the version number from emacs --version
 VERSION_RE = re.compile(r'^GNU Emacs (?P<version>\d+(?:\.\d+)*)$', re.MULTILINE)
