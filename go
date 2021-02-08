@@ -85,13 +85,35 @@ def install_cask(target_directory):
 
 
 def main():
+    notice = """
+!!!
+!!!                    DEPRECATION NOTICE
+!!!
+!!!
+!!!    The cask `go` script will be removed on 2021/06/01.
+!!!
+!!!    This is due to security concerns about the way python is
+!!!    invoked from curl, and to remove the python dependency from cask.
+!!!
+!!!    The way to install cask without depending on the `go` script
+!!!    is very simple.  Just clone Cask and pass the PATH.
+!!!
+!!!        git clone https://github.com/cask/cask ~/.cask
+!!!        PATH=$HOME/.cask/bin:$PATH
+!!!
+!!!        # If you want to make it permanent
+!!!        echo 'PATH=$HOME/.cask/bin:$PATH' >> .bashrc
+!!!
+"""
     try:
         install_cask(TARGET_DIRECTORY)
         bootstrap_cask(TARGET_DIRECTORY)
+        print(FAIL + notice + ENDC, file=sys.stderr)
         success("""\
 Successfully installed Cask!  Now, add the cask binary to your $PATH:
   export PATH="{0}/bin:$PATH\"""".format(TARGET_DIRECTORY))
     except CaskGoError as error:
+        print(FAIL + notice + ENDC, file=sys.stderr)
         fail('{0!s}'.format(error))
 
 
