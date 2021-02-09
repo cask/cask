@@ -27,17 +27,13 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (defvar cask-directory))
+(defvar cask-directory)
 
-(defconst cask-bootstrap-emacs-version
-  (format "%s.%s"
-          emacs-major-version
-          emacs-minor-version))
 
 (defconst cask-bootstrap-dir
   (expand-file-name
-   (locate-user-emacs-file (format ".cask/%s/bootstrap" cask-bootstrap-emacs-version)))
+   (locate-user-emacs-file
+    (format ".cask/%s.%s/bootstrap" emacs-major-version emacs-minor-version)))
   "Path to Cask bootstrap directory.")
 
 (defconst cask-bootstrap-packages
@@ -47,12 +43,41 @@
 (unless (require 'package nil :noerror)
   (require 'package (expand-file-name "package-legacy" cask-directory)))
 
+;; Importing package-keyring.gpg...
+;; Importing package-keyring.gpg...done
+;; Contacting host: stable.melpa.org:443
+;; gnutls.c: [0] (Emacs) fatal error: A TLS fatal alert has been received.
+;; gnutls.c: [0] (Emacs) Received alert:  Handshake failed
+;; gnutls.el: (err=[-12] A TLS fatal alert has been received.) boot: (:priority NORMAL :hostname stable.melpa.org :loglevel 0 :min-prime-bits 256 :trustfiles (/etc/ssl/certs/ca-certificates.crt) :crlfiles nil :keylist nil :verify-flags nil :verify-error nil :callbacks nil)
+;; Failed to download `melpa' archive.
+;; Contacting host: elpa.gnu.org:443
+;; Package `s-' is unavailable
+
+;; (require 'gnutls)
+
+;; (when (version<= emacs-version "24.4")
+;;   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+
 (when (version< emacs-version "25.1")
   ;; Use vendored package-build package (and package-recipe) because its newer
   ;; versions require Emacs25.1+
-  (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
-  (require 'package-build (expand-file-name "package-build-legacy" cask-directory)))
+  (let (package-archives
+        package-alist
+        package-archive-contents
+        (package-user-dir cask-bootstrap-dir))
+    (unless package--initialized
+      (package-initialize))
 
+    (unless (package-installed-p 'cl-lib)
+      (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
+      (add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/"))
+      (package-refresh-contents)
+      (package-install 'cl-lib)))
+  (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
+  (require 'package-build (expand-file-name "package-build-legacy" cask-directory))
+  (delq 'cl-lib cask-bootstrap-packages)
+  (delq 'package-build cask-bootstrap-packages)
+  (delq 'eieio cask-bootstrap-packages))
 
 (let ((orig-load-path load-path))
   (unwind-protect
