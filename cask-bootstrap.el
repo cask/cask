@@ -46,9 +46,23 @@
 (when (version< emacs-version "25.1")
   ;; Use vendored package-build package (and package-recipe) because its newer
   ;; versions require Emacs25.1+
-  (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
-  (require 'package-build (expand-file-name "package-build-legacy" cask-directory)))
+  (let (package-archives
+        package-alist
+        package-archive-contents
+        (package-user-dir cask-bootstrap-dir))
+    (unless package--initialized
+      (package-initialize))
 
+    (unless (package-installed-p 'cl-lib)
+      (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
+      (add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/"))
+      (package-refresh-contents)
+      (package-install 'cl-lib)))
+  (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
+  (require 'package-build (expand-file-name "package-build-legacy" cask-directory))
+  (delq 'cl-lib cask-bootstrap-packages)
+  (delq 'package-build cask-bootstrap-packages)
+  (delq 'eieio cask-bootstrap-packages))
 
 (let ((orig-load-path load-path))
   (unwind-protect

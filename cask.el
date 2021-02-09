@@ -645,8 +645,17 @@ Return list of updated packages."
           (prog1
               (epl-upgrade)
             (--each (cask--fetcher-dependencies bundle)
-              (cask--delete-dependency bundle it)
-              (cask--install-dependency bundle it it-index)))
+              (let ((prj (cask-bundle-name bundle))
+                    (dep (cask-dependency-name it)))
+                (when (or (not (eq 'cask prj))             ; normal project
+                          (and (eq 'cask prj)              ; Cask project
+                               (not (and
+                                     (version< emacs-version "25.1")
+                                     (or (eq 'package-build dep))
+                                     (prog1 t
+                                       (cask-print (red "    Cask project hack; Don't update %s from ELPA!\n" dep)))))))
+                  (cask--delete-dependency bundle it)
+                  (cask--install-dependency bundle it it-index)))))
         (error
          (signal 'cask-failed-installation
                  (list (car err) err (shut-up-current-output))))))))
@@ -682,7 +691,16 @@ to install, and ERR is the original error data."
       (-each-indexed (cask--dependencies bundle)
         (lambda (index dependency)
           (condition-case err
-              (cask--install-dependency bundle dependency index)
+              (let ((prj (cask-bundle-name bundle))
+                    (dep (cask-dependency-name dependency)))
+                (when (or (not (eq 'cask prj))             ; normal project
+                          (and (eq 'cask prj)              ; Cask project
+                               (not (and
+                                     (version< emacs-version "25.1")
+                                     (or (eq 'package-build dep))
+                                     (prog1 t
+                                       (cask-print (red "    Cask project hack; Don't install %s from ELPA!\n" dep)))))))
+                  (cask--install-dependency bundle dependency index)))
             (cask-missing-dependency
              (push dependency missing-dependencies))
             (error
