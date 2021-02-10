@@ -43,20 +43,12 @@
 (unless (require 'package nil :noerror)
   (require 'package (expand-file-name "package-legacy" cask-directory)))
 
-;; Importing package-keyring.gpg...
-;; Importing package-keyring.gpg...done
-;; Contacting host: stable.melpa.org:443
-;; gnutls.c: [0] (Emacs) fatal error: A TLS fatal alert has been received.
-;; gnutls.c: [0] (Emacs) Received alert:  Handshake failed
-;; gnutls.el: (err=[-12] A TLS fatal alert has been received.) boot: (:priority NORMAL :hostname stable.melpa.org :loglevel 0 :min-prime-bits 256 :trustfiles (/etc/ssl/certs/ca-certificates.crt) :crlfiles nil :keylist nil :verify-flags nil :verify-error nil :callbacks nil)
-;; Failed to download `melpa' archive.
-;; Contacting host: elpa.gnu.org:443
-;; Package `s-' is unavailable
-
-;; (require 'gnutls)
-
-;; (when (version<= emacs-version "24.4")
-;;   (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+(when (version< emacs-version "24.5")
+  ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and cannot connect to
+  ;; melpa. Use external openssl instead.
+  (require 'tls)
+  (setq tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
+  (defun gnutls-available-p () nil))
 
 (when (version< emacs-version "25.1")
   ;; Use vendored package-build package (and package-recipe) because its newer
