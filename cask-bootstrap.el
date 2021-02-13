@@ -59,8 +59,6 @@
     (setq tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
     (defun gnutls-available-p () nil)
 
-    ;; Use vendored package-build package (and package-recipe)
-    ;; because its newer versions require Emacs25.1+
     (unless package--initialized
       (package-initialize))
 
@@ -69,6 +67,9 @@
       (add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/"))
       (package-refresh-contents)
       (package-install 'cl-lib))
+
+    ;; Use vendored package-build package (and package-recipe)
+    ;; because its newer versions require Emacs25.1+
     (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
     (require 'package-build (expand-file-name "package-build-legacy" cask-directory))
     (delq 'cl-lib cask-bootstrap-packages)
