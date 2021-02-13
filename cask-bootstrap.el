@@ -42,34 +42,6 @@
   '(cl-generic s dash f commander git epl shut-up cl-lib package-build eieio ansi)
   "List of bootstrap packages required by this file.")
 
-(when (version< emacs-version "25.1")
-  ;; Builtin gnutls on Emacs 24 was used incorrectly, and
-  ;; cannot connect to melpa.  Use external openssl instead.
-  (require 'tls)
-  (defvar tls-program)
-  (setq tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
-  (defun gnutls-available-p () nil)
-
-  ;; Use vendored package-build package (and package-recipe)
-  ;; because its newer versions require Emacs25.1+
-  (let (package-archives
-        package-alist
-        package-archive-contents
-        (package-user-dir cask-bootstrap-dir))
-    (unless package--initialized
-      (package-initialize))
-
-    (unless (package-installed-p 'cl-lib)
-      (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
-      (add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/"))
-      (package-refresh-contents)
-      (package-install 'cl-lib)))
-  (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
-  (require 'package-build (expand-file-name "package-build-legacy" cask-directory))
-  (delq 'cl-lib cask-bootstrap-packages)
-  (delq 'package-build cask-bootstrap-packages)
-  (delq 'eieio cask-bootstrap-packages))
-
 ;; Don't change global `load-path' via `package-install'.
 ;; We need `s' or something else dependency package, But the
 ;; load-path has to be the user's, otherwise it hides the
@@ -79,6 +51,34 @@
       package-alist
       package-archive-contents
       (package-user-dir cask-bootstrap-dir))
+  (when (version< emacs-version "25.1")
+    ;; Builtin gnutls on Emacs 24 was used incorrectly, and
+    ;; cannot connect to melpa.  Use external openssl instead.
+    (require 'tls)
+    (defvar tls-program)
+    (setq tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
+    (defun gnutls-available-p () nil)
+
+    ;; Use vendored package-build package (and package-recipe)
+    ;; because its newer versions require Emacs25.1+
+    (let (package-archives
+          package-alist
+          package-archive-contents
+          (package-user-dir cask-bootstrap-dir))
+      (unless package--initialized
+        (package-initialize))
+
+      (unless (package-installed-p 'cl-lib)
+        (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
+        (add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/"))
+        (package-refresh-contents)
+        (package-install 'cl-lib)))
+    (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
+    (require 'package-build (expand-file-name "package-build-legacy" cask-directory))
+    (delq 'cl-lib cask-bootstrap-packages)
+    (delq 'package-build cask-bootstrap-packages)
+    (delq 'eieio cask-bootstrap-packages))
+
   (package-initialize)
   (mapc
    (lambda (package)
