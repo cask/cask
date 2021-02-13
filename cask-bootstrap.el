@@ -38,10 +38,6 @@
     (format ".cask/%s.%s/bootstrap" emacs-major-version emacs-minor-version)))
   "Path to Cask bootstrap directory.")
 
-(defconst cask-bootstrap-packages
-  '(cl-generic s dash f commander git epl shut-up cl-lib package-build eieio ansi)
-  "List of bootstrap packages required by this file.")
-
 ;; Don't change global `load-path' via `package-install'.
 ;; We need `s' or something else dependency package, But the
 ;; load-path has to be the user's, otherwise it hides the
@@ -51,7 +47,9 @@
                           ("melpa" . "https://stable.melpa.org/packages/")))
       package-alist
       package-archive-contents
-      (package-user-dir cask-bootstrap-dir))
+      (package-user-dir cask-bootstrap-dir)
+      (deps '(s dash f commander git epl shut-up cl-lib cl-generic
+                package-build eieio ansi)))
   (when (version< emacs-version "25.1")
     ;; Builtin gnutls on Emacs 24 was used incorrectly, and
     ;; cannot connect to melpa.  Use external openssl instead.
@@ -71,9 +69,9 @@
     ;; because its newer versions require Emacs25.1+
     (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
     (require 'package-build (expand-file-name "package-build-legacy" cask-directory))
-    (delq 'cl-lib cask-bootstrap-packages)
-    (delq 'package-build cask-bootstrap-packages)
-    (delq 'eieio cask-bootstrap-packages))
+    (delq 'cl-lib deps)
+    (delq 'package-build deps)
+    (delq 'eieio deps))
 
   (package-initialize)
   (mapc
@@ -85,7 +83,7 @@
           (package-refresh-contents))
         (package-install package)
         (require package))))
-   cask-bootstrap-packages))
+   deps))
 
 (provide 'cask-bootstrap)
 
