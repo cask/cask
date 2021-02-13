@@ -74,16 +74,14 @@
     (delq 'eieio deps))
 
   (package-initialize)
-  (mapc
-   (lambda (package)
-     (condition-case nil
-         (require package)
-       (error
-        (unless package-archives
-          (package-refresh-contents))
-        (package-install package)
-        (require package))))
-   deps))
+  (dolist (pkg deps)
+    (condition-case nil
+        (require pkg)
+      (error
+       (unless package-archives
+         (package-refresh-contents))
+       (package-install pkg)
+       (require pkg)))))
 
 (provide 'cask-bootstrap)
 
