@@ -61,6 +61,7 @@
     (unless package--initialized
       (package-initialize))
 
+    ;; install cl-lib depends by `package-build'.
     (unless (require 'cl-lib nil 'no-error)
       (package-refresh-contents)
       (package-install 'cl-lib))
