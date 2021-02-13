@@ -47,7 +47,8 @@
 ;; load-path has to be the user's, otherwise it hides the
 ;; dependency issues of the user's package.
 (let ((load-path load-path)
-      package-archives
+      (package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                          ("melpa" . "https://stable.melpa.org/packages/")))
       package-alist
       package-archive-contents
       (package-user-dir cask-bootstrap-dir))
@@ -63,8 +64,6 @@
       (package-initialize))
 
     (unless (package-installed-p 'cl-lib)
-      (add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
-      (add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/"))
       (package-refresh-contents)
       (package-install 'cl-lib))
 
@@ -83,8 +82,6 @@
          (require package)
        (error
         (unless package-archives
-          (add-to-list 'package-archives (cons "gnu" "https://elpa.gnu.org/packages/"))
-          (add-to-list 'package-archives (cons "melpa" "https://stable.melpa.org/packages/"))
           (package-refresh-contents))
         (package-install package)
         (require package))))
