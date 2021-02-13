@@ -89,13 +89,8 @@
     (should (s-contains? output cask-test/stdout))))
 
 (Then "^I should see command output matching \"\\([^\"]+\\)\"$"
-  (lambda (_regex)
-    ;; ((should (s-matches\? regex cask-test/stdout))
-    ;;  :form (s-matches\? ":/usr/bin:" "")
-    ;;  :value nil)
-
-    ;; (should (s-matches? regex cask-test/stdout))
-    nil))
+  (lambda (regex)
+    (should (s-matches? regex cask-test/stdout))))
 
 (Then "^I should not see command error:$"
   (lambda (output)
