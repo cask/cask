@@ -61,7 +61,7 @@
     (unless package--initialized
       (package-initialize))
 
-    (unless (package-installed-p 'cl-lib)
+    (unless (require 'cl-lib nil 'no-error)
       (package-refresh-contents)
       (package-install 'cl-lib))
 
