@@ -47,6 +47,7 @@
   ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and cannot connect to
   ;; melpa. Use external openssl instead.
   (require 'tls)
+  (defvar tls-program)
   (setq tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
   (defun gnutls-available-p () nil))
 
