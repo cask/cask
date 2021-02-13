@@ -78,7 +78,7 @@
     (condition-case nil
         (require pkg)
       (error
-       (unless package-archives
+       (unless package-archive-contents
          (package-refresh-contents))
        (package-install pkg)
        (require pkg)))))
