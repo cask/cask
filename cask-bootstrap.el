@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'package)
+
 (defvar cask-directory)
 
 
@@ -39,9 +41,6 @@
 (defconst cask-bootstrap-packages
   '(cl-generic s dash f commander git epl shut-up cl-lib package-build eieio ansi)
   "List of bootstrap packages required by this file.")
-
-(unless (require 'package nil :noerror)
-  (require 'package (expand-file-name "package-legacy" cask-directory)))
 
 (when (version< emacs-version "25.1")
   ;; Builtin gnutls on Emacs 24 was used incorrectly, and
