@@ -44,16 +44,16 @@
   (require 'package (expand-file-name "package-legacy" cask-directory)))
 
 (when (version< emacs-version "24.5")
-  ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and cannot connect to
-  ;; melpa. Use external openssl instead.
+  ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and
+  ;; cannot connect to melpa.  Use external openssl instead.
   (require 'tls)
   (defvar tls-program)
   (setq tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
   (defun gnutls-available-p () nil))
 
 (when (version< emacs-version "25.1")
-  ;; Use vendored package-build package (and package-recipe) because its newer
-  ;; versions require Emacs25.1+
+  ;; Use vendored package-build package (and package-recipe)
+  ;; because its newer versions require Emacs25.1+
   (let (package-archives
         package-alist
         package-archive-contents
