@@ -29,8 +29,8 @@
 
 (require 'package)
 
-(defvar cask-directory)
 
+(defvar cask-directory)
 
 (defconst cask-bootstrap-dir
   (expand-file-name
