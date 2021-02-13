@@ -73,7 +73,9 @@
     (delq 'package-build deps)
     (delq 'eieio deps))
 
-  (package-initialize)
+  (unless package--initialized
+    (package-initialize))
+
   (dolist (pkg deps)
     (condition-case nil
         (require pkg)
