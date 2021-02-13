@@ -71,26 +71,28 @@
   (delq 'package-build cask-bootstrap-packages)
   (delq 'eieio cask-bootstrap-packages))
 
-(let ((orig-load-path load-path))
-  (unwind-protect
-      (let (package-archives
-            package-alist
-            package-archive-contents
-            (package-user-dir cask-bootstrap-dir))
-        (package-initialize)
-        (mapc
-         (lambda (package)
-           (condition-case nil
-               (require package)
-             (error
-              (unless package-archives
-                (add-to-list 'package-archives (cons "gnu" "https://elpa.gnu.org/packages/"))
-                (add-to-list 'package-archives (cons "melpa" "https://stable.melpa.org/packages/"))
-                (package-refresh-contents))
-              (package-install package)
-              (require package))))
-         cask-bootstrap-packages))
-    (setq load-path orig-load-path)))
+;; Don't change global `load-path' via `package-install'.
+;; We need `s' or something else dependency package, But the
+;; load-path has to be the user's, otherwise it hides the
+;; dependency issues of the user's package.
+(let ((load-path load-path)
+      package-archives
+      package-alist
+      package-archive-contents
+      (package-user-dir cask-bootstrap-dir))
+  (package-initialize)
+  (mapc
+   (lambda (package)
+     (condition-case nil
+         (require package)
+       (error
+        (unless package-archives
+          (add-to-list 'package-archives (cons "gnu" "https://elpa.gnu.org/packages/"))
+          (add-to-list 'package-archives (cons "melpa" "https://stable.melpa.org/packages/"))
+          (package-refresh-contents))
+        (package-install package)
+        (require package))))
+   cask-bootstrap-packages))
 
 (provide 'cask-bootstrap)
 
