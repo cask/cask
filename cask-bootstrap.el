@@ -43,8 +43,8 @@
 (unless (require 'package nil :noerror)
   (require 'package (expand-file-name "package-legacy" cask-directory)))
 
-(when (version< emacs-version "24.5")
-  ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and
+(when (version< emacs-version "24")
+  ;; Builtin gnutls on Emacs 24 was used incorrectly, and
   ;; cannot connect to melpa.  Use external openssl instead.
   (require 'tls)
   (defvar tls-program)
