@@ -50,8 +50,8 @@
       (package-user-dir cask-bootstrap-dir)
       (deps '(s dash f commander git epl shut-up cl-lib cl-generic
                 package-build eieio ansi)))
-  (when (version< emacs-version "25.1")
-    ;; Builtin gnutls on Emacs 24 was used incorrectly, and
+  (when (version<= emacs-version "24.4")
+    ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and
     ;; cannot connect to melpa.  Use external openssl instead.
     (require 'tls)
     (defvar tls-program)
@@ -64,8 +64,9 @@
     ;; install cl-lib depends by `package-build'.
     (unless (require 'cl-lib nil 'no-error)
       (package-refresh-contents)
-      (package-install 'cl-lib))
+      (package-install 'cl-lib)))
 
+  (when (version< emacs-version "25.1")
     ;; Use vendored package-build package (and package-recipe)
     ;; because its newer versions require Emacs25.1+
     (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
