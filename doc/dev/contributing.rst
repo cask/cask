@@ -40,14 +40,14 @@ Setup
 
 To build the documentation locally, you need to go through a little setup first.
 
-Make sure that you have Python 2.7 and virtualenv_ available.  To install
+Make sure that you have Python 3.6 and virtualenv_ available.  To install
 virtualenv_, use the following command:
 
 .. code-block:: console
 
    $ pip install --user virtualenv
 
-Then add :file:`~/Library/Python/2.7/bin` (on OS X) or :file:`~/.local/bin` (on
+Then add :file:`~/Library/Python/3.6/bin` (on OS X) or :file:`~/.local/bin` (on
 other Unix variants) to :envvar:`PATH`.
 
 .. note::
@@ -64,7 +64,7 @@ Now create a virtualenv for the documentation, and install the requirements:
 .. code-block:: console
 
    $ mkdir -p ~/.virtualenvs
-   $ virtualenv -p python2.7 ~/.virtualenvs/cask
+   $ virtualenv -p python3.6 ~/.virtualenvs/cask
    $ pip install -r doc/requirements.txt
 
 Now you are set up to build the documentation.

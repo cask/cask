@@ -7,7 +7,7 @@ This document guides you through the installation of Cask.
 Prerequisites
 =============
 
-Cask requires GNU Emacs 24 and Python 2.6 or later on a Unix system.  It will
+Cask requires GNU Emacs 24 and Python 3.6 or later on a Unix system.  It will
 not work with Emacs 23 and below, or with other flavours of Emacs, e.g. XEmacs.
 
 .. warning::
@@ -67,14 +67,14 @@ Both :program:`emacs` and :program:`python` need to be added to your
 :envvar:`%PATH%`.
 
 Assuming that python is installed to the default location
-(:file:`c:\Python27`) and emacs is under :file:`c:\bin\emacs`.
+(:file:`c:\Python36`) and emacs is under :file:`c:\bin\emacs`.
 
 By Command Line
 ---------------
 
 .. code-block:: bat
 
-   > setx PATH "%PATH%;c:\Python27\"
+   > setx PATH "%PATH%;c:\Python36\"
    > setx PATH "%PATH%;c:\bin\emacs\bin"
    > setx PATH "%PATH%;%userprofile%\.cask\bin"
 
@@ -94,7 +94,7 @@ By GUI
    At the end of the listed path, append (include the first ``;`` only if not
    already present)::
      
-     ;C:\Python27\;C:\bin\emacs\bin
+     ;C:\Python36\;C:\bin\emacs\bin
 
    If you do not have administrative rights to the machine, add
    the above to the User Variables :envvar:`Path`.
