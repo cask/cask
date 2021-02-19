@@ -439,6 +439,16 @@ def main():
     the Cask package environment, or delegate to the Cask CLI.
 
     """
+    FAIL = "\033[31m"
+    ENDC = "\033[0m"
+    notice = """\
+!!!
+!!!                         DEPRECATION NOTICE
+!!!
+!!!    This `cask` executable will be required Python 3.6 from 2021/08/01.
+!!!    Your Python is {0.major}.{0.minor}.  Please install latest Python.
+!!!
+"""
     try:
         # Special handling for emacs on travis with evm and buggy
         # pyenv, see cask issue #399.
@@ -451,6 +461,10 @@ def main():
             exit_error(
                 'Python 2.6 required, yours is {0.major}.{0.minor}'.format(
                     sys.version_info))
+
+        if sys.version_info[:2] < (3, 6):
+            print(FAIL + notice.format(sys.version_info) + ENDC, file=sys.stderr)
+
         # TODO: replace with a command line parser!
         if len(sys.argv) > 1 and sys.argv[1] == 'exec':
             if len(sys.argv) == 2:
