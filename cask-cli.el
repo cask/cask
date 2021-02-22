@@ -363,6 +363,17 @@ Commands:
   "Be verbose and show debug output."
   (setq shut-up-ignore t))
 
+;; On macOS at least, `error' and `signal' can be traced, which is very useful.
+(defun cask-cli/trace (&rest prefixes)
+  "Trace functions whose name starts with one of PREFIXES.
+If PREFIXES are not specified, 'cask-' functions will be traced."
+  (require 'cask-trace (expand-file-name "cask-trace" cask-directory))
+  (cask-trace-print-entry t)
+  (cask-trace-print-exit t)
+  (if prefixes
+      (mapc #'cask-trace-prefix prefixes)
+    (cask-trace-prefix "cask-")))
+
 (defun cask-cli/silent ()
   "Be silent and do not print anything."
   (setq cask-cli--silent t))
@@ -411,6 +422,7 @@ Commands:
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
  (option "--verbose" cask-cli/verbose)
+ (option "--trace [*]" cask-cli/trace)
  (option "--silent" cask-cli/silent))
 
 (provide 'cask-cli)

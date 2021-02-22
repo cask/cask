@@ -1019,7 +1019,10 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
                   :files patterns
                   :dir path))
             (package-build-working-dir path)
-            (package-build-archive-dir target-dir))
+            (package-build-archive-dir target-dir)
+            ;; This assumes only package files are written. For these files
+            ;; there's practically no reason to use any other coding.
+            (buffer-file-coding-system 'utf-8-unix))
         (package-build--package rcp version)))))
 
 (provide 'cask)
