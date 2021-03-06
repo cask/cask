@@ -69,7 +69,7 @@ class EnvbShim():
 
     def __setitem__(self, key, value):
         key = self._fix_key(key)
-        self.environ[key] = value
+        self.environ[key] = self._fix_key(value)
 
     def get(self, key, default=None):
         key = self._fix_key(key)
