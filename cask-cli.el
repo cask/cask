@@ -78,9 +78,7 @@
 
 (defun cask-cli--print-table (table)
   "Print TABLE, which is a list of alist's."
-  (let ((max (length (--max-by (> (length it)
-                                  (length other))
-                               (-map 'car table)))))
+  (let ((max (apply #'max (mapcar #'length (mapcar #'car table)))))
     (-each table
       (lambda (row)
         (let ((key (car row)) (value (cadr row)))
