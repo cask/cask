@@ -508,8 +508,9 @@ returns an `epl-package' object."
    (-flatten
     (mapcar
      (lambda (dependency)
-       (let ((name (cask-dependency-name dependency)))
-         (-when-let (package (funcall package-function name))
+       (let* ((name (cask-dependency-name dependency))
+              (package (funcall package-function name)))
+         (when package
            (cask--uniq-dependencies
             (cons dependency
                   (cask--compute-dependencies
@@ -580,8 +581,9 @@ INDEX is the current install index."
 
 (defun cask--delete-dependency (bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
-  (let ((name (cask-dependency-name dependency)))
-    (-when-let (package (epl-find-installed-package name))
+  (let* ((name (cask-dependency-name dependency))
+         (package (epl-find-installed-package name)))
+    (when package
       (epl-package-delete package))))
 
 (defun cask--dependency-files (dependency)
@@ -616,9 +618,10 @@ This function return a `cask-bundle' object."
            (cask--exit-error bundle err))
           (invalid-read-syntax
            (cask--exit-error bundle err)))
-      (-when-let (define-package-file (car (f-glob "*-pkg.el" project-path)))
-        (let ((package (epl-package-from-descriptor-file define-package-file)))
-          (cask--from-epl-package bundle package))))
+      (let ((define-package-file (car (f-glob "*-pkg.el" project-path))))
+        (when define-package-file
+          (let ((package (epl-package-from-descriptor-file define-package-file)))
+            (cask--from-epl-package bundle package)))))
     bundle))
 
 (defun cask-initialize (&optional project-path)
@@ -903,18 +906,19 @@ ARGS can also include any of the items in `cask-fetchers'.  The
 plist key is one of the items in the list and the value is the
 url to the fetcher source."
   (let ((dependency (make-cask-dependency :name name)))
-    (-when-let (version (plist-get args :version))
-      (setf (cask-dependency-version dependency) version))
-    (-when-let (files (plist-get args :files))
-      (setf (cask-dependency-files dependency) files))
-    (-when-let (fetcher (--first (-contains? cask-fetchers it) args))
-      (setf (cask-dependency-fetcher dependency) fetcher)
-      (let ((url (plist-get args fetcher)))
-        (setf (cask-dependency-url dependency) url))
-      (-when-let (ref (plist-get args :ref))
-        (setf (cask-dependency-ref dependency) ref))
-      (-when-let (branch (plist-get args :branch))
-        (setf (cask-dependency-branch dependency) branch)))
+    (when (plist-get args :version)
+      (setf (cask-dependency-version dependency) (plist-get args :version)))
+    (when (plist-get args :files)
+      (setf (cask-dependency-files dependency) (plist-get args :files)))
+    (let ((fetcher (--first (-contains? cask-fetchers it) args)))
+      (when fetcher
+        (setf (cask-dependency-fetcher dependency) fetcher)
+        (let ((url (plist-get args fetcher)))
+          (setf (cask-dependency-url dependency) url))
+        (when (plist-get args :ref)
+          (setf (cask-dependency-ref dependency) (plist-get args :ref)))
+        (when (plist-get args :branch)
+          (setf (cask-dependency-branch dependency) (plist-get args :branch)))))
     (if (eq (plist-get args :scope) 'development)
         (push dependency (cask-bundle-development-dependencies bundle))
       (push dependency (cask-bundle-runtime-dependencies bundle)))))
@@ -1001,8 +1005,8 @@ NAME-pkg.el or Cask file for the linking to be possible."
                 (cask-elpa-path bundle))))
           (when (f-exists? link-path)
             (f-delete link-path 'force))
-          (-when-let (dependency-path (cask-dependency-path bundle name))
-            (f-delete dependency-path 'force))
+          (when (cask-dependency-path bundle name)
+            (f-delete (cask-dependency-path bundle name) 'force))
           (f-symlink source link-path))))))
 
 (defun cask-link-delete (bundle name)
@@ -1017,8 +1021,8 @@ NAME-pkg.el or Cask file for the linking to be possible."
 
 (defun cask-linked-p (bundle name)
   "Return t if BUNDLE has link with NAME."
-  (-when-let (path (cask-dependency-path bundle name))
-    (f-symlink? path)))
+  (when (cask-dependency-path bundle name)
+    (f-symlink? (cask-dependency-path bundle name))))
 
 (defun cask-package (bundle &optional target-dir)
   "Build an ELPA package of BUNDLE.
