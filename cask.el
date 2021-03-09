@@ -944,8 +944,9 @@ URL is the url to the mirror."
 
 (defun cask-remove-source (bundle name)
   "Remove source from BUNDLE with NAME."
-  (let ((sources (--reject (string= name (cask-source-name it))
-                           (cask-bundle-sources bundle))))
+  (let ((sources (cl-remove-if
+                  (lambda (elm) (string= name (cask-source-name elm)))
+                  (cask-bundle-sources bundle))))
     (setf (cask-bundle-sources bundle) sources)))
 
 (defun cask-build (bundle)
