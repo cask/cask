@@ -492,12 +492,10 @@ The BUNDLE is initialized when the elpa directory exists."
 
 (defun cask--uniq-dependencies (dependencies)
   "Return new list with all duplicates in DEPENDENCIES removed."
-  (let ((-compare-fn
-         (lambda (dependency-1 dependency-2)
-           (eq
-            (cask-dependency-name dependency-1)
-            (cask-dependency-name dependency-2)))))
-    (-uniq dependencies)))
+  (cl-delete-duplicates
+   dependencies
+   :test (lambda (a b)
+           (eq (cask-dependency-name a) (cask-dependency-name b)))))
 
 (defun cask--compute-dependencies (dependencies package-function)
   "Return a list of DEPENDENCIES's dependencies, recursively.
@@ -763,7 +761,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `load-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-     (mapcar 'f-expand (-uniq (mapcar 'f-parent (cask-files bundle))))
+   (mapcar 'f-expand (delete-dups (mapcar 'f-parent (cask-files bundle))))
      (mapcar
       (lambda (dependency)
         (cask-dependency-path bundle (cask-dependency-name dependency)))
@@ -774,7 +772,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-     (mapcar 'expand-file-name (-uniq (mapcar 'f-parent (cl-remove-if-not #'f-executable-p (cask-files bundle)))))
+     (mapcar 'expand-file-name (delete-dups (mapcar 'f-parent (cl-remove-if-not #'f-executable-p (cask-files bundle)))))
      (cl-remove-if-not
       #'f-dir?
       (mapcar
