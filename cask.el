@@ -319,7 +319,7 @@ ARGS is a plist with these additional options:
 
 (defun cask--fetcher-dependencies (bundle)
   "Return list of fetcher dependencies for BUNDLE."
-  (--select (cask-dependency-fetcher it) (cask--dependencies bundle)))
+  (cl-remove-if-not #'cask-dependency-fetcher (cask--dependencies bundle)))
 
 (defun cask--has-fetcher-dependency-p (bundle)
   "Return t if BUNDLE has any fetcher dependencies."
@@ -774,9 +774,9 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-     (mapcar 'expand-file-name (-uniq (mapcar 'f-parent (-filter 'f-executable-p (cask-files bundle)))))
-     (-select
-      'f-dir?
+     (mapcar 'expand-file-name (-uniq (mapcar 'f-parent (cl-remove-if-not #'f-executable-p (cask-files bundle)))))
+     (cl-remove-if-not
+      #'f-dir?
       (mapcar
        (lambda (dependency)
          (let ((path (cask-dependency-path bundle (cask-dependency-name dependency))))
