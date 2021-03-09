@@ -631,10 +631,10 @@ This function return a `cask-bundle' object."
 This function return a `cask-bundle' object."
   (let* ((bundle (cask-setup (or project-path user-emacs-directory)))
          (package-load-list
-          (-snoc (mapcar
-                  (lambda (elm) (list (cask-dependency-name elm) t))
-                  (cask--runtime-dependencies bundle))
-                 'all)))
+          `(,@(mapcar
+               (lambda (elm) (list (cask-dependency-name elm) t))
+               (cask--runtime-dependencies bundle))
+            all)))
     (when (equal (epl-package-dir) (epl-default-package-dir))
       (cask--use-environment bundle :activate t))
     bundle))
