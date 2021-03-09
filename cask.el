@@ -377,7 +377,7 @@ outside of package.el, for example `load-path'."
   `(cask--with-file ,bundle
      (if (or ,(plist-get body :force) (not (equal ,bundle cask-current-bundle)))
          (prog1
-             (let ((load-path (-clone load-path)))
+             (let ((load-path (copy-sequence load-path)))
                (cask--use-environment ,bundle :refresh ,(plist-get body :refresh))
                ,@body)
            (setq cask-current-bundle (copy-cask-bundle ,bundle)))
