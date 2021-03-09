@@ -48,7 +48,7 @@
       package-alist
       package-archive-contents
       (package-user-dir cask-bootstrap-dir)
-      (deps '(s dash f commander git epl shut-up cl-lib cl-generic
+      (deps '(s f commander git epl shut-up cl-lib cl-generic
                 package-build eieio ansi)))
   (when (version<= emacs-version "24.4")
     ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and

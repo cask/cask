@@ -27,7 +27,6 @@
 
 (require 'f)
 (require 's)
-(require 'dash)
 (require 'noflet)
 (require 'el-mock)
 (require 'ert-async)

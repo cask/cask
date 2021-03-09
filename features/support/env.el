@@ -27,7 +27,6 @@
 
 (require 's)
 (require 'f)
-(require 'dash)
 (require 'espuds)
 (require 'ansi)
 
