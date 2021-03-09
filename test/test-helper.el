@@ -150,14 +150,15 @@ asserted that only those packages are installed"
 (defun cask-test/run-command (command &rest args)
   "Run COMMAND with ARGS."
   (with-temp-buffer
-    (-if-let (program (executable-find command))
-        (let ((exit-code (apply 'call-process (append (list program nil t nil) args))))
-          (if (zerop exit-code)
-              (buffer-string)
-            (error "Running command %s failed with: '%s'"
-                   (s-join " " (cons command args))
-                   (buffer-string))))
-      (error "No such command found %s" command))))
+    (let ((program (executable-find command)))
+      (if program
+          (let ((exit-code (apply 'call-process (append (list program nil t nil) args))))
+            (if (zerop exit-code)
+                (buffer-string)
+              (error "Running command %s failed with: '%s'"
+                     (s-join " " (cons command args))
+                     (buffer-string))))
+        (error "No such command found %s" command)))))
 
 (defmacro cask-test/with-git-repo (&rest body)
   "Create temporary Git repo and yield BODY."
