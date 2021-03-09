@@ -358,8 +358,9 @@ This function returns the path to the package file."
       (cask-print "building\e[F\n")
       (package-build--package rcp version)
       (let ((pattern (format "%s-%s.*" name version)))
-        (--first (s-match ".*\\.\\(tar\\|el\\)" it)
-                 (f-glob pattern cask-tmp-packages-path))))))
+        (cl-find-if
+         (lambda (elm) (s-match ".*\\.\\(tar\\|el\\)" elm))
+         (f-glob pattern cask-tmp-packages-path))))))
 
 (defmacro cask--with-environment (bundle &rest body)
   "Switch to BUNDLE environment and yield BODY.
@@ -828,7 +829,7 @@ If DEEP is t, all dependencies recursively will be returned."
 
 (defun cask-find-dependency (bundle name)
   "Find dependency in BUNDLE with NAME."
-  (-first
+  (cl-find-if
    (lambda (dependency)
      (eq name (cask-dependency-name dependency)))
    (cask--dependencies bundle)))
@@ -909,7 +910,7 @@ url to the fetcher source."
       (setf (cask-dependency-version dependency) (plist-get args :version)))
     (when (plist-get args :files)
       (setf (cask-dependency-files dependency) (plist-get args :files)))
-    (let ((fetcher (--first (-contains? cask-fetchers it) args)))
+    (let ((fetcher (cl-find-if (lambda (elm) (-contains? cask-fetchers elm)) args)))
       (when fetcher
         (setf (cask-dependency-fetcher dependency) fetcher)
         (let ((url (plist-get args fetcher)))
