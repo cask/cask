@@ -163,9 +163,10 @@ Git is available in `exec-path'."
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
   (cask-cli/with-handled-errors
-    (-when-let (upgrades (cask-update (cask-cli--bundle)))
-      (princ "Updated packages:\n")
-      (mapc #'cask-cli--print-upgrade upgrades))))
+    (let ((upgrades (cask-update (cask-cli--bundle))))
+      (when upgrades
+        (princ "Updated packages:\n")
+        (mapc #'cask-cli--print-upgrade upgrades)))))
 
 (defun cask-cli/init ()
   "Initialize the current directory with a Cask-file.
@@ -245,9 +246,10 @@ The output is formatted as a colon path."
 
 That is packages that have a more recent version available for
 installation."
-  (-when-let (outdated (cask-outdated (cask-cli--bundle)))
-    (princ "Outdated packages:\n")
-    (mapc #'cask-cli--print-upgrade outdated)))
+  (let ((outdated (cask-outdated (cask-cli--bundle))))
+    (when outdated
+      (princ "Outdated packages:\n")
+      (mapc #'cask-cli--print-upgrade outdated))))
 
 (defun cask-cli/files ()
   "Print list of files specified in the files directive.
