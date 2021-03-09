@@ -161,10 +161,10 @@ Slots:
 (defclass package-directory-recipe (package-recipe)
   ((dir           :initarg :dir   :initform ".")))
 
-(defmethod package-recipe--working-tree ((rcp package-directory-recipe))
+(cl-defmethod package-recipe--working-tree ((rcp package-directory-recipe))
   (oref rcp dir))
 
-(defmethod package-build--get-commit ((rcp package-directory-recipe)))
+(cl-defmethod package-build--get-commit ((_rcp package-directory-recipe)))
 
 (defvar cask-source-mapping
   '((gnu          . "https://elpa.gnu.org/packages/")
@@ -583,7 +583,7 @@ INDEX is the current install index."
 (defun cask--delete-dependency (bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
   (let* ((name (cask-dependency-name dependency))
-         (package (epl-find-installed-package name)))
+         (package (epl-find-installed-packages name)))
     (when package
       (epl-package-delete package))))
 
