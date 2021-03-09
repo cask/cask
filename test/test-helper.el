@@ -132,13 +132,12 @@ asserted that only those packages are installed"
            `(let ((expected-packages ,(plist-get body :packages))
                   (actual-packages (cask-test/installed-packages bundle)))
               (should (-same-items? (mapcar 'car expected-packages) (mapcar 'car actual-packages)))
-              (-each expected-packages
-                (lambda (expected-package)
-                  (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
-                    (let ((actual-package-version (cadr actual-package))
-                          (expected-package-version (cadr expected-package)))
-                      (when expected-package-version
-                        (should (string= actual-package-version expected-package-version)))))))))
+              (dolist (expected-package expected-packages)
+                (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
+                  (let ((actual-package-version (cadr actual-package))
+                        (expected-package-version (cadr expected-package)))
+                    (when expected-package-version
+                      (should (string= actual-package-version expected-package-version))))))))
         ))))
 
 (defun cask-test/install (bundle)

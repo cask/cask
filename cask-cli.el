@@ -165,7 +165,7 @@ including their dependencies."
   (cask-cli/with-handled-errors
     (-when-let (upgrades (cask-update (cask-cli--bundle)))
       (princ "Updated packages:\n")
-      (-each upgrades 'cask-cli--print-upgrade))))
+      (mapc #'cask-cli--print-upgrade upgrades))))
 
 (defun cask-cli/init ()
   "Initialize the current directory with a Cask-file.
@@ -247,7 +247,7 @@ That is packages that have a more recent version available for
 installation."
   (-when-let (outdated (cask-outdated (cask-cli--bundle)))
     (princ "Outdated packages:\n")
-    (-each outdated 'cask-cli--print-upgrade)))
+    (mapc #'cask-cli--print-upgrade outdated)))
 
 (defun cask-cli/files ()
   "Print list of files specified in the files directive.
@@ -266,9 +266,8 @@ If no files directive or no files, do nothing."
             (unless (ignore-errors (package-build-expand-file-specs path (list pattern)))
               (cask-warn "Files spec; Pattern `%s' doesn't match anything" pattern)))))))
 
-  (-each (cask-files (cask-cli--bundle))
-    (lambda (file)
-      (princ (concat file "\n")))))
+  (dolist (file (cask-files (cask-cli--bundle)))
+    (princ (concat file "\n"))))
 
 (defun cask-cli/build ()
   "Build all Elisp files in the files directive."
