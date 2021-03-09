@@ -96,8 +96,8 @@
       (let ((missing-dependencies (cdr err)))
         (error "Some dependencies were not available: %s"
                (->> missing-dependencies
-                 (-map #'cask-dependency-name)
-                 (-map #'symbol-name)
+                 (mapcar #'cask-dependency-name)
+                 (mapcar #'symbol-name)
                  (s-join ", ")))))
      (cask-failed-initialization
       (let* ((data (cdr err))

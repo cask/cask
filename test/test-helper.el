@@ -80,16 +80,16 @@ The items in the list are on the form (package version)."
     (when (f-dir? elpa-dir)
       (let ((directories (f--directories elpa-dir (s-matches? package-regex
                                                               (f-filename it)))))
-        (-map
+        (mapcar
          (lambda (filename)
            (cdr (s-match package-regex (f-filename filename))))
-         (-map 'f-filename directories))))))
+         (mapcar 'f-filename directories))))))
 
 (defun cask-test/write-forms (forms path)
   "Write FORMS to PATH."
   (if (eq forms 'empty)
       (f-touch path)
-    (let ((cask-file-content (s-join "\n" (-map 'pp-to-string forms))))
+    (let ((cask-file-content (s-join "\n" (mapcar 'pp-to-string forms))))
       (f-write-text cask-file-content 'utf-8 path))))
 
 (defmacro cask-test/with-sandbox (&rest body)
@@ -131,7 +131,7 @@ asserted that only those packages are installed"
         ,(when (plist-member body :packages)
            `(let ((expected-packages ,(plist-get body :packages))
                   (actual-packages (cask-test/installed-packages bundle)))
-              (should (-same-items? (-map 'car expected-packages) (-map 'car actual-packages)))
+              (should (-same-items? (mapcar 'car expected-packages) (mapcar 'car actual-packages)))
               (-each expected-packages
                 (lambda (expected-package)
                   (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
@@ -191,11 +191,11 @@ The fixture with name FIXTURE-NAME will be copied to
   "Assert that the dependencies ACTUAL and EXPECTED are same."
   (should
    (-same-items?
-    (-map 'cask-dependency-name expected)
-    (-map 'cask-dependency-name actual)))
+    (mapcar 'cask-dependency-name expected)
+    (mapcar 'cask-dependency-name actual)))
   (should
    (-same-items?
-    (-map 'cask-dependency-version expected)
-    (-map 'cask-dependency-version actual))))
+    (mapcar 'cask-dependency-version expected)
+    (mapcar 'cask-dependency-version actual))))
 
 ;;; test-helper.el ends here

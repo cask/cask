@@ -508,14 +508,14 @@ PACKAGE-FUNCTION is a function that takes a name as argument and
 returns an `epl-package' object."
   (cask--uniq-dependencies
    (-flatten
-    (-map
+    (mapcar
      (lambda (dependency)
        (let ((name (cask-dependency-name dependency)))
          (-when-let (package (funcall package-function name))
            (cask--uniq-dependencies
             (cons dependency
                   (cask--compute-dependencies
-                   (-map 'cask--epl-requirement-to-dependency
+                   (mapcar 'cask--epl-requirement-to-dependency
                          (epl-package-requirements package))
                    package-function))))))
      dependencies))))
@@ -760,8 +760,8 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `load-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-     (-map 'f-expand (-uniq (-map 'f-parent (cask-files bundle))))
-     (-map
+     (mapcar 'f-expand (-uniq (mapcar 'f-parent (cask-files bundle))))
+     (mapcar
       (lambda (dependency)
         (cask-dependency-path bundle (cask-dependency-name dependency)))
       (cask--installed-dependencies bundle 'deep))
@@ -771,10 +771,10 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-     (-map 'expand-file-name (-uniq (-map 'f-parent (-filter 'f-executable-p (cask-files bundle)))))
+     (mapcar 'expand-file-name (-uniq (mapcar 'f-parent (-filter 'f-executable-p (cask-files bundle)))))
      (-select
       'f-dir?
-      (-map
+      (mapcar
        (lambda (dependency)
          (let ((path (cask-dependency-path bundle (cask-dependency-name dependency))))
            (f-expand "bin" path)))
@@ -839,7 +839,7 @@ If DEEP is t, all dependencies recursively will be returned."
           (version (cask-bundle-version bundle))
           (description (cask-bundle-description bundle))
           (dependencies
-           (-map
+           (mapcar
             (lambda (dependency)
               (list (cask-dependency-name dependency)
                     (cask-dependency-version dependency)))
@@ -880,7 +880,7 @@ in the list are relative to the path."
                             (append package-build-default-files-spec (cdr file-list)))
                            (t
                             file-list))))
-      (-map 'car (ignore-errors (package-build-expand-file-specs path patterns))))))
+      (mapcar 'car (ignore-errors (package-build-expand-file-specs path patterns))))))
 
 (defun cask-add-dependency (bundle name &rest args)
   "Add dependency to BUNDLE.
@@ -971,7 +971,7 @@ The list is a list of alist's where the key is the name of the
 link, as a string and the value is the absolute path to the link."
   (cask--with-file bundle
     (when (cask--initialized-p bundle)
-      (-map
+      (mapcar
        (lambda (file)
          (list (f-filename file) (f-canonical file)))
        (f-entries (cask-elpa-path bundle) 'f-symlink?)))))

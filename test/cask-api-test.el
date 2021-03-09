@@ -505,7 +505,7 @@
     (f-touch "foo/package-b.el")
     (should
      (-same-items?
-      (append (-map 'f-expand (list "./" "foo/")) load-path)
+      (append (mapcar 'f-expand (list "./" "foo/")) load-path)
       (cask-load-path bundle)))))
 
 (ert-deftest cask-load-path-test/without-initialized-environment ()
@@ -863,7 +863,7 @@
         (depends-on "package-b" "0.0.1"))
     (cask-install bundle)
     (should (cask-bundle-p (cask-initialize (cask-path bundle))))
-    (should (equal (-map 'car package-alist) '(package-a package-b)))))
+    (should (equal (mapcar 'car package-alist) '(package-a package-b)))))
 
 
 ;;;; cask-files
