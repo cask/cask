@@ -255,6 +255,19 @@ installation."
   "Print list of files specified in the files directive.
 
 If no files directive or no files, do nothing."
+  ;; this code just show warnings for user experience
+  (let ((bundle (cask-cli--bundle)))
+    (cask--with-file bundle
+      (let* ((path (cask-bundle-path bundle))
+             (file-list (cask-bundle-patterns bundle))
+             (patterns (cond ((null file-list) nil)
+                             ((eq :defaults (car file-list)) nil)
+                             (t file-list))))
+        (when patterns
+          (dolist (pattern patterns)
+            (unless (ignore-errors (package-build-expand-file-specs path (list pattern)))
+              (cask-warn "Files spec; Pattern `%s' doesn't match anything" pattern)))))))
+
   (-each (cask-files (cask-cli--bundle))
     (lambda (file)
       (princ (concat file "\n")))))

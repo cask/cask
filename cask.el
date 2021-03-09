@@ -215,6 +215,10 @@ If `cask-cli--silent' is non-nil, do not print anything."
       (with-ansi
        ,@body))))
 
+(defun cask-warn (message &rest args)
+  "Display MESSAGE with ARGS.  see `warn'."
+  (display-warning 'cask (apply #'format message args)))
+
 (defun cask--find-unbalanced-parenthesis (bundle)
   "Find unbalanced parenthesis for Cask file in BUNDLE."
   (with-temp-buffer
