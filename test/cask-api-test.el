@@ -36,7 +36,16 @@
   (defvar cask-test/link-path)
   (defvar cask-test/sandbox-path)
   (defvar cask-test/fixtures-path)
-  (defvar cask-test/cvs-repo-path))
+  (defvar cask-test/cvs-repo-path)
+
+  (require 'cl-lib)
+  (defun cask-same-items (a b)
+    "`-same-items?' for A, B."
+    (let ((length-a (length a))
+          (length-b (length b)))
+      (and
+       (= length-a length-b)
+       (= length-a (length (cl-remove-if-not (lambda (elm) (member elm b)) a)))))))
 
 
 ;;;; cask-setup
@@ -476,7 +485,7 @@
     (let ((path-package-a (f-expand "package-a-0.0.1" (cask-elpa-path bundle)))
           (path-package-b (f-expand "package-b-0.0.1" (cask-elpa-path bundle))))
       (should
-       (-same-items?
+       (cask-same-items
         (append (list path-package-b path-package-a) load-path)
         (cask-load-path bundle))))))
 
@@ -490,7 +499,7 @@
           (path-package-d (f-expand "package-d-0.0.1" (cask-elpa-path bundle)))
           (path-package-f (f-expand "package-f-0.0.1" (cask-elpa-path bundle))))
       (should
-       (-same-items?
+       (cask-same-items
         (append (list path-package-c
                       path-package-d
                       path-package-f)
@@ -504,8 +513,8 @@
     (f-mkdir "foo")
     (f-touch "foo/package-b.el")
     (should
-     (-same-items?
-      (append (-map 'f-expand (list "./" "foo/")) load-path)
+     (cask-same-items
+      (append (mapcar 'f-expand (list "./" "foo/")) load-path)
       (cask-load-path bundle)))))
 
 (ert-deftest cask-load-path-test/without-initialized-environment ()
@@ -518,7 +527,7 @@
     (let ((path-package-a (f-expand "package-a-0.0.1" (cask-elpa-path bundle)))
           (path-package-b (f-expand "package-b-0.0.1" (cask-elpa-path bundle))))
       (should
-       (-same-items?
+       (cask-same-items
         (append (list path-package-b path-package-a) load-path)
         (cask-load-path bundle))))))
 
@@ -863,7 +872,7 @@
         (depends-on "package-b" "0.0.1"))
     (cask-install bundle)
     (should (cask-bundle-p (cask-initialize (cask-path bundle))))
-    (should (equal (-map 'car package-alist) '(package-a package-b)))))
+    (should (equal (mapcar 'car package-alist) '(package-a package-b)))))
 
 
 ;;;; cask-files
@@ -881,13 +890,13 @@
   (cask-test/with-bundle 'empty
     (f-touch "package-a.el")
     (f-touch "package-a.info")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-a.info")))))
 
 (ert-deftest cask-files-test/no-files-directive-with-files-and-excluded-files ()
   (cask-test/with-bundle 'empty
     (f-touch "package-a.el")
     (f-touch "foo")
-    (should (-same-items? (cask-files bundle) '("package-a.el")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el")))))
 
 (ert-deftest cask-files-test/with-files-directive ()
   (cask-test/with-bundle
@@ -895,7 +904,7 @@
     (f-touch "package-a.el")
     (f-touch "package-b.el")
     (f-touch "package-c.el")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-b.el")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-b.el")))))
 
 (ert-deftest cask-files-test/with-defaults-files-directive-with-files ()
   (cask-test/with-bundle
@@ -903,7 +912,7 @@
     (f-touch "package-a.el")
     (f-touch "package-a.info")
     (f-touch "foo")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-a.info")))))
 
 (ert-deftest cask-files-test/with-defaults-and-more-files-directive-with-files ()
   (cask-test/with-bundle
@@ -911,7 +920,7 @@
     (f-touch "package-a.el")
     (f-touch "package-a.info")
     (f-touch "foo")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info" "foo")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-a.info" "foo")))))
 
 
 ;;;; cask-add-dependency
@@ -1076,7 +1085,7 @@
       (let ((actual (cask-links bundle))
             (expected `(("package-c-0.0.1" ,package-c-path)
                         ("package-d-0.0.1" ,package-d-path))))
-        (should (-same-items? actual expected))))))
+        (should (cask-same-items actual expected))))))
 
 
 ;;;; cask-link

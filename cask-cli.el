@@ -78,14 +78,11 @@
 
 (defun cask-cli--print-table (table)
   "Print TABLE, which is a list of alist's."
-  (let ((max (length (--max-by (> (length it)
-                                  (length other))
-                               (-map 'car table)))))
-    (-each table
-      (lambda (row)
-        (let ((key (car row)) (value (cadr row)))
-          (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
-          (princ (concat value "\n")))))))
+  (let ((max (apply #'max (mapcar #'length (mapcar #'car table)))))
+    (dolist (row table)
+      (let ((key (car row)) (value (cadr row)))
+        (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
+        (princ (concat value "\n"))))))
 
 
 ;;;; Commands
@@ -98,10 +95,11 @@
      (cask-missing-dependencies
       (let ((missing-dependencies (cdr err)))
         (error "Some dependencies were not available: %s"
-               (->> missing-dependencies
-                 (-map #'cask-dependency-name)
-                 (-map #'symbol-name)
-                 (s-join ", ")))))
+               (s-join
+                ", "
+                (mapcar
+                 #'symbol-name
+                 (mapcar #'cask-dependency-name missing-dependencies))))))
      (cask-failed-initialization
       (let* ((data (cdr err))
              (message (error-message-string (nth 0 data)))
@@ -165,9 +163,10 @@ Git is available in `exec-path'."
 All packages that are specified in the Cask-file will be updated
 including their dependencies."
   (cask-cli/with-handled-errors
-    (-when-let (upgrades (cask-update (cask-cli--bundle)))
-      (princ "Updated packages:\n")
-      (-each upgrades 'cask-cli--print-upgrade))))
+    (let ((upgrades (cask-update (cask-cli--bundle))))
+      (when upgrades
+        (princ "Updated packages:\n")
+        (mapc #'cask-cli--print-upgrade upgrades)))))
 
 (defun cask-cli/init ()
   "Initialize the current directory with a Cask-file.
@@ -247,9 +246,10 @@ The output is formatted as a colon path."
 
 That is packages that have a more recent version available for
 installation."
-  (-when-let (outdated (cask-outdated (cask-cli--bundle)))
-    (princ "Outdated packages:\n")
-    (-each outdated 'cask-cli--print-upgrade)))
+  (let ((outdated (cask-outdated (cask-cli--bundle))))
+    (when outdated
+      (princ "Outdated packages:\n")
+      (mapc #'cask-cli--print-upgrade outdated))))
 
 (defun cask-cli/files ()
   "Print list of files specified in the files directive.
@@ -268,9 +268,8 @@ If no files directive or no files, do nothing."
             (unless (ignore-errors (package-build-expand-file-specs path (list pattern)))
               (cask-warn "Files spec; Pattern `%s' doesn't match anything" pattern)))))))
 
-  (-each (cask-files (cask-cli--bundle))
-    (lambda (file)
-      (princ (concat file "\n")))))
+  (dolist (file (cask-files (cask-cli--bundle)))
+    (princ (concat file "\n"))))
 
 (defun cask-cli/build ()
   "Build all Elisp files in the files directive."
