@@ -32,6 +32,14 @@
 (require 'el-mock)
 (require 'ert-async)
 
+(defun cask-same-items (a b)
+    "`-same-items?' for A, B."
+    (let ((length-a (length a))
+          (length-b (length b)))
+      (and
+       (= length-a length-b)
+       (= length-a (length (cl-remove-if-not (lambda (elm) (member elm b)) a))))))
+
 (defconst cask-test/test-path
   (f-parent (f-this-file)))
 
@@ -131,7 +139,9 @@ asserted that only those packages are installed"
         ,(when (plist-member body :packages)
            `(let ((expected-packages ,(plist-get body :packages))
                   (actual-packages (cask-test/installed-packages bundle)))
-              (should (-same-items? (mapcar 'car expected-packages) (mapcar 'car actual-packages)))
+              (should (cask-same-items
+                       (mapcar 'car expected-packages)
+                       (mapcar 'car actual-packages)))
               (dolist (expected-package expected-packages)
                 (let ((actual-package (cl-find-if (lambda (elm) (string= (car elm) (car expected-package))) actual-packages)))
                   (let ((actual-package-version (cadr actual-package))
@@ -190,11 +200,11 @@ The fixture with name FIXTURE-NAME will be copied to
 (defun should-be-same-dependencies (actual expected)
   "Assert that the dependencies ACTUAL and EXPECTED are same."
   (should
-   (-same-items?
+   (cask-same-items
     (mapcar 'cask-dependency-name expected)
     (mapcar 'cask-dependency-name actual)))
   (should
-   (-same-items?
+   (cask-same-items
     (mapcar 'cask-dependency-version expected)
     (mapcar 'cask-dependency-version actual))))
 
