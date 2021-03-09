@@ -79,11 +79,10 @@
 (defun cask-cli--print-table (table)
   "Print TABLE, which is a list of alist's."
   (let ((max (apply #'max (mapcar #'length (mapcar #'car table)))))
-    (-each table
-      (lambda (row)
-        (let ((key (car row)) (value (cadr row)))
-          (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
-          (princ (concat value "\n")))))))
+    (dolist (row table)
+      (let ((key (car row)) (value (cadr row)))
+        (princ (s-pad-right (+ max cask-cli--table-padding) " " key))
+        (princ (concat value "\n"))))))
 
 
 ;;;; Commands
