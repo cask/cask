@@ -164,7 +164,7 @@ Slots:
 (cl-defmethod package-recipe--working-tree ((rcp package-directory-recipe))
   (oref rcp dir))
 
-(cl-defmethod package-build--get-commit ((rcp package-directory-recipe)))
+(cl-defmethod package-build--get-commit ((_rcp package-directory-recipe)))
 
 (defvar cask-source-mapping
   '((gnu          . "https://elpa.gnu.org/packages/")
