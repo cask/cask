@@ -729,7 +729,7 @@ configuration template is used."
     (when dev-mode
       (let* ((files (f--files (cask-path bundle) (f-ext? it "el")))
              (package-file (if (equal (length files) 1)
-                               (f-filename (-first-item files))
+                               (f-filename (car files))
                              "TODO")))
         (setq init-content (format init-content package-file))))
     (if (f-file? cask-file)
