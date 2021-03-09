@@ -912,7 +912,7 @@ url to the fetcher source."
       (setf (cask-dependency-version dependency) (plist-get args :version)))
     (when (plist-get args :files)
       (setf (cask-dependency-files dependency) (plist-get args :files)))
-    (let ((fetcher (cl-find-if (lambda (elm) (-contains? cask-fetchers elm)) args)))
+    (let ((fetcher (cl-find-if (lambda (elm) (memq elm cask-fetchers)) args)))
       (when fetcher
         (setf (cask-dependency-fetcher dependency) fetcher)
         (let ((url (plist-get args fetcher)))
