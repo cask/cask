@@ -504,7 +504,8 @@ The BUNDLE is initialized when the elpa directory exists."
 PACKAGE-FUNCTION is a function that takes a name as argument and
 returns an `epl-package' object."
   (cask--uniq-dependencies
-   (-flatten
+   (apply
+    'append
     (mapcar
      (lambda (dependency)
        (let* ((name (cask-dependency-name dependency))
