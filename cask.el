@@ -566,6 +566,7 @@ INDEX is the current install index."
       (if (cask-dependency-fetcher dependency)
           (shut-up
             (let ((package-path (cask--checkout-and-package-dependency dependency)))
+              (epl-refresh)
               (epl-install-file package-path)))
         (let ((package (cask--find-available-package name)))
           (if package
