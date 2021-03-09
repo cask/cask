@@ -133,7 +133,7 @@ asserted that only those packages are installed"
                   (actual-packages (cask-test/installed-packages bundle)))
               (should (-same-items? (mapcar 'car expected-packages) (mapcar 'car actual-packages)))
               (dolist (expected-package expected-packages)
-                (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
+                (let ((actual-package (cl-find-if (lambda (elm) (string= (car elm) (car expected-package))) actual-packages)))
                   (let ((actual-package-version (cadr actual-package))
                         (expected-package-version (cadr expected-package)))
                     (when expected-package-version
