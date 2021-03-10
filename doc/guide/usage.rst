@@ -49,7 +49,7 @@ it.
 Finding Emacs
 -------------
 
-By default, packages are installed for the default Emacs, i.e. the one behind
+By default, packages are installed for the default Emacs, i.e., the one behind
 the `emacs` command.  To pick a different Emacs, set the environment variable
 :envvar:`EMACS` to the command name or executable path of the Emacs to use:
 
@@ -64,11 +64,14 @@ switching between versions you will have to install the dependencies for each:
 
    $ EMACS="emacs24.5" cask install
 
-Exceptionally, if you are launching :program:`cask` inside Emacs 24 either
-from an internal shell or `M-x compile`, then Emacs uses :envvar:`EMACS` in a
-way which conflicts with :program:`cask`, in which case you can use the
-environment variable :envvar:`CASK_EMACS` instead. With Emacs 25,
-:envvar:`EMACS` can be used as normal.
+
+There are, unfortunately, circumstances under which Emacs itself
+resets the :envvar:`EMACS` variable in a way which conflicts with
+:program:`cask`, in which case you can use the environment variable
+:envvar:`CASK_EMACS` instead. Specifically, this problem effects:
+Emacs-24, for `M-x compile`, `M-x shell` or `M-x term`, for Emacs-25
+and Emacs-26 only for `M-x term`.
+
 
 
 Commands and options
@@ -107,7 +110,7 @@ cask emacs
    cask [GLOBAL-OPTIONS] emacs [ARGUMENTS ...]
 
 Execute `emacs` with the given :var:`arguments`, with the appropriate
-environmment (see :ref:`cask exec`). The Emacs executable is that which cask
+environment (see :ref:`cask exec`). The Emacs executable is that which cask
 would normally run in (see :ref:`finding_emacs`).
 
 
@@ -198,7 +201,7 @@ cask list
 
    cask [GLOBAL-OPTIONS] list
 
-List all runtime and development dependencies.
+List all run-time and development dependencies.
 
 .. _cask load-path:
 
@@ -479,4 +482,4 @@ Environment variables
 .. envvar:: CASK_EMACS
 
    As EMACS, but takes precedence over it. This is most useful for launching
-   Cask inside Emacs which often resets EMACS to other values.
+   Cask inside Emacs which sometimes resets EMACS to other values.

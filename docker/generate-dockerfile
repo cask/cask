@@ -1,0 +1,39 @@
+:;exec ${EMACS:-emacs} --batch -l "$0" -- "$@"
+
+(setq debug-on-error t)
+
+(eval-and-compile
+  (when (or load-file-name byte-compile-current-file)
+    (setq user-emacs-directory (expand-file-name
+                                (file-name-directory
+                                 (or load-file-name byte-compile-current-file))))))
+
+(cd user-emacs-directory)
+
+(eval-and-compile
+  (prog1 "leaf"
+    (custom-set-variables
+     '(package-archives '(("org"   . "https://orgmode.org/elpa/")
+                          ("melpa" . "https://melpa.org/packages/")
+                          ("gnu"   . "https://elpa.gnu.org/packages/"))))
+    (package-initialize)
+    (unless (package-installed-p 'leaf)
+      (package-refresh-contents)
+      (package-install 'leaf))))
+
+(leaf ht :ensure t :require t)
+(leaf mustache :ensure t :require t)
+
+(let ((template (with-temp-buffer
+                  (insert-file-contents "Dockerfile.mustache")
+                  (buffer-string))))
+  (dolist (ver '("24.1" "24.2" "24.3" "24.4" "24.5"
+                 "25.1" "25.2" "25.3"
+                 "26.1" "26.2" "26.3"
+                 "27.1"
+                 "master"))
+    (let ((file (format "Dockerfile-%s" ver))
+          (context (ht ("version" ver))))
+      (princ (format "Create %s\n" file))
+      (with-temp-file file
+        (insert (mustache-render template context))))))

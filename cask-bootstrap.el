@@ -27,46 +27,65 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (defvar cask-directory))
+(require 'package)
 
-(defconst cask-bootstrap-emacs-version
-  (format "%s.%s"
-          emacs-major-version
-          emacs-minor-version))
+
+(defvar cask-directory)
 
 (defconst cask-bootstrap-dir
   (expand-file-name
-   (locate-user-emacs-file (format ".cask/%s/bootstrap" cask-bootstrap-emacs-version)))
+   (locate-user-emacs-file
+    (format ".cask/%s.%s/bootstrap" emacs-major-version emacs-minor-version)))
   "Path to Cask bootstrap directory.")
 
-(defconst cask-bootstrap-packages
-  '(s dash f commander git epl shut-up cl-lib package-build)
-  "List of bootstrap packages required by this file.")
+;; Don't change global `load-path' via `package-install'.
+;; We need `s' or something else dependency package, But the
+;; load-path has to be the user's, otherwise it hides the
+;; dependency issues of the user's package.
+(let ((load-path load-path)
+      (package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                          ("melpa" . "https://stable.melpa.org/packages/")))
+      package-alist
+      package-archive-contents
+      (package-user-dir cask-bootstrap-dir)
+      (deps '(s f commander git epl shut-up cl-lib cl-generic
+                package-build eieio ansi)))
+  (when (version<= emacs-version "24.4")
+    ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and
+    ;; cannot connect to melpa.  Use external openssl instead.
+    (require 'tls)
+    (defvar tls-program)
+    (setq tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
+    (defun gnutls-available-p () nil)
 
-(unless (require 'package nil :noerror)
-  (require 'package (expand-file-name "package-legacy" cask-directory)))
+    (unless package--initialized
+      (package-initialize))
 
-(let ((orig-load-path load-path))
-  (unwind-protect
-      (let (package-archives
-            package-alist
-            package-archive-contents
-            (package-user-dir cask-bootstrap-dir))
-        (package-initialize)
-        (condition-case nil
-            (mapc 'require cask-bootstrap-packages)
-          (error
-           (add-to-list 'package-archives (cons "gnu" "https://elpa.gnu.org/packages/"))
-           (add-to-list 'package-archives (cons "melpa" "https://melpa.org/packages/"))
-           (package-refresh-contents)
-           (mapc
-            (lambda (package)
-              (unless (package-installed-p package)
-                (package-install package)))
-            cask-bootstrap-packages)
-           (mapc 'require cask-bootstrap-packages))))
-    (setq load-path orig-load-path)))
+    ;; install cl-lib depends by `package-build'.
+    (unless (require 'cl-lib nil 'no-error)
+      (package-refresh-contents)
+      (package-install 'cl-lib)))
+
+  (when (version< emacs-version "25.1")
+    ;; Use vendored package-build package (and package-recipe)
+    ;; because its newer versions require Emacs25.1+
+    (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
+    (require 'package-build (expand-file-name "package-build-legacy" cask-directory))
+    (delq 'cl-lib deps)
+    (delq 'package-build deps)
+    (delq 'eieio deps))
+
+  (unless package--initialized
+    (package-initialize))
+
+  (dolist (pkg deps)
+    (condition-case nil
+        (require pkg)
+      (error
+       (unless package-archive-contents
+         (package-refresh-contents))
+       (package-install pkg)
+       (require pkg)))))
 
 (provide 'cask-bootstrap)
 

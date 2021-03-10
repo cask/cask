@@ -4,7 +4,7 @@
 
 This document provides guidelines and information on contributing to Cask.
 
-Cask is on Github_, and a discussion group is available at
+Cask is on GitHub_, and a discussion group is available at
 https://groups.google.com/forum/#!forum/cask-dev.
 
 .. _github: https://github.com/cask/cask
@@ -40,14 +40,14 @@ Setup
 
 To build the documentation locally, you need to go through a little setup first.
 
-Make sure that you have Python 2.7 and virtualenv_ available.  To install
+Make sure that you have Python 3.6 and virtualenv_ available.  To install
 virtualenv_, use the following command:
 
 .. code-block:: console
 
    $ pip install --user virtualenv
 
-Then add :file:`~/Library/Python/2.7/bin` (on OS X) or :file:`~/.local/bin` (on
+Then add :file:`~/Library/Python/3.6/bin` (on OS X) or :file:`~/.local/bin` (on
 other Unix variants) to :envvar:`PATH`.
 
 .. note::
@@ -64,7 +64,7 @@ Now create a virtualenv for the documentation, and install the requirements:
 .. code-block:: console
 
    $ mkdir -p ~/.virtualenvs
-   $ virtualenv -p python2.7 ~/.virtualenvs/cask
+   $ virtualenv -p python3.6 ~/.virtualenvs/cask
    $ pip install -r doc/requirements.txt
 
 Now you are set up to build the documentation.
@@ -109,3 +109,81 @@ request`_ with your changes.
    pull request on `master`.
 
 .. _pull request: https://github.com/cask/cask/pulls
+
+Docker image (Optional)
+=======================
+
+If you need clean Emacs environment, you can use Docker image.
+
+Usage
+-----
+
+.. code-block:: console
+
+   $ cd cask
+   $ docker build -t cask-27.1 -f docker/Dockerfile-27.1 .
+   $ docker run -it --rm -v $PWD:/cask cask-27.1 bash
+   $ cask
+
+Generate
+--------
+
+You can use Dockerfile template file and generate from it.
+
+Just edit ``Dockerfile.mustache`` using mustache grammar and exec ``generate-dockerfile``.
+
+Misc
+----
+
+Build images.
+
+.. code-block:: console
+    docker build -t cask-24.1 -f docker/Dockerfile-24.1 .
+    docker build -t cask-24.2 -f docker/Dockerfile-24.2 .
+    docker build -t cask-24.3 -f docker/Dockerfile-24.3 .
+    docker build -t cask-24.4 -f docker/Dockerfile-24.4 .
+    docker build -t cask-24.5 -f docker/Dockerfile-24.5 .
+    docker build -t cask-25.1 -f docker/Dockerfile-25.1 .
+    docker build -t cask-25.2 -f docker/Dockerfile-25.2 .
+    docker build -t cask-25.3 -f docker/Dockerfile-25.3 .
+    docker build -t cask-26.1 -f docker/Dockerfile-26.1 .
+    docker build -t cask-26.2 -f docker/Dockerfile-26.2 .
+    docker build -t cask-26.3 -f docker/Dockerfile-26.3 .
+    docker build -t cask-27.1 -f docker/Dockerfile-27.1 .
+    docker build -t cask-head -f docker/Dockerfile-master .
+
+Run docker image for Cask-self debugging.
+
+.. code-block:: console
+    docker run -it --rm -v $PWD:/cask cask-24.1 bash
+    docker run -it --rm -v $PWD:/cask cask-24.2 bash
+    docker run -it --rm -v $PWD:/cask cask-24.3 bash
+    docker run -it --rm -v $PWD:/cask cask-24.4 bash
+    docker run -it --rm -v $PWD:/cask cask-24.5 bash
+    docker run -it --rm -v $PWD:/cask cask-25.1 bash
+    docker run -it --rm -v $PWD:/cask cask-25.2 bash
+    docker run -it --rm -v $PWD:/cask cask-25.3 bash
+    docker run -it --rm -v $PWD:/cask cask-26.1 bash
+    docker run -it --rm -v $PWD:/cask cask-26.2 bash
+    docker run -it --rm -v $PWD:/cask cask-26.3 bash
+    docker run -it --rm -v $PWD:/cask cask-27.1 bash
+    docker run -it --rm -v $PWD:/cask cask-head bash
+
+Run docker image for using Cask for wild other packages.
+- Assume that cask has been forked to $HOME/dev/forks/cask.
+- Assume that the current directory is the folder where the ``Cask`` file.
+
+.. code-block:: console
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.2 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.3 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.4 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-24.5 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-25.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-25.2 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-25.3 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.2 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-26.3 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-27.1 bash
+    docker run -it --rm -v $HOME/dev/forks/cask:/cask -v $PWD:/work -w /work cask-head bash
