@@ -21,10 +21,12 @@ all: test
 test: unit ecukes
 
 unit:
-	$(CASK) exec ert-runner
+	$(MAKE) start-server
+	! ($(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el) ; (ret=$$? ; $(MAKE) stop-server || exit $$ret)
 
 ecukes:
-	$(CASK) exec ecukes
+	$(MAKE) start-server
+	! ($(CASK) exec ecukes) ; (ret=$$? ; $(MAKE) stop-server || exit $$ret)
 
 doc: html
 
@@ -92,3 +94,5 @@ clean:
 
 .PHONY: start-server stop-server unit ecukes test all clean \
 	doc html linkcheck
+
+.SILENT: start-server stop-server
