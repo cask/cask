@@ -208,9 +208,8 @@ the function `cask--with-environment'.")
 The BODY of this macro is automatically wrapped with
 `with-ansi' for easier colored output.
 
-If `cask-cli--silent' is non-nil, do not print anything."
-  `(when (and (boundp 'cask-cli--silent)
-              (not cask-cli--silent))
+Only print if running from cli and `cask-cli--silent' is non-nil"
+  `(when (and (featurep 'cask-cli) (not cask-cli--silent))
      (princ
       (with-ansi
        ,@body))))
