@@ -27,10 +27,17 @@
 
 (require 'f)
 (require 's)
-(require 'dash)
 (require 'noflet)
 (require 'el-mock)
 (require 'ert-async)
+
+(defun cask-same-items (a b)
+    "`-same-items?' for A, B."
+    (let ((length-a (length a))
+          (length-b (length b)))
+      (and
+       (= length-a length-b)
+       (= length-a (length (cl-remove-if-not (lambda (elm) (member elm b)) a))))))
 
 (defconst cask-test/test-path
   (f-parent (f-this-file)))
@@ -80,16 +87,16 @@ The items in the list are on the form (package version)."
     (when (f-dir? elpa-dir)
       (let ((directories (f--directories elpa-dir (s-matches? package-regex
                                                               (f-filename it)))))
-        (-map
+        (mapcar
          (lambda (filename)
            (cdr (s-match package-regex (f-filename filename))))
-         (-map 'f-filename directories))))))
+         (mapcar 'f-filename directories))))))
 
 (defun cask-test/write-forms (forms path)
   "Write FORMS to PATH."
   (if (eq forms 'empty)
       (f-touch path)
-    (let ((cask-file-content (s-join "\n" (-map 'pp-to-string forms))))
+    (let ((cask-file-content (s-join "\n" (mapcar 'pp-to-string forms))))
       (f-write-text cask-file-content 'utf-8 path))))
 
 (defmacro cask-test/with-sandbox (&rest body)
@@ -128,16 +135,19 @@ asserted that only those packages are installed"
           (cask-test/write-forms ,forms cask-file)))
       (let (cask-current-bundle (bundle (cask-setup cask-test/sandbox-path)))
         ,@body
-        (-when-let (expected-packages ,(plist-get body :packages))
-          (let ((actual-packages (cask-test/installed-packages bundle)))
-            (should (-same-items? (-map 'car expected-packages) (-map 'car actual-packages)))
-            (-each expected-packages
-              (lambda (expected-package)
-                (let ((actual-package (--first (string= (car it) (car expected-package)) actual-packages)))
+        ,(when (plist-member body :packages)
+           `(let ((expected-packages ,(plist-get body :packages))
+                  (actual-packages (cask-test/installed-packages bundle)))
+              (should (cask-same-items
+                       (mapcar 'car expected-packages)
+                       (mapcar 'car actual-packages)))
+              (dolist (expected-package expected-packages)
+                (let ((actual-package (cl-find-if (lambda (elm) (string= (car elm) (car expected-package))) actual-packages)))
                   (let ((actual-package-version (cadr actual-package))
                         (expected-package-version (cadr expected-package)))
                     (when expected-package-version
-                      (should (string= actual-package-version expected-package-version)))))))))))))
+                      (should (string= actual-package-version expected-package-version))))))))
+        ))))
 
 (defun cask-test/install (bundle)
   "Install BUNDLE and then reset the environment."
@@ -149,14 +159,15 @@ asserted that only those packages are installed"
 (defun cask-test/run-command (command &rest args)
   "Run COMMAND with ARGS."
   (with-temp-buffer
-    (-if-let (program (executable-find command))
-        (let ((exit-code (apply 'call-process (append (list program nil t nil) args))))
-          (if (zerop exit-code)
-              (buffer-string)
-            (error "Running command %s failed with: '%s'"
-                   (s-join " " (cons command args))
-                   (buffer-string))))
-      (error "No such command found %s" command))))
+    (let ((program (executable-find command)))
+      (if program
+          (let ((exit-code (apply 'call-process (append (list program nil t nil) args))))
+            (if (zerop exit-code)
+                (buffer-string)
+              (error "Running command %s failed with: '%s'"
+                     (s-join " " (cons command args))
+                     (buffer-string))))
+        (error "No such command found %s" command)))))
 
 (defmacro cask-test/with-git-repo (&rest body)
   "Create temporary Git repo and yield BODY."
@@ -177,20 +188,23 @@ asserted that only those packages are installed"
 
 The fixture with name FIXTURE-NAME will be copied to
 `cask-test/link-path' and will be the link source."
-  (f-copy (f-expand fixture-name cask-test/fixtures-path) cask-test/link-path)
-  (let ((link-path (f-expand fixture-name cask-test/link-path)))
-    (cask-link bundle name link-path)
-    link-path))
+  (let ((from (f-expand fixture-name cask-test/fixtures-path))
+        (to cask-test/link-path))
+    (unless (f-dir? (f-expand (f-filename from) to))
+      (f-copy from (f-slash to)))
+    (let ((link-path (f-expand fixture-name cask-test/link-path)))
+      (cask-link bundle name link-path)
+      link-path)))
 
 (defun should-be-same-dependencies (actual expected)
   "Assert that the dependencies ACTUAL and EXPECTED are same."
   (should
-   (-same-items?
-    (-map 'cask-dependency-name expected)
-    (-map 'cask-dependency-name actual)))
+   (cask-same-items
+    (mapcar 'cask-dependency-name expected)
+    (mapcar 'cask-dependency-name actual)))
   (should
-   (-same-items?
-    (-map 'cask-dependency-version expected)
-    (-map 'cask-dependency-version actual))))
+   (cask-same-items
+    (mapcar 'cask-dependency-version expected)
+    (mapcar 'cask-dependency-version actual))))
 
 ;;; test-helper.el ends here

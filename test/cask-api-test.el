@@ -36,7 +36,16 @@
   (defvar cask-test/link-path)
   (defvar cask-test/sandbox-path)
   (defvar cask-test/fixtures-path)
-  (defvar cask-test/cvs-repo-path))
+  (defvar cask-test/cvs-repo-path)
+
+  (require 'cl-lib)
+  (defun cask-same-items (a b)
+    "`-same-items?' for A, B."
+    (let ((length-a (length a))
+          (length-b (length b)))
+      (and
+       (= length-a length-b)
+       (= length-a (length (cl-remove-if-not (lambda (elm) (member elm b)) a)))))))
 
 
 ;;;; cask-setup
@@ -44,7 +53,7 @@
 (ert-deftest cask-setup-test/cask-file ()
   (cask-test/with-sandbox
    (f-copy (f-join cask-test/fixtures-path "package-b-0.0.1")
-           cask-test/sandbox-path)
+           (f-slash cask-test/sandbox-path))
    (let ((bundle (cask-setup (f-expand "package-b-0.0.1" cask-test/sandbox-path))))
      (should (string= (cask-package-name bundle) "package-b"))
      (should (string= (cask-package-version bundle) "0.0.1"))
@@ -53,7 +62,7 @@
 (ert-deftest cask-setup-test/define-package-file ()
   (cask-test/with-sandbox
    (f-copy (f-join cask-test/fixtures-path "package-c-0.0.1")
-           cask-test/sandbox-path)
+           (f-slash cask-test/sandbox-path))
    (let ((bundle (cask-setup (f-expand "package-c-0.0.1" cask-test/sandbox-path))))
      (should (string= (cask-package-name bundle) "package-c"))
      (should (string= (cask-package-version bundle) "0.0.1"))
@@ -198,6 +207,18 @@
     (let ((actual (cask-dependencies bundle))
           (expected (list (make-cask-dependency :name 'package-a :version "0.0.1")
                           (make-cask-dependency :name 'package-b :version "0.0.1"))))
+      (should-be-same-dependencies actual expected))))
+
+(ert-deftest cask-dependencies-test/with-duplicated-dependenies ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (depends-on "package-c" "0.0.1")
+        (depends-on "package-d" "0.0.1")
+        (development
+         (depends-on "package-d" "0.0.2")))
+    (let ((actual (cask-dependencies bundle))
+          (expected (list (make-cask-dependency :name 'package-c :version "0.0.1")
+                          (make-cask-dependency :name 'package-d :version "0.0.1"))))
       (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-dependencies-test/deep ()
@@ -442,6 +463,16 @@
     (let ((path (f-join (cask-elpa-path bundle) "package-e-0.0.1" "bin")))
       (should (equal (cons path exec-path) (cask-exec-path bundle))))))
 
+(ert-deftest cask-exec-path-test/local-executable-files ()
+  (cask-test/with-bundle
+      '((source localhost)
+        (files "bin/executable"))
+    (f-mkdir "bin")
+    (f-touch "bin/executable")
+    (chmod "bin/executable" 755)
+    (let ((path (f-join (cask-path bundle) "bin/")))
+      (should (equal (cons path exec-path) (cask-exec-path bundle))))))
+
 
 ;;;; cask-load-path
 
@@ -454,7 +485,7 @@
     (let ((path-package-a (f-expand "package-a-0.0.1" (cask-elpa-path bundle)))
           (path-package-b (f-expand "package-b-0.0.1" (cask-elpa-path bundle))))
       (should
-       (-same-items?
+       (cask-same-items
         (append (list path-package-b path-package-a) load-path)
         (cask-load-path bundle))))))
 
@@ -468,12 +499,23 @@
           (path-package-d (f-expand "package-d-0.0.1" (cask-elpa-path bundle)))
           (path-package-f (f-expand "package-f-0.0.1" (cask-elpa-path bundle))))
       (should
-       (-same-items?
+       (cask-same-items
         (append (list path-package-c
                       path-package-d
                       path-package-f)
                 load-path)
         (cask-load-path bundle))))))
+
+(ert-deftest cask-load-path-test/hierarchical ()
+  (cask-test/with-bundle
+      '((files "package-a.el" "foo/package-b.el"))
+    (f-touch "package-a.el")
+    (f-mkdir "foo")
+    (f-touch "foo/package-b.el")
+    (should
+     (cask-same-items
+      (append (mapcar 'f-expand (list "./" "foo/")) load-path)
+      (cask-load-path bundle)))))
 
 (ert-deftest cask-load-path-test/without-initialized-environment ()
   (cask-test/with-bundle
@@ -485,7 +527,7 @@
     (let ((path-package-a (f-expand "package-a-0.0.1" (cask-elpa-path bundle)))
           (path-package-b (f-expand "package-b-0.0.1" (cask-elpa-path bundle))))
       (should
-       (-same-items?
+       (cask-same-items
         (append (list path-package-b path-package-a) load-path)
         (cask-load-path bundle))))))
 
@@ -830,7 +872,7 @@
         (depends-on "package-b" "0.0.1"))
     (cask-install bundle)
     (should (cask-bundle-p (cask-initialize (cask-path bundle))))
-    (should (equal (-map 'car package-alist) '(package-a package-b)))))
+    (should (equal (mapcar 'car package-alist) '(package-a package-b)))))
 
 
 ;;;; cask-files
@@ -848,13 +890,13 @@
   (cask-test/with-bundle 'empty
     (f-touch "package-a.el")
     (f-touch "package-a.info")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-a.info")))))
 
 (ert-deftest cask-files-test/no-files-directive-with-files-and-excluded-files ()
   (cask-test/with-bundle 'empty
     (f-touch "package-a.el")
     (f-touch "foo")
-    (should (-same-items? (cask-files bundle) '("package-a.el")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el")))))
 
 (ert-deftest cask-files-test/with-files-directive ()
   (cask-test/with-bundle
@@ -862,7 +904,7 @@
     (f-touch "package-a.el")
     (f-touch "package-b.el")
     (f-touch "package-c.el")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-b.el")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-b.el")))))
 
 (ert-deftest cask-files-test/with-defaults-files-directive-with-files ()
   (cask-test/with-bundle
@@ -870,7 +912,7 @@
     (f-touch "package-a.el")
     (f-touch "package-a.info")
     (f-touch "foo")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-a.info")))))
 
 (ert-deftest cask-files-test/with-defaults-and-more-files-directive-with-files ()
   (cask-test/with-bundle
@@ -878,7 +920,7 @@
     (f-touch "package-a.el")
     (f-touch "package-a.info")
     (f-touch "foo")
-    (should (-same-items? (cask-files bundle) '("package-a.el" "package-a.info" "foo")))))
+    (should (cask-same-items (cask-files bundle) '("package-a.el" "package-a.info" "foo")))))
 
 
 ;;;; cask-add-dependency
@@ -958,7 +1000,7 @@
       '((files "foo.el"))
     (f-touch "foo.el")
     (f-touch "bar.el")
-    (cask-build bundle)
+    (shut-up (cask-build bundle))
     (should (f-file? "foo.el"))
     (should (f-file? "foo.el"))
     (should (f-file? "bar.el"))
@@ -968,7 +1010,7 @@
   (cask-test/with-bundle 'empty
     (f-touch "foo.el")
     (f-touch "bar.el")
-    (cask-build bundle)
+    (shut-up (cask-build bundle))
     (should (f-file? "foo.el"))
     (should (f-file? "foo.el"))
     (should (f-file? "bar.el"))
@@ -980,7 +1022,7 @@
                            (depends-on "package-a" "0.0.1"))
     (f-write-text "(require 'package-a)" 'utf-8 "foo.el")
     (cask-install bundle)
-    (cask-build bundle)))
+    (shut-up (cask-build bundle))))
 
 
 ;;;; cask-clean-elc
@@ -1043,7 +1085,7 @@
       (let ((actual (cask-links bundle))
             (expected `(("package-c-0.0.1" ,package-c-path)
                         ("package-d-0.0.1" ,package-d-path))))
-        (should (-same-items? actual expected))))))
+        (should (cask-same-items actual expected))))))
 
 
 ;;;; cask-link

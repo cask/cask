@@ -34,9 +34,19 @@ Package metadata
 
    The package name will be the name of the given :var:`file`, sans directory
    and extension.  The description is taken from the very first line of
-   :var:`file`.  The version and the runtime dependencies are taken from the
+   :var:`file`.  The version and the run-time dependencies are taken from the
    library headers of :var:`file`.  See :infonode:`(elisp)Library Headers` for
    details about library headers
+
+.. function:: package-descriptor file
+
+   Declare all package metadata directly by specifying a package descriptor
+   contained in file with name given by :var:`file`
+
+   See `Multi-file Packages`_ for examples on defining packages with the
+   :function:`define-package` function.
+
+   .. _Multi-file Packages: https://www.gnu.org/software/emacs/manual/html_node/elisp/Multi_002dfile-Packages.html
 
 Package contents
 ================
@@ -54,14 +64,22 @@ Package contents
    may be used as the first pattern to explicitly include the default patterns.
    This allows subsequent patterns to append to the defaults.
 
-   In the latter case, :var:`target` is the *unqualified* target directory
-   within the package, each :var:`pattern` describes the contents of the package
-   under the :var:`target` directory recursively.
+   In the latter case, :var:`target` is the *unqualified* target
+   directory within the package, each :var:`pattern` describes the
+   contents of the package under the :var:`target` directory
+   recursively.  The :var:`pattern` is relative to the package root.
 
    Hence, the pattern `("*.el" ("resources" ("snippets" "*.snippet")))` would
    include all `.el` files from the project root in the package root, and all
    `.snippet` files from the project root in the directory `resources/snippets`
    under the package root.
+
+   If the files to be included already are in a subdirectory this
+   needs to also be included in the pattern.  For example, if the
+   development version of the package has the snippets under
+   :file:`snippets/` instead of in the project root the files pattern
+   would be `("*.el" ("resources" ("snippets" "snippets/*.snippet")))`
+
 
    .. _MELPA recipe: https://github.com/milkypostman/melpa#recipe-format
 
@@ -130,12 +148,6 @@ Dependencies
    `marmalade`
       An archive of packages uploaded by users and maintainers, at
       https://marmalade-repo.org/.
-
-   `SC`
-      An archive providing packages for `Sunrise Commander`_, at
-      http://joseito.republika.pl/sunrise-commander/.
-
-      .. _Sunrise Commander: http://www.emacswiki.org/emacs/Sunrise_Commander
 
    `org`
       An archive providing packages for `Org Mode`_, at
