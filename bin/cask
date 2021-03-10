@@ -405,13 +405,13 @@ def exec_cask(arguments):
     Find the Emacs to use for Cask, and run the Cask CLI with the given
     ``arguments``.
 
-    This function replaces the current process.  It does **not** return.
+    This function exits with Emacs' return code.  It does **not** return.
 
     """
     emacs = get_cask_emacs()
     cli = os.path.join(CASK_DIRECTORY, 'cask-cli.el')
     command = [emacs, '-Q', '--script', cli, '--'] + arguments
-    os.execvp(command[0], command)
+    sys.exit(subprocess.call(command))
 
 
 def exit_error(error):
