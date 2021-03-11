@@ -45,7 +45,7 @@ html:
 linkcheck :
 	$(SPHINX-BUILD) -b linkcheck -d $(DOCTREEDIR) $(SPHINXFLAGS) doc $(DOCBUILDDIR)/linkcheck
 
-start-server: $(SERVANT_DIR)
+start-server: cask $(SERVANT_DIR)
 	$(CASK) exec $(SERVANT) start > $(SERVANT_TMP_DIR)/servant.log 2>&1 &
 
 stop-server:
