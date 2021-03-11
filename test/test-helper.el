@@ -30,6 +30,12 @@
 (require 'noflet)
 (require 'el-mock)
 (require 'ert-async)
+(require 'cl-lib)
+
+(defvar cask-test/link-path)
+(defvar cask-test/sandbox-path)
+(defvar cask-test/fixtures-path)
+(defvar cask-test/cvs-repo-path)
 
 (defun cask-same-items (a b)
     "`-same-items?' for A, B."

@@ -32,22 +32,6 @@
 
 (require 'cask)
 
-(eval-when-compile
-  (defvar cask-test/link-path)
-  (defvar cask-test/sandbox-path)
-  (defvar cask-test/fixtures-path)
-  (defvar cask-test/cvs-repo-path)
-
-  (require 'cl-lib)
-  (defun cask-same-items (a b)
-    "`-same-items?' for A, B."
-    (let ((length-a (length a))
-          (length-b (length b)))
-      (and
-       (= length-a length-b)
-       (= length-a (length (cl-remove-if-not (lambda (elm) (member elm b)) a)))))))
-
-
 ;;;; cask-setup
 
 (ert-deftest cask-setup-test/cask-file ()
