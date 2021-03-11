@@ -1,5 +1,6 @@
-CASK ?= cask
-EMACS ?= emacs
+export CASK ?= cask
+export EMACS ?= emacs
+export CASK_DIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 SERVANT ?= servant
 SPHINX-BUILD = sphinx-build
 SPHINXFLAGS =
@@ -18,7 +19,13 @@ FIXTURES_DIR = fixtures
 
 all: test
 
-test: unit ecukes
+test: cask unit ecukes
+
+cask: $(CASK_DIR)
+
+$(CASK_DIR): Cask
+	$(CASK) install
+	touch $(CASK_DIR)
 
 unit:
 	$(MAKE) start-server
@@ -93,6 +100,6 @@ clean:
 	rm -rf $(DOCBUILDDIR)
 
 .PHONY: start-server stop-server unit ecukes test all clean \
-	doc html linkcheck
+	doc html linkcheck cask
 
 .SILENT: start-server stop-server
