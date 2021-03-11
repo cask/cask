@@ -29,11 +29,13 @@ $(CASK_DIR): Cask
 
 unit:
 	$(MAKE) start-server
-	! ($(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el) ; (ret=$$? ; $(MAKE) stop-server || exit $$ret)
+	$(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el | tee /tmp/unit.out
+	$(MAKE) stop-server || true
+	! (grep -q "unexpected results" /tmp/unit.out)
 
 ecukes:
 	$(MAKE) start-server
-	! ($(CASK) exec ecukes) ; (ret=$$? ; $(MAKE) stop-server || exit $$ret)
+	$(CASK) exec ecukes --reporter magnars ; (ret=$$? ; $(MAKE) stop-server || exit $$ret)
 
 doc: html
 

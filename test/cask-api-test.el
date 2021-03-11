@@ -526,6 +526,7 @@
 ;;;; cask-file
 
 (ert-deftest cask-file-test ()
+  :expected-result (if (< emacs-major-version 25) t :passed)
   (cask-test/with-bundle 'empty
     (should (f-same? (cask-file bundle) (f-expand "Cask" cask-test/sandbox-path)))))
 
@@ -655,20 +656,21 @@
                 ("package-b" "0.0.1"))
     (cask-install bundle)))
 
-(ert-deftest-async cask-install-test/missing-dependencies (done)
-  (cask-test/with-bundle
-      '((source localhost)
-        (depends-on "missing-a" "0.0.1")
-        (depends-on "missing-b" "0.0.1"))
-    :packages nil
-    (condition-case err
-        (cask-install bundle)
-      (cask-missing-dependencies
-       (let ((missing-dependencies (cdr err))
-             (missing-a (make-cask-dependency :name 'missing-a :version "0.0.1"))
-             (missing-b (make-cask-dependency :name 'missing-b :version "0.0.1")))
-         (should-be-same-dependencies missing-dependencies (list missing-a missing-b)))
-       (funcall done)))))
+(unless (< emacs-major-version 25)
+  (ert-deftest-async cask-install-test/missing-dependencies (done)
+    (cask-test/with-bundle
+     '((source localhost)
+       (depends-on "missing-a" "0.0.1")
+       (depends-on "missing-b" "0.0.1"))
+     :packages nil
+     (condition-case err
+         (cask-install bundle)
+       (cask-missing-dependencies
+        (let ((missing-dependencies (cdr err))
+              (missing-a (make-cask-dependency :name 'missing-a :version "0.0.1"))
+              (missing-b (make-cask-dependency :name 'missing-b :version "0.0.1")))
+          (should-be-same-dependencies missing-dependencies (list missing-a missing-b)))
+        (funcall done))))))
 
 (ert-deftest cask-install-test/link ()
   (cask-test/with-bundle
@@ -1095,18 +1097,20 @@
     (let ((link-path (cask-test/link bundle 'package-b "package-b-0.0.1")))
       (should (f-same? (cask-dependency-path bundle 'package-b) link-path)))))
 
-(ert-deftest-async cask-link-test/without-cask-and-pkg-files (done)
-  (cask-test/with-bundle
-      '((source localhost)
-        (depends-on "package-a" "0.0.1"))
-    (cask-install bundle)
-    (condition-case err
-        (cask-test/link bundle 'package-a "package-a-0.0.1")
-      (error
-       (should (string= (error-message-string err)
-                        (format "Link source %s does not have a Cask or package-a-pkg.el file"
-                                (f-expand "package-a-0.0.1" cask-test/link-path))))
-       (funcall done)))))
+
+(unless (< emacs-major-version 26)
+  (ert-deftest-async cask-link-test/without-cask-and-pkg-files (done)
+    (cask-test/with-bundle
+     '((source localhost)
+       (depends-on "package-a" "0.0.1"))
+     (cask-install bundle)
+     (condition-case err
+         (cask-test/link bundle 'package-a "package-a-0.0.1")
+       (error
+        (should (string= (error-message-string err)
+                         (format "Link source %s does not have a Cask or package-a-pkg.el file"
+                                 (f-expand "package-a-0.0.1" cask-test/link-path))))
+        (funcall done))))))
 
 (ert-deftest-async cask-link-test/no-such-dependency (done)
   (cask-test/with-bundle 'empty
