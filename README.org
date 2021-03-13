@@ -1,7 +1,8 @@
 * Cask
 [[file:cask.png]]
 
-[[https://travis-ci.org/cask/cask][https://travis-ci.org/cask/cask.svg?branch=master]]
+
+[[https://github.com/cask/cask/actions/workflows/test.yml][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg]]
 [[https://melpa.org/#/cask][https://melpa.org/packages/cask-badge.svg]]
 [[https://stable.melpa.org/#/cask][https://stable.melpa.org/packages/cask-badge.svg]]
 
