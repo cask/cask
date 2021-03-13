@@ -1,5 +1,6 @@
-CASK ?= cask
-EMACS ?= emacs
+export CASK ?= cask
+export EMACS ?= emacs
+export CASK_DIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 SERVANT ?= servant
 SPHINX-BUILD = sphinx-build
 SPHINXFLAGS =
@@ -18,13 +19,23 @@ FIXTURES_DIR = fixtures
 
 all: test
 
-test: unit ecukes
+test: cask unit ecukes
+
+cask: $(CASK_DIR)
+
+$(CASK_DIR): Cask
+	$(CASK) install
+	touch $(CASK_DIR)
 
 unit:
-	$(CASK) exec ert-runner
+	$(MAKE) start-server
+	$(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el | tee /tmp/unit.out
+	$(MAKE) stop-server || true
+	! (grep -q "unexpected results" /tmp/unit.out)
 
 ecukes:
-	$(CASK) exec ecukes
+	$(MAKE) start-server
+	$(CASK) exec ecukes --reporter magnars ; (ret=$$? ; $(MAKE) stop-server || exit $$ret)
 
 doc: html
 
@@ -34,7 +45,7 @@ html:
 linkcheck :
 	$(SPHINX-BUILD) -b linkcheck -d $(DOCTREEDIR) $(SPHINXFLAGS) doc $(DOCBUILDDIR)/linkcheck
 
-start-server: $(SERVANT_DIR)
+start-server: cask $(SERVANT_DIR)
 	$(CASK) exec $(SERVANT) start > $(SERVANT_TMP_DIR)/servant.log 2>&1 &
 
 stop-server:
@@ -91,4 +102,6 @@ clean:
 	rm -rf $(DOCBUILDDIR)
 
 .PHONY: start-server stop-server unit ecukes test all clean \
-	doc html linkcheck
+	doc html linkcheck cask
+
+.SILENT: start-server stop-server

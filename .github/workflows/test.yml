@@ -1,7 +1,17 @@
-## test.yml
+name: CI
 
-name: Main workflow
-on: [push, pull_request]
+on:
+  pull_request:
+    paths-ignore:
+    - '**.md'
+    - '**.rst'
+  push:
+    paths-ignore:
+    - '**.md'
+    - '**.rst'
+    branches-ignore:
+    - 'master'
+    - 'main'
 
 jobs:
   build:
@@ -9,44 +19,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        emacs_version:
-          - '24.1'
-          - '24.2'
-          - '24.3'
-          - '24.4'
-          - '24.5'
-          - '25.1'
-          - '25.2'
-          - '25.3'
-          - '26.1'
-          - '26.2'
-          - '26.3'
-          - '27.1'
-          - 'snapshot'
-        include:
-          - emacs_version: 'snapshot'
-            allow_failure: true
+        os: [ubuntu-latest]
+        python_version: [3.6]
+        # beginning of time is 24.3 when cl-flet was defined
+        emacs_version: [24.3, 24.4, 24.5, 25.3, 26.3, 27.1, snapshot]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python_version }}
     - uses: purcell/setup-emacs@master
       with:
         version: ${{ matrix.emacs_version }}
-    - uses: conao3/setup-cask@master
-
-    - name: Prepare
-      if: matrix.allow_failure != true
-      run: 'cask && make start-server'
-
-    - name: Run tests
-      if: matrix.allow_failure != true
-      id: test
-      run: 'make test'
-
-    - name: Run tests (allow failure)
-      if: matrix.allow_failure == true
-      run: 'make test || true'
-
-    - name: Run if test failed
-      if: failure() && steps.test.outcome == 'failure'
-      run: 'cat test/servant/tmp/servant.log'
+    - name: paths
+      run: |
+        echo "$HOME/local/bin" >> $GITHUB_PATH
+        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        echo "LD_LIBRARY_PATH=$HOME/.local/lib" >> $GITHUB_ENV
+    - run: 'make test'
+      continue-on-error: ${{ matrix.emacs_version == 'snapshot' }}
