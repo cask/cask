@@ -62,7 +62,7 @@
     (with-temp-buffer
       (let* ((default-directory (f-full cask-test/sandbox-path))
              (args (shell-split-string (cask-test/template command)))
-             (exit-code
+i             (exit-code
               (apply
                'call-process
                (append (list cask-test/bin-command nil (current-buffer) nil) args))))

@@ -40,7 +40,6 @@
 
 (ert-deftest cask-cli-test/print-table-no-links ()
   (cask-test/with-bundle 'empty
-    (cask-install bundle)
     (cl-letf (((symbol-function 'princ) #'insert))
       (with-temp-buffer
         (cask-cli--print-table (cask-links bundle))
@@ -51,7 +50,6 @@
       '((source localhost)
         (depends-on "package-c" "0.0.1")
         (depends-on "package-d" "0.0.1"))
-    (cask-install bundle)
     (let ((package-c-path (cask-test/link bundle 'package-c "package-c-0.0.1"))
           (package-d-path (cask-test/link bundle 'package-d "package-d-0.0.1")))
       (cl-letf (((symbol-function 'princ) #'insert))

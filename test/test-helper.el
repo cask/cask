@@ -83,7 +83,8 @@ directory exists."
   "Return list of all of BUNDLE's installed packages.
 
 The items in the list are on the form (package version)."
-  (let ((elpa-dir (cask-elpa-path bundle)) (package-regex "\\(.+\\)-\\([^\-]+\\)"))
+  (let ((elpa-dir (cask-elpa-path bundle))
+        (package-regex "\\(.+\\)-\\([^\-]+\\)"))
     (when (f-dir? elpa-dir)
       (let ((directories (f--directories elpa-dir (s-matches? package-regex
                                                               (f-filename it)))))
@@ -199,11 +200,11 @@ The fixture with name FIXTURE-NAME will be copied to
   "Assert that the dependencies ACTUAL and EXPECTED are same."
   (should
    (cask-same-items
-    (mapcar 'cask-dependency-name expected)
-    (mapcar 'cask-dependency-name actual)))
+    (mapcar 'cask-dependency-name actual)
+    (mapcar 'cask-dependency-name expected)))
   (should
    (cask-same-items
-    (mapcar 'cask-dependency-version expected)
-    (mapcar 'cask-dependency-version actual))))
+    (mapcar 'cask-dependency-version actual)
+    (mapcar 'cask-dependency-version expected))))
 
 ;;; test-helper.el ends here

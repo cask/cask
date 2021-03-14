@@ -180,15 +180,8 @@ will be for an Emacs package."
 
 (defun cask-cli/list ()
   "List this package dependencies."
-  (let ((runtime-dependencies (cask-runtime-dependencies (cask-cli--bundle)))
-        (development-dependencies (cask-development-dependencies (cask-cli--bundle))))
-    (princ "### Dependencies ###\n\n")
-    (princ (format "Runtime [%s]:\n" (length runtime-dependencies)))
-    (mapc 'cask-cli--print-dependency runtime-dependencies)
-    (if (> (length runtime-dependencies) 0)
-        (princ "\n"))
-    (princ (format "Development [%s]:\n" (length development-dependencies)))
-    (mapc 'cask-cli--print-dependency development-dependencies)))
+  (cask-cli/with-handled-errors
+   (cask-list (cask-cli--bundle))))
 
 (defun cask-cli/version ()
   "Print version for the current project."

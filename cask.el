@@ -86,6 +86,7 @@ Defaults to `error'."
 (define-error 'cask-failed-initialization "Failed initialization" 'cask-error)
 (define-error 'cask-not-a-package "Missing `package` or `package-file` directive" 'cask-error)
 (define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
+(define-error 'cask-empty-archive-contents "Empty archive contents" 'cask-error)
 
 (cl-defstruct cask-dependency
   "Structure representing a dependency.
@@ -207,13 +208,10 @@ the function `cask--with-environment'.")
   "Print messages to `standard-output'.
 
 The BODY of this macro is automatically wrapped with
-`with-ansi' for easier colored output.
-
-Only print if running from cli and `cask-cli--silent' is non-nil"
-  `(when (and (featurep 'cask-cli) (not cask-cli--silent))
-     (princ
-      (with-ansi
-       ,@body))))
+`with-ansi' for easier colored output."
+  `(when (or (not (boundp 'cask-cli--silent))
+             (not cask-cli--silent))
+     (princ (with-ansi ,@body))))
 
 (defun cask-warn (message &rest args)
   "Display MESSAGE with ARGS.  see `warn'."
@@ -316,6 +314,24 @@ ARGS is a plist with these additional options:
         (error
          (signal 'cask-failed-initialization
                  (list err (shut-up-current-output))))))))
+
+(defun cask--dependencies-and-missing (bundle)
+  "Workhorse for `cask--dependencies'."
+  (let* (missing
+         (errback (lambda (dep)
+                    (let ((name (cask-dependency-name dep)))
+                      (unless (eq name 'emacs)
+                        (push dep missing)))))
+         (runtime (cask--runtime-dependencies bundle errback))
+         (develop (cask--development-dependencies bundle errback)))
+    (list runtime develop (cask--uniq-dependencies missing))))
+
+(defun cask--dependencies (bundle &optional _deep)
+  "Return transitive closure of dependencies for BUNDLE.
+The legacy argument _DEEP is assumed true."
+  (cl-destructuring-bind (runtime develop &rest _args)
+      (cask--dependencies-and-missing bundle)
+    (cask--uniq-dependencies (append runtime develop))))
 
 (defun cask--fetcher-dependencies (bundle)
   "Return list of fetcher dependencies for BUNDLE."
@@ -483,6 +499,17 @@ The BUNDLE is initialized when the elpa directory exists."
    :name (epl-requirement-name epl-requirement)
    :version (epl-requirement-version-string epl-requirement)))
 
+(defun cask--find-available-package-jit (bundle name)
+  "Ensure `cask--find-available-package' has `package-archive-contents'."
+  (when (and (not package-archive-contents)
+             (cask-bundle-sources bundle))
+    (epl-refresh)
+    (unless package-archive-contents
+      (signal 'cask-empty-archive-contents
+              (list (mapcar #'cask-source-url
+                            (cask-bundle-sources bundle))))))
+  (cask--find-available-package name))
+
 (defun cask--find-available-package (name)
   "Find first available package with NAME."
   (car (epl-find-available-packages name)))
@@ -498,71 +525,74 @@ The BUNDLE is initialized when the elpa directory exists."
    :test (lambda (a b)
            (eq (cask-dependency-name a) (cask-dependency-name b)))))
 
-(defun cask--compute-dependencies (dependencies package-function)
+(defun cask--compute-dependencies (dependencies package-function errback)
   "Return a list of DEPENDENCIES's dependencies, recursively.
 
 PACKAGE-FUNCTION is a function that takes a name as argument and
 returns an `epl-package' object."
   (cask--uniq-dependencies
-   (apply
-    'append
-    (mapcar
-     (lambda (dependency)
-       (let* ((name (cask-dependency-name dependency))
-              (package (funcall package-function name)))
-         (when package
-           (cask--uniq-dependencies
+   (cl-mapcan
+    (lambda (dependency)
+      (let* ((name (cask-dependency-name dependency))
+             (package (funcall package-function name)))
+        (if package
             (cons dependency
                   (cask--compute-dependencies
-                   (mapcar 'cask--epl-requirement-to-dependency
-                         (epl-package-requirements package))
-                   package-function))))))
-     dependencies))))
+                   (mapcar #'cask--epl-requirement-to-dependency
+                           (epl-package-requirements package))
+                   package-function
+                   errback))
+          (prog1 nil
+            (funcall errback dependency)))))
+    dependencies)))
 
-(defun cask--runtime-dependencies (bundle &optional deep)
-  "Return runtime dependencies for BUNDLE, optionally DEEP."
-  (let ((dependencies (cask-bundle-runtime-dependencies bundle)))
-    (if deep
-        (cask--compute-dependencies dependencies 'cask--find-available-package)
-      dependencies)))
+(defun cask--runtime-dependencies (bundle &optional errback)
+  "Return runtime dependencies for BUNDLE.
+The legacy argument _DEEP is assumed true."
+  (cask--compute-dependencies
+   (cask-bundle-runtime-dependencies bundle)
+   (apply-partially #'cask--find-available-package-jit bundle)
+   (or errback #'ignore)))
 
-(defun cask--development-dependencies (bundle &optional deep)
-  "Return development dependencies for BUNDLE, optionally DEEP."
-  (let ((dependencies (cask-bundle-development-dependencies bundle)))
-    (if deep
-        (cask--compute-dependencies dependencies 'cask--find-available-package)
-      dependencies)))
+(defun cask--development-dependencies (bundle &optional errback)
+  "Return development dependencies for BUNDLE.
+The legacy argument _DEEP is assumed true."
+  (cask--compute-dependencies
+   (cask-bundle-development-dependencies bundle)
+   (apply-partially #'cask--find-available-package-jit bundle)
+   (or errback #'ignore)))
 
-(defun cask--dependencies (bundle &optional deep)
-  "Return dependencies for BUNDLE, optionally DEEP."
-  (cask--uniq-dependencies
-   (append (cask--runtime-dependencies bundle deep)
-           (cask--development-dependencies bundle deep))))
+(defun cask--remove-package-build (dependencies)
+  "Upper bound for package-build for emacs-24 is vendored."
+  (cl-remove-if
+   (lambda (dep) (and (version< emacs-version "25.1")
+                      (eq (cask-dependency-name dep) 'package-build)))
+   dependencies))
 
-(defun cask--installed-dependencies (bundle &optional deep)
-  "Return installed dependencies for BUNDLE, optionally DEEP."
-  (let ((dependencies (cask--dependencies bundle)))
-    (if deep
-        (cask--compute-dependencies dependencies 'cask--find-installed-package)
-      dependencies)))
+(defun cask--installed-dependencies (bundle &optional _deep)
+  "Return installed dependencies for BUNDLE.
+The legacy argument _DEEP is assumed true."
+  (cl-remove-if-not (lambda (dep) (cask--find-installed-package
+                                   (cask-dependency-name dep)))
+                    (cask--dependencies bundle)))
 
-(defun cask--install-dependency (bundle dependency index)
+(defun cask--install-dependency (bundle dependency index total)
   "In BUNDLE, install DEPENDENCY.
 
 If dependency does not exist, the error `cask-missing-dependency'
 is signaled.
-INDEX is the current install index."
+INDEX is the current install index of TOTAL indices."
   (let ((name (cask-dependency-name dependency))
         (version (cask-dependency-version dependency)))
     (cask-print
-     (format "  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+     (format "  - Installing [%2d/%d]" (1+ index) total)
      " " (green "%s" name) " "
      "(" (yellow "%s" (or version "latest")) ")... ")
     (when (cask-linked-p bundle name)
       (cask-print "linked\n"))
     (when (epl-package-installed-p name)
       (cask-print (bold (black "already present")) "\n"))
-    (unless (or (epl-package-installed-p name) (cask-linked-p bundle name))
+    (unless (cask--dependency-installed-p bundle dependency)
       (if (cask-dependency-fetcher dependency)
           (shut-up
             (let ((package-path (cask--checkout-and-package-dependency dependency)))
@@ -577,7 +607,7 @@ INDEX is the current install index."
               (cask-print (bold (red "not available")) "\n")
               (signal 'cask-missing-dependency (list dependency))))))
       (cask-print
-       (format "\e[K  - Installing [%2d/%d]" (1+ index) (length (cask--dependencies bundle)))
+       (format "\e[K  - Installing [%2d/%d]" (1+ index) total)
        " " (green "%s" name) " "
        "(" (yellow "%s" (or version "latest")) ")... done\n"))))
 
@@ -650,20 +680,12 @@ Return list of updated packages."
     (shut-up
       (condition-case err
           (prog1 (epl-upgrade)
-            (let ((inx -1))
-              (dolist (elm (cask--fetcher-dependencies bundle))
+            (let ((inx -1)
+                  (deps (cask--fetcher-dependencies bundle)))
+              (dolist (elm deps)
                 (cl-incf inx)
-                (let ((prj (cask-bundle-name bundle))
-                      (dep (cask-dependency-name elm)))
-                  (when (or (not (eq 'cask prj))             ; normal project
-                            (and (eq 'cask prj)              ; Cask project
-                                 (not (and
-                                       (version< emacs-version "25.1")
-                                       (or (eq 'package-build dep))
-                                       (prog1 t
-                                         (cask-print (red "    Cask project hack; Don't update %s from ELPA!\n" dep)))))))
-                    (cask--delete-dependency bundle elm)
-                    (cask--install-dependency bundle elm inx))))))
+                (cask--delete-dependency bundle elm)
+                (cask--install-dependency bundle elm inx (length deps)))))
         (error
          (signal 'cask-failed-installation
                  (list (car err) err (shut-up-current-output))))))))
@@ -674,6 +696,27 @@ Return list of updated packages."
     :force t
     :refresh t
     (epl-find-upgrades)))
+
+(defun cask--dependency-installed-p (bundle dependency)
+  "Return non-nil if DEPENDENCY is installed.
+
+An installed dependency is one which is already present or
+locally linked with \"cask link\"."
+  (let ((name (cask-dependency-name dependency)))
+    (or (epl-package-installed-p name) (cask-linked-p bundle name))))
+
+(defun cask-list (bundle)
+  "List BUNDLE dependencies."
+  (cask--with-environment bundle
+    (cl-destructuring-bind (runtime develop &rest _args)
+        (cask--dependencies-and-missing bundle)
+      (princ "### Dependencies ###\n\n")
+      (princ (format "Runtime [%s]:\n" (length runtime)))
+      (mapc 'cask-cli--print-dependency runtime)
+      (if (> (length runtime) 0)
+          (princ "\n"))
+      (princ (format "Development [%s]:\n" (length develop)))
+      (mapc 'cask-cli--print-dependency develop))))
 
 (defun cask-install (bundle)
   "Install BUNDLE dependencies.
@@ -689,34 +732,29 @@ If a dependency failed to install, signal a
 `cask-failed-installation' error, whose data is a `(DEPENDENCY
 . ERR)', where DEPENDENCY is the `cask-dependency' which failed
 to install, and ERR is the original error data."
-  (let (missing-dependencies)
-    (cask-print (green "Loading package information... "))
-    (cask--with-environment bundle
-      :force t
-      :refresh t
+  (cask-print (green "Loading package information... "))
+  (cask--with-environment bundle
+    :force t
+    :refresh t
+    (cl-destructuring-bind (runtime
+                            develop
+                            missing-dependencies
+                            &aux
+                            (dependencies (cask--uniq-dependencies (append runtime develop)))
+                            (total (length dependencies)))
+        (cask--dependencies-and-missing bundle)
       (cask-print (green "done") "\n")
-      (cask-print (green "Package operations: %d installs, %d removals\n" (length (cask--dependencies bundle)) 0))
+      (cask-print (green "Package operations: %d installs, %d removals\n" total 0))
       (let ((inx -1))
-        (dolist (dependency (cask--dependencies bundle))
-          (cl-incf inx)
-          (condition-case err
-              (let ((prj (cask-bundle-name bundle))
-                    (dep (cask-dependency-name dependency)))
-                (when (or (not (eq 'cask prj))             ; normal project
-                          (and (eq 'cask prj)              ; Cask project
-                               (not (and
-                                     (version< emacs-version "25.1")
-                                     (or (eq 'package-build dep))
-                                     (prog1 t
-                                       (cask-print (red "    Cask project hack; Don't install %s from ELPA!\n" dep)))))))
-                  (cask--install-dependency bundle dependency inx)))
-            (cask-missing-dependency
-             (push dependency missing-dependencies))
-            (error
-             (signal 'cask-failed-installation
-                     (list dependency err))))))
+        (condition-case-unless-debug err
+            (dolist (dependency (cask--remove-package-build dependencies))
+              (cl-incf inx)
+              (cask--install-dependency bundle dependency inx total))
+          (error
+           (signal 'cask-failed-installation
+                   (list dependency err)))))
       (when missing-dependencies
-        (signal 'cask-missing-dependencies (nreverse missing-dependencies))))))
+        (signal 'cask-missing-dependencies missing-dependencies)))))
 
 (defun cask-caskify (bundle &optional dev-mode)
   "Create Cask-file for BUNDLE path.
@@ -769,7 +807,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
      (mapcar
       (lambda (dependency)
         (cask-dependency-path bundle (cask-dependency-name dependency)))
-      (cask--installed-dependencies bundle 'deep))
+      (cask--installed-dependencies bundle))
      load-path)))
 
 (defun cask-exec-path (bundle)
@@ -783,7 +821,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
        (lambda (dependency)
          (let ((path (cask-dependency-path bundle (cask-dependency-name dependency))))
            (f-expand "bin" path)))
-       (cask--installed-dependencies bundle 'deep)))
+       (cask--installed-dependencies bundle)))
      exec-path)))
 
 (defun cask-elpa-path (bundle)
@@ -792,43 +830,36 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
    (format ".cask/%s.%s/elpa" emacs-major-version emacs-minor-version)
    (cask-bundle-path bundle)))
 
-(defun cask-runtime-dependencies (bundle &optional deep)
+(defun cask-runtime-dependencies (bundle &optional _deep)
   "Return BUNDLE's runtime dependencies.
-
-If DEEP is true, return all dependencies, recursively.
-
+The legacy argument _DEEP is assumed true.
 Return value is a list of `cask-dependency' objects."
   (cask--with-environment bundle
-    (cask--runtime-dependencies bundle deep)))
+    (cask--runtime-dependencies bundle)))
 
-(defun cask-development-dependencies (bundle &optional deep)
+(defun cask-development-dependencies (bundle &optional _deep)
   "Return BUNDLE's development dependencies.
-
-If DEEP is true, return all dependencies, recursively.
-
+The legacy argument _DEEP is assumed true.
 Return value is a list of `cask-dependency' objects."
   (cask--with-environment bundle
-    (cask--development-dependencies bundle deep)))
+    (cask--development-dependencies bundle)))
 
-(defun cask-dependencies (bundle &optional deep)
+(defun cask-dependencies (bundle &optional _deep)
   "Return BUNDLE's runtime and development dependencies.
-
-If DEEP is true, return all dependencies, recursively.
-
+The legacy argument _DEEP is assumed true.
 Return value is a list of `cask-dependency' objects."
   (cask--with-environment bundle
-    (cask--dependencies bundle deep)))
+    (cask--dependencies bundle)))
 
-(defun cask-installed-dependencies (bundle &optional deep)
+(defun cask-installed-dependencies (bundle &optional _deep)
   "Return list of BUNDLE's installed dependencies.
-
-If DEEP is t, all dependencies recursively will be returned."
+The legacy argument _DEEP is assumed true."
   (cask--with-environment bundle
-    (cask--installed-dependencies bundle deep)))
+    (cask--installed-dependencies bundle)))
 
 (defun cask-has-dependency (bundle name)
   "Return t if BUNDLE contain link with NAME, false otherwise."
-  (not (null (cask-find-dependency bundle name))))
+  (cask-find-dependency bundle name))
 
 (defun cask-find-dependency (bundle name)
   "Find dependency in BUNDLE with NAME."
@@ -987,7 +1018,7 @@ link, as a string and the value is the absolute path to the link."
 NAME is the name of the package to link as a string.  SOURCE is
 the path to the directory to link to.  SOURCE must have either a
 NAME-pkg.el or Cask file for the linking to be possible."
-  (cask--with-file bundle
+  (cask--with-environment bundle
     (setq source (f-expand source))
     (unless (cask-has-dependency bundle name)
       (error "Cannot link package %s, is not a dependency" name))
@@ -1015,7 +1046,7 @@ NAME-pkg.el or Cask file for the linking to be possible."
 
 (defun cask-link-delete (bundle name)
   "Delete BUNDLE link with NAME."
-  (cask--with-file bundle
+  (cask--with-environment bundle
     (unless (cask-has-dependency bundle name)
       (error "Cannot link package %s, is not a dependency" name))
     (let ((link (cask-dependency-path bundle name)))
@@ -1025,8 +1056,9 @@ NAME-pkg.el or Cask file for the linking to be possible."
 
 (defun cask-linked-p (bundle name)
   "Return t if BUNDLE has link with NAME."
-  (when (cask-dependency-path bundle name)
-    (f-symlink? (cask-dependency-path bundle name))))
+  (cask--with-environment bundle
+    (when (cask-dependency-path bundle name)
+      (f-symlink? (cask-dependency-path bundle name)))))
 
 (defun cask-package (bundle &optional target-dir)
   "Build an ELPA package of BUNDLE.

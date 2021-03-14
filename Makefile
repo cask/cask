@@ -1,4 +1,9 @@
-export CASK ?= cask
+export CASK ?= python bin/cask
+ifeq ($(shell expr $$($(PYTHON) --version 2>&1 | cut -d' ' -f2) \< 3),1)
+ifneq ($(shell which python3),)
+CASK = python3 bin/cask
+endif
+endif
 export EMACS ?= emacs
 export CASK_DIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 SERVANT ?= servant
@@ -29,13 +34,12 @@ $(CASK_DIR): Cask
 
 unit:
 	$(MAKE) start-server
-	$(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el | tee /tmp/unit.out
-	$(MAKE) stop-server || true
-	! (grep -q "unexpected results" /tmp/unit.out)
+	bash -c "trap 'trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server' EXIT ; $(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el | tee /tmp/cask.unit.out"
+	! (grep -q "unexpected results" /tmp/cask.unit.out)
 
 ecukes:
 	$(MAKE) start-server
-	$(CASK) exec ecukes --reporter magnars ; (ret=$$? ; $(MAKE) stop-server || exit $$ret)
+	bash -c "trap 'ret=$$? ; trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server; exit $$ret' EXIT ; $(CASK) exec ecukes --reporter magnars"
 
 doc: html
 

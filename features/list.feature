@@ -17,6 +17,7 @@ Feature: List
   Scenario: With dependencies
     Given this Cask file:
       """
+      (source "localhost" "http://127.0.0.1:9191/packages/")
       (depends-on "package-a" "0.1.2")
       (depends-on "package-b" "0.2.1")
 
@@ -33,7 +34,8 @@ Feature: List
        - package-b (0.2.1)
        - package-a (0.1.2)
 
-      Development [2]:
-       - package-d
+      Development [3]:
        - package-c
+       - package-d (0.0.1)
+       - package-f (0.0.1)
       """
