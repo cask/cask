@@ -765,7 +765,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `load-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-     (mapcar 'f-expand (delete-dups (mapcar 'f-parent (cask-files bundle))))
+   (mapcar 'f-expand (delete-dups (mapcar 'f-parent (cask-files bundle))))
      (mapcar
       (lambda (dependency)
         (cask-dependency-path bundle (cask-dependency-name dependency)))
