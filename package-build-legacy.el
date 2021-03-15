@@ -1056,7 +1056,6 @@ This is a copy of `lm-homepage', which first appeared in Emacs 24.4."
 ;; (require 'package-recipe-mode)
 
 ;; Local Variables:
-;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
 ;;; package-build.el ends here
