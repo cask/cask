@@ -515,7 +515,7 @@ returns an `epl-package' object."
             (cons dependency
                   (cask--compute-dependencies
                    (mapcar 'cask--epl-requirement-to-dependency
-                           (epl-package-requirements package))
+                         (epl-package-requirements package))
                    package-function))))))
      dependencies))))
 
@@ -1045,9 +1045,9 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
       (unless (f-dir? target-dir)
         (f-mkdir target-dir))
       (let ((rcp (package-directory-recipe name
-                                           :name name
-                                           :files patterns
-                                           :dir path))
+                  :name name
+                  :files patterns
+                  :dir path))
             (package-build-working-dir path)
             (package-build-archive-dir target-dir))
         (package-build--package rcp version)))))
