@@ -320,8 +320,7 @@ ARGS is a plist with these additional options:
   (let* (missing
          (errback (lambda (dep)
                     (let ((name (cask-dependency-name dep)))
-                      (unless (eq name 'emacs)
-                        (push dep missing)))))
+                      (push dep missing))))
          (runtime (cask--runtime-dependencies bundle errback))
          (develop (cask--development-dependencies bundle errback)))
     (list runtime develop (cask--uniq-dependencies missing))))
@@ -393,11 +392,11 @@ outside of package.el, for example `load-path'."
   (declare (indent defun))
   `(cask--with-file ,bundle
      (if (or ,(plist-get body :force) (not (equal ,bundle cask-current-bundle)))
-         (prog1
-             (let ((load-path (copy-sequence load-path)))
-               (cask--use-environment ,bundle :refresh ,(plist-get body :refresh))
-               ,@body)
-           (setq cask-current-bundle (copy-cask-bundle ,bundle)))
+         (let ((load-path load-path))
+           (setq cask-current-bundle ,bundle)
+           (cask--use-environment cask-current-bundle
+                                  :refresh ,(plist-get body :refresh))
+           ,@body)
        ,@body)))
 
 (defmacro cask--with-package (bundle &rest body)
@@ -526,7 +525,7 @@ The BUNDLE is initialized when the elpa directory exists."
            (eq (cask-dependency-name a) (cask-dependency-name b)))))
 
 (defun cask--compute-dependencies (dependencies package-function errback)
-  "Return a list of DEPENDENCIES's dependencies, recursively.
+  "Topologically sort full dependency graph.
 
 PACKAGE-FUNCTION is a function that takes a name as argument and
 returns an `epl-package' object."
@@ -538,14 +537,19 @@ returns an `epl-package' object."
            for name = (cask-dependency-name dep)
            for package = (funcall package-function name)
            if package
-           collect dep into result
-           and do (mapc (lambda (child-dep)
-                          (unless (memq (cask-dependency-name child-dep) seen)
-                            (setq queue (append queue (list child-dep)))
-                            (push (cask-dependency-name child-dep) seen)))
-                        (mapcar #'cask--epl-requirement-to-dependency
-                                (epl-package-requirements package)))
-           else do (funcall errback dep)
+             collect dep into result
+             and do (dolist (req (epl-package-requirements package))
+                      (let ((child-dep
+                             (cask--epl-requirement-to-dependency req)))
+                        (unless (memq (cask-dependency-name child-dep) seen)
+                          (setq queue (append queue (list child-dep)))
+                          (push (cask-dependency-name child-dep) seen))))
+           else
+             if (eq name 'emacs)
+               collect dep into result
+             else
+               do (funcall errback dep)
+             end
            end
            finally return result))
 
@@ -565,7 +569,7 @@ The legacy argument _DEEP is assumed true."
    (apply-partially #'cask--find-available-package-jit bundle)
    (or errback #'ignore)))
 
-(defun cask--remove-package-build (dependencies)
+(defun cask--remove-vendored (dependencies)
   "Upper bound for package-build for emacs-24 is vendored."
   (cl-remove-if
    (lambda (dep) (and (version< emacs-version "25.1")
@@ -708,6 +712,12 @@ locally linked with \"cask link\"."
   (let ((name (cask-dependency-name dependency)))
     (or (epl-package-installed-p name) (cask-linked-p bundle name))))
 
+(defsubst cask--build-install-dependencies (bundle)
+  "Maybe incur cost of \"cask install\" before attempting to byte-compile."
+  (unless (cl-every (lambda (dep) (cask--dependency-installed-p bundle dep))
+                    (cask--runtime-dependencies bundle))
+    (cask-install bundle)))
+
 (defun cask-list (bundle)
   "List BUNDLE dependencies."
   (cask--with-environment bundle
@@ -743,19 +753,18 @@ to install, and ERR is the original error data."
                             develop
                             missing-dependencies
                             &aux
-                            (dependencies (cask--uniq-dependencies (append runtime develop)))
-                            (total (length dependencies)))
+                            (dependencies (cask--remove-vendored
+                                           (cask--uniq-dependencies
+                                            (append runtime develop))))
+                            (total (length dependencies))
+                            (inx -1))
         (cask--dependencies-and-missing bundle)
       (cask-print (green "done") "\n")
       (cask-print (green "Package operations: %d installs, %d removals\n" total 0))
-      (let ((inx -1))
-        (condition-case-unless-debug err
-            (dolist (dependency (cask--remove-package-build dependencies))
-              (cl-incf inx)
-              (cask--install-dependency bundle dependency inx total))
-          (error
-           (signal 'cask-failed-installation
-                   (list dependency err)))))
+      (condition-case-unless-debug err
+          (dolist (dep dependencies)
+            (cask--install-dependency bundle dep (cl-incf inx) total))
+        (error (signal 'cask-failed-installation (list dependency err))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies missing-dependencies)))))
 
@@ -986,8 +995,9 @@ URL is the url to the mirror."
 
 (defun cask-build (bundle)
   "Build BUNDLE Elisp files."
-  (cask--with-file bundle
+  (cask--with-environment bundle
     (require 'bytecomp)
+    (cask--build-install-dependencies bundle)
     (let ((load-path (cons (cask-path bundle) (cask-load-path bundle))))
       (dolist (path (cask-files bundle))
         (when (and (f-file? path) (f-ext? path "el"))

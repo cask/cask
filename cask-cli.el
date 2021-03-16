@@ -268,7 +268,8 @@ If no files directive or no files, do nothing."
 
 (defun cask-cli/build ()
   "Build all Elisp files in the files directive."
-  (cask-build (cask-cli--bundle)))
+  (cask-cli/with-handled-errors
+    (cask-build (cask-cli--bundle))))
 
 (defun cask-cli/clean-elc ()
   "Remove all byte compiled Elisp files in the files directive."

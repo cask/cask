@@ -35,7 +35,7 @@ Feature: List
        - package-a (0.1.2)
 
       Development [3]:
+       - package-d
        - package-c
-       - package-d (0.0.1)
        - package-f (0.0.1)
       """

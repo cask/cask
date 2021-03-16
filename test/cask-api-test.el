@@ -101,7 +101,6 @@
   (cask-test/with-bundle
       '((source localhost)
         (depends-on "package-c" "0.0.1"))
-    (cask-test/install bundle)
     (let ((actual (cask-runtime-dependencies bundle))
           (expected (list (make-cask-dependency :name 'package-c :version "0.0.1")
                           (make-cask-dependency :name 'package-d :version "0.0.1")
@@ -161,7 +160,6 @@
       '((source localhost)
         (development
          (depends-on "package-c" "0.0.1")))
-    (cask-test/install bundle)
     (let ((actual (cask-development-dependencies bundle))
           (expected (list (make-cask-dependency :name 'package-c :version "0.0.1")
                           (make-cask-dependency :name 'package-d :version "0.0.1")
@@ -229,7 +227,6 @@
         (depends-on "package-a" "0.0.1")
         (development
          (depends-on "package-c" "0.0.1")))
-    (cask-test/install bundle)
     (let ((actual (cask-dependencies bundle))
           (expected (list (make-cask-dependency :name 'package-a :version "0.0.1")
                           (make-cask-dependency :name 'package-c :version "0.0.1")
