@@ -168,6 +168,7 @@ Slots:
 
 (defvar cask-source-mapping
   '((gnu          . "https://elpa.gnu.org/packages/")
+    (celpa        . "https://celpa.conao3.com/packages/")
     (melpa        . "https://melpa.org/packages/")
     (melpa-stable . "https://stable.melpa.org/packages/")
     (marmalade    . "https://marmalade-repo.org/packages/")
