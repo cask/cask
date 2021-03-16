@@ -182,12 +182,6 @@ Slots:
 (defconst cask-dist-path "dist"
   "Name of default target directory for building packages.")
 
-(defvar cask-current-bundle nil
-  "Cache the currently used bundle environment.
-
-This variable should not be modifed.  It is used by
-the function `cask--with-environment'.")
-
 (defconst cask-fetchers
   '(:git :bzr :hg :darcs :svn :cvs)
   "List of supported fetchers.")
@@ -201,7 +195,7 @@ the function `cask--with-environment'.")
 (defconst cask-tmp-packages-path
   (f-expand "packages" cask-tmp-path))
 
-
+
 ;;;; Internal functions
 
 (defmacro cask-print (&rest body)
@@ -291,29 +285,43 @@ If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
        (progn ,@body)
      (signal 'cask-no-cask-file (list (cask-file ,bundle)))))
 
-(defun cask--use-environment (bundle &rest args)
-  "Use BUNDLE environment.
+(defun cask--use-environment (bundle refresh no-activate)
+  "If called outside `cask--with-environment', alter package context."
+  (setq package-archives nil)
+  (setq package-user-dir (cask-elpa-path bundle))
+  (dolist (source (cask-bundle-sources bundle))
+    (epl-add-archive (cask-source-name source) (cask-source-url source)))
+  (shut-up
+    (condition-case err
+        (progn
+          (when refresh (epl-refresh))
+          (epl-initialize no-activate))
+      (error (signal 'cask-failed-initialization
+                     (list err (shut-up-current-output)))))))
 
-ARGS is a plist with these additional options:
-
-`refresh' If non nil, refresh the environment by calling `epl-refresh'.
-
-`activate' If non nil, activate packages on initialization."
-  (cask--with-file bundle
-    (setq package-archives nil)
-    (setq package-user-dir (cask-elpa-path bundle))
-    (dolist (source (cask-bundle-sources bundle))
-      (epl-add-archive (cask-source-name source)
-                       (cask-source-url source)))
-    (shut-up
-      (condition-case err
-          (progn
-            (when (plist-get args :refresh)
-              (epl-refresh))
-            (epl-initialize (not (plist-get args :activate))))
-        (error
-         (signal 'cask-failed-initialization
-                 (list err (shut-up-current-output))))))))
+(cl-defmacro cask--with-environment (bundle
+                                     &rest body
+                                     &key activate refresh
+                                     &allow-other-keys
+                                     &aux (no-activate (not activate)))
+  "Hygienic wrapper for `cask--use-environment'.
+Evaluate BODY in the package context of BUNDLE.  Then restore package context."
+  `(cask--with-file ,bundle
+     (let* (package-alist
+            package-activated-list
+            package-archives
+            package-archive-contents
+            (load-path load-path)
+            (package-directory-list
+             (eval (car (get 'package-directory-list 'standard-value))))
+            (package-load-list
+             (eval (car (get 'package-load-list 'standard-value))))
+            (package-user-dir (cask-elpa-path ,bundle))
+            (package-gnupghome-dir (expand-file-name "gnupg" package-user-dir)))
+       (cask--use-environment ,bundle ,refresh ,no-activate)
+       ;; following will evaluate keys e.g., `:activate t` as separate s-exprs
+       ;; which ought to be no-ops
+       ,@body)))
 
 (defun cask--dependencies-and-missing (bundle)
   "Workhorse for `cask--dependencies'."
@@ -376,28 +384,6 @@ This function returns the path to the package file."
         (cl-find-if
          (lambda (elm) (s-match ".*\\.\\(tar\\|el\\)" elm))
          (f-glob pattern cask-tmp-packages-path))))))
-
-(defmacro cask--with-environment (bundle &rest body)
-  "Switch to BUNDLE environment and yield BODY.
-
-This function will not switch to the bundle if it's already the
-currently used bundle environment.  If :force property is present
-in BODY and true, the environment will be reinitalized.
-
-If :refresh property is present in BODY, it will be passed as
-refresh argument to `cask--use-environment'.
-
-When BODY has yielded, this function cleans up side effects
-outside of package.el, for example `load-path'."
-  (declare (indent defun))
-  `(cask--with-file ,bundle
-     (if (or ,(plist-get body :force) (not (equal ,bundle cask-current-bundle)))
-         (let ((load-path load-path))
-           (setq cask-current-bundle ,bundle)
-           (cask--use-environment cask-current-bundle
-                                  :refresh ,(plist-get body :refresh))
-           ,@body)
-       ,@body)))
 
 (defmacro cask--with-package (bundle &rest body)
   "If BUNDLE is a package, yield BODY.
@@ -642,7 +628,7 @@ the default files pattern `package-build-default-files-spec'."
           (version (epl-requirement-version-string requirement)))
       (cask-add-dependency bundle name :version version))))
 
-
+
 ;;;; Public API
 
 (defun cask-setup (project-path)
@@ -671,10 +657,10 @@ This function return a `cask-bundle' object."
          (package-load-list
           `(,@(mapcar
                (lambda (elm) (list (cask-dependency-name elm) t))
-               (cask--runtime-dependencies bundle))
+               (cask-runtime-dependencies bundle))
             all)))
     (when (equal (epl-package-dir) (epl-default-package-dir))
-      (cask--use-environment bundle :activate t))
+      (cask--use-environment bundle nil nil))
     bundle))
 
 (defun cask-update (bundle)
@@ -682,25 +668,21 @@ This function return a `cask-bundle' object."
 
 Return list of updated packages."
   (cask--with-environment bundle
-    :force t
     :refresh t
     (shut-up
       (condition-case err
           (prog1 (epl-upgrade)
-            (let ((inx -1)
-                  (deps (cask--fetcher-dependencies bundle)))
-              (dolist (elm deps)
-                (cl-incf inx)
-                (cask--delete-dependency bundle elm)
-                (cask--install-dependency bundle elm inx (length deps)))))
-        (error
-         (signal 'cask-failed-installation
-                 (list (car err) err (shut-up-current-output))))))))
+            (let* ((deps (cask--fetcher-dependencies bundle))
+                   (total (length deps)))
+              (dotimes (inx total)
+                (cask--delete-dependency bundle (nth inx deps))
+                (cask--install-dependency bundle (nth inx deps) inx total))))
+        (error (signal 'cask-failed-installation
+                       (list (car err) err (shut-up-current-output))))))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
   (cask--with-environment bundle
-    :force t
     :refresh t
     (epl-find-upgrades)))
 
@@ -715,7 +697,7 @@ locally linked with \"cask link\"."
 (defsubst cask--build-install-dependencies (bundle)
   "Maybe incur cost of \"cask install\" before attempting to byte-compile."
   (unless (cl-every (lambda (dep) (cask--dependency-installed-p bundle dep))
-                    (cask--runtime-dependencies bundle))
+                    (cask-runtime-dependencies bundle))
     (cask-install bundle)))
 
 (defun cask-list (bundle)
@@ -747,7 +729,6 @@ If a dependency failed to install, signal a
 to install, and ERR is the original error data."
   (cask-print (green "Loading package information... "))
   (cask--with-environment bundle
-    :force t
     :refresh t
     (cl-destructuring-bind (runtime
                             develop
@@ -756,14 +737,13 @@ to install, and ERR is the original error data."
                             (dependencies (cask--remove-vendored
                                            (cask--uniq-dependencies
                                             (append runtime develop))))
-                            (total (length dependencies))
-                            (inx -1))
+                            (total (length dependencies)))
         (cask--dependencies-and-missing bundle)
       (cask-print (green "done") "\n")
       (cask-print (green "Package operations: %d installs, %d removals\n" total 0))
       (condition-case-unless-debug err
-          (dolist (dep dependencies)
-            (cask--install-dependency bundle dep (cl-incf inx) total))
+          (dotimes (inx total)
+            (cask--install-dependency bundle (nth inx dependencies) inx total))
         (error (signal 'cask-failed-installation (list dependency err))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies missing-dependencies)))))
@@ -815,7 +795,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `load-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-   (mapcar 'f-expand (delete-dups (mapcar 'f-parent (cask-files bundle))))
+     (mapcar #'f-expand (delete-dups (mapcar #'f-parent (cask-files bundle))))
      (mapcar
       (lambda (dependency)
         (cask-dependency-path bundle (cask-dependency-name dependency)))
@@ -826,7 +806,7 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
   "Return Emacs `exec-path' (including BUNDLE dependencies)."
   (cask--with-environment bundle
     (append
-     (mapcar 'expand-file-name (delete-dups (mapcar 'f-parent (cl-remove-if-not #'f-executable-p (cask-files bundle)))))
+     (mapcar #'expand-file-name (delete-dups (mapcar #'f-parent (cl-remove-if-not #'f-executable-p (cask-files bundle)))))
      (cl-remove-if-not
       #'f-dir?
       (mapcar
@@ -878,7 +858,7 @@ The legacy argument _DEEP is assumed true."
   (cl-find-if
    (lambda (dependency)
      (eq name (cask-dependency-name dependency)))
-   (cask--dependencies bundle)))
+   (cask-dependencies bundle)))
 
 (defun cask-define-package-string (bundle)
   "Return `define-package' string for BUNDLE."
@@ -891,7 +871,7 @@ The legacy argument _DEEP is assumed true."
             (lambda (dependency)
               (list (cask-dependency-name dependency)
                     (cask-dependency-version dependency)))
-            (cask--runtime-dependencies bundle))))
+            (cask-runtime-dependencies bundle))))
       (pp-to-string `(define-package ,name ,version ,description ',dependencies)))))
 
 (defun cask-define-package-file (bundle)
@@ -928,7 +908,7 @@ in the list are relative to the path."
                             (append package-build-default-files-spec (cdr file-list)))
                            (t
                             file-list))))
-      (mapcar 'car (ignore-errors (package-build-expand-file-specs path patterns))))))
+      (mapcar #'car (ignore-errors (package-build-expand-file-specs path patterns))))))
 
 (defun cask-add-dependency (bundle name &rest args)
   "Add dependency to BUNDLE.

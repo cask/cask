@@ -130,13 +130,12 @@ property...
 asserted that only those packages are installed"
   (declare (indent 1))
   `(cask-test/with-sandbox
-    (let ((cask-source-mapping
-           (cons (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping)))
+    (let ((cask-source-mapping cask-source-mapping))
+      (push (cons 'localhost "http://127.0.0.1:9191/packages/") cask-source-mapping)
       (when ,forms
         (let ((cask-file (f-expand "Cask" cask-test/sandbox-path)))
           (cask-test/write-forms ,forms cask-file)))
-      (let (cask-current-bundle
-            (bundle (cask-setup cask-test/sandbox-path)))
+      (let ((bundle (cask-setup cask-test/sandbox-path)))
         ,@body
         ,(when (plist-member body :packages)
            `(let ((expected-packages ,(plist-get body :packages))
@@ -153,8 +152,7 @@ asserted that only those packages are installed"
 
 (defun cask-test/install (bundle)
   "Install BUNDLE and then reset the environment."
-  (let (cask-current-bundle)
-    (cask-install bundle)))
+  (cask-install bundle))
 
 (defun cask-test/run-command (command &rest args)
   "Run COMMAND with ARGS."
