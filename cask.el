@@ -530,21 +530,24 @@ The BUNDLE is initialized when the elpa directory exists."
 
 PACKAGE-FUNCTION is a function that takes a name as argument and
 returns an `epl-package' object."
-  (cask--uniq-dependencies
-   (cl-mapcan
-    (lambda (dependency)
-      (let* ((name (cask-dependency-name dependency))
-             (package (funcall package-function name)))
-        (if package
-            (cons dependency
-                  (cask--compute-dependencies
-                   (mapcar #'cask--epl-requirement-to-dependency
-                           (epl-package-requirements package))
-                   package-function
-                   errback))
-          (prog1 nil
-            (funcall errback dependency)))))
-    dependencies)))
+  (cl-loop with result
+           with seen = (mapcar #'cask-dependency-name dependencies)
+           with queue = dependencies
+           until (null queue)
+           for dep = (pop queue)
+           for name = (cask-dependency-name dep)
+           for package = (funcall package-function name)
+           if package
+           collect dep into result
+           and do (mapc (lambda (child-dep)
+                          (unless (memq (cask-dependency-name child-dep) seen)
+                            (setq queue (append queue (list child-dep)))
+                            (push (cask-dependency-name child-dep) seen)))
+                        (mapcar #'cask--epl-requirement-to-dependency
+                                (epl-package-requirements package)))
+           else do (funcall errback dep)
+           end
+           finally return result))
 
 (defun cask--runtime-dependencies (bundle &optional errback)
   "Return runtime dependencies for BUNDLE.
