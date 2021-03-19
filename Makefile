@@ -1,9 +1,4 @@
-export CASK ?= python bin/cask
-ifeq ($(shell expr $$($(PYTHON) --version 2>&1 | cut -d' ' -f2) \< 3),1)
-ifneq ($(shell which python3),)
-CASK = python3 bin/cask
-endif
-endif
+export CASK ?= bin/cask
 export EMACS ?= emacs
 export CASK_DIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 SERVANT ?= servant

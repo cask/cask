@@ -308,12 +308,12 @@ Commands:
  $ cask link delete name
 
   Delete local link with NAME."
-  (cond ((string= command-or-name "delete")
+  (cond ((and (stringp arg) (string= command-or-name "delete"))
          (cask-link-delete (cask-cli--bundle) (intern arg)))
         ((string= command-or-name "list")
          (cask-cli--print-table
           (cask-links (cask-cli--bundle))))
-        ((stringp command-or-name)
+        ((and (stringp arg) (stringp command-or-name))
          (cask-link (cask-cli--bundle) (intern command-or-name) arg))
         (t
          (cask-cli/help "link"))))

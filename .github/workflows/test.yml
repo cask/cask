@@ -20,14 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python_version: [3.6]
         # beginning of time is 24.3 when cl-flet was defined
         emacs_version: [24.3, 24.4, 24.5, 25.3, 26.3, 27.1, snapshot]
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python_version }}
     - uses: purcell/setup-emacs@master
       with:
         version: ${{ matrix.emacs_version }}

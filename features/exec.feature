@@ -61,16 +61,5 @@ Feature: Exec
     When I run cask "exec does-not-exist"
     Then I should see command error:
       """
-      cask exec: error: Failed to execute does-not-exist: [Errno 2] No such file or directory
-      Did you run cask install?
+      command not found
       """
-
-  Scenario: With Travis' pyenv prepending /usr/bin to path, remove the first instance
-    Given this Cask file:
-      """
-      """
-    When I set environment variable "TRAVIS" to "true"
-    When "/usr/bin" is prepended to $PATH
-    When I run cask "exec sh -c 'echo $PATH'"
-    Then I should not see command output matching "^/usr/bin:"
-    # Then I should see command output matching ":/usr/bin:"
