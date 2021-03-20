@@ -30,13 +30,13 @@ fi
 
 case $subcommand in
 	emacs)
-		EMACSLOADPATH=$($CASK load-path) PATH=$($CASK path) EMACS=$EMACS $EMACS "$@"
+		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" "$EMACS" "$@"
 		;;
 	exec)
-		EMACSLOADPATH=$($CASK load-path) PATH=$($CASK path) EMACS=$EMACS "$@"
+		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" "$@"
 		;;
 	*)
 		SRCDIR=$(dirname $(dirname $(realpath $CASK)))
-		$EMACS -Q --script $SRCDIR/cask-cli.el -- $subcommand "$@"
+		"$EMACS" -Q --script "$SRCDIR/cask-cli.el" -- $subcommand "$@"
 		;;
 esac

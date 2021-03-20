@@ -6,7 +6,7 @@
 
 ;; Author: Johan Andersson <johan.rejeep@gmail.com>
 ;; Maintainer: Johan Andersson <johan.rejeep@gmail.com>
-;; Version: 0.8.6
+;; Version: 0.8.7
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
 ;; Package-Requires: ((emacs "24.1") (s "1.8.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (package-build "1.2") (ansi "0.4.1"))
@@ -450,7 +450,7 @@ SCOPE may be nil or 'development."
          (when (stringp (car args))
            (push :version args))
          (setq args (plist-put args :scope scope))
-         (apply 'cask-add-dependency (append (list bundle (intern name)) args))))
+         (apply #'cask-add-dependency (append (list bundle (intern name)) args))))
       (files
        (cl-destructuring-bind (_ &rest patterns) form
          (setf (cask-bundle-patterns bundle) patterns)))
