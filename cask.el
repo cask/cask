@@ -741,11 +741,12 @@ to install, and ERR is the original error data."
         (cask--dependencies-and-missing bundle)
       (cask-print (green "done") "\n")
       (cask-print (green "Package operations: %d installs, %d removals\n" total 0))
-      (condition-case-unless-debug err
-          (dotimes (inx total)
-            (cask--install-dependency bundle (nth inx dependencies) inx total))
-        (error (signal 'cask-failed-installation
-                       (list (error-message-string err) (shut-up-current-output)))))
+      (shut-up
+        (condition-case-unless-debug err
+            (dotimes (inx total)
+              (cask--install-dependency bundle (nth inx dependencies) inx total))
+          (error (signal 'cask-failed-installation
+                         (list (error-message-string err) (shut-up-current-output))))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies missing-dependencies)))))
 
