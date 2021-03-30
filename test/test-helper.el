@@ -113,7 +113,9 @@ The items in the list are on the form (package version)."
          (condition-case err
              (f-delete cask-test/sandbox-path 'force)
            ;; gnupg/S.gpg-agent.ssh dematerializes on github actions
-           (file-error)))
+           (file-error
+	    (--each (f-entries cask-test/sandbox-path)
+	      (ignore-errors (f-delete it 'force))))))
        (f-mkdir cask-test/sandbox-path)
        (f-mkdir cask-test/link-path)
        ,@body)))
