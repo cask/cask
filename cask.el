@@ -744,7 +744,8 @@ to install, and ERR is the original error data."
       (condition-case-unless-debug err
           (dotimes (inx total)
             (cask--install-dependency bundle (nth inx dependencies) inx total))
-        (error (signal 'cask-failed-installation (list dependency err))))
+        (error (signal 'cask-failed-installation
+                       (list (car err) err (shut-up-current-output)))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies missing-dependencies)))))
 
