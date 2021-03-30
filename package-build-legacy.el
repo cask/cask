@@ -238,9 +238,9 @@ is used instead."
   (package-build--message "Fetcher: %s"
                           (substring (symbol-name
                                       (with-no-warnings
-                                        (if (version< emacs-version "24.4")
-                                            (object-class-fast rcp)
-                                          (eieio--object-class rcp))))
+                                        ;; Use eieio-object-class once we
+                                        ;; no longer support Emacs 24.3.
+                                        (object-class-fast rcp)))
                                      8 -7))
   (package-build--message "Source:  %s\n" (package-recipe--upstream-url rcp)))
 
