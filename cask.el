@@ -678,7 +678,7 @@ Return list of updated packages."
                 (cask--delete-dependency bundle (nth inx deps))
                 (cask--install-dependency bundle (nth inx deps) inx total))))
         (error (signal 'cask-failed-installation
-                       (list (car err) err (shut-up-current-output))))))))
+                       (list (error-message-string err) (shut-up-current-output))))))))
 
 (defun cask-outdated (bundle)
   "Return list of `epl-upgrade' objects for outdated BUNDLE dependencies."
@@ -745,7 +745,7 @@ to install, and ERR is the original error data."
           (dotimes (inx total)
             (cask--install-dependency bundle (nth inx dependencies) inx total))
         (error (signal 'cask-failed-installation
-                       (list (car err) err (shut-up-current-output)))))
+                       (list (error-message-string err) (shut-up-current-output)))))
       (when missing-dependencies
         (signal 'cask-missing-dependencies missing-dependencies)))))
 
