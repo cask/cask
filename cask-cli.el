@@ -43,6 +43,9 @@
 (defconst cask-cli--table-padding 10
   "Number of spaces to pad with when printing table.")
 
+(defvar no-emacs-24-warning nil
+  "If Cask should show Emacs 24 warning or not.")
+
 (defvar cask-cli--dev-mode nil
   "If Cask should run in dev mode or not.")
 
@@ -132,6 +135,25 @@ The file is written to the Cask project root path with name
 
 The dependencies to packages are also installed.  If a package
 already is installed, it will not be installed again."
+  (when (and (not no-emacs-24-warning) (version< emacs-version "24.5"))
+    (let ((fail "\033[31m")
+          (endc "\033[0m")
+          (str "\
+!!!
+!!!                         DEPRECATION NOTICE
+!!!
+!!!    `cask' will be require Emacs-24.5 from June 1, 2021.
+!!!    Your Emacs is %s.%s.  Please install latest Emacs.
+!!!    If you want a cask that works with Emacs <= 24.4, you can download it
+!!!    from the following URL.
+!!!
+!!!    https://github.com/cask/cask/archive/refs/tags/v0.8.7.tar.gz
+!!!
+!!!    You can hide this warning with `--no-emacs-24-warning' option.
+!!!
+"))
+      (princ
+       (concat fail (format str emacs-major-version emacs-minor-version) endc))))
   (cask-cli/with-handled-errors
     (cask-install (cask-cli--bundle))))
 
@@ -372,6 +394,10 @@ Commands:
   "Be silent and do not print anything."
   (setq cask-cli--silent t))
 
+(defun cask-cli/no-emacs-24-warning ()
+  "Be silent Emacs 24 warning."
+  (setq no-emacs-24-warning t))
+
 
 ;;;; Commander schedule
 
@@ -409,6 +435,8 @@ Commands:
  (option "--http-proxy <host>" cask-cli/cask-http-proxy)
  (option "--https-proxy <host>" cask-cli/cask-https-proxy)
  (option "--no-proxy <host>" cask-cli/cask-no-proxy)
+
+ (option "--no-emacs-24-warning" cask-cli/no-emacs-24-warning)
 
  (option "--version" cask-cli/cask-version)
  (option "-h [command], --help [command]" cask-cli/help)
