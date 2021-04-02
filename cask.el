@@ -198,14 +198,15 @@ Slots:
 
 ;;;; Internal functions
 
-(defmacro cask-print (&rest body)
+(cl-defmacro cask-print (&rest body &key stderr &allow-other-keys)
   "Print messages to `standard-output'.
 
 The BODY of this macro is automatically wrapped with
 `with-ansi' for easier colored output."
+  (delq :stderr body)
   `(when (or (not (boundp 'cask-cli--silent))
              (not cask-cli--silent))
-     (princ (with-ansi ,@body))))
+     (princ (with-ansi ,@body) ,(when stderr '(function external-debugging-output)))))
 
 (defun cask-warn (message &rest args)
   "Display MESSAGE with ARGS.  see `warn'."
@@ -727,7 +728,7 @@ If a dependency failed to install, signal a
 `cask-failed-installation' error, whose data is a `(DEPENDENCY
 . ERR)', where DEPENDENCY is the `cask-dependency' which failed
 to install, and ERR is the original error data."
-  (cask-print (green "Loading package information... "))
+  (cask-print :stderr (green "Loading package information... "))
   (cask--with-environment bundle
     :refresh t
     (cl-destructuring-bind (runtime
@@ -739,7 +740,7 @@ to install, and ERR is the original error data."
                                             (append runtime develop))))
                             (total (length dependencies)))
         (cask--dependencies-and-missing bundle)
-      (cask-print (green "done") "\n")
+      (cask-print :stderr (green "done") "\n")
       (cask-print (green "Package operations: %d installs, %d removals\n" total 0))
       (shut-up
         (condition-case-unless-debug err
