@@ -19,7 +19,11 @@ FIXTURES_DIR = fixtures
 
 all: test
 
-test: cask unit ecukes
+test: cask spaces unit ecukes
+
+spaces:
+	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p bin/cask \"cask cask cask/bin\" ; cd \"cask cask cask\" ; EMACS=true bash -eux bin/cask"
+	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p bin/cask \"cask cask cask/bin\" ; cd \"cask cask cask\" ; WHICH=true EMACS=true bash -eux bin/cask"
 
 cask: $(CASK_DIR)
 
