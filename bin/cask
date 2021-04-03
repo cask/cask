@@ -36,15 +36,13 @@ case $subcommand in
 		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" "$@"
 		;;
 	*)
-		WHICH=${WHICH:-$(which which || true)}
-		GREADLINK=$($WHICH greadlink || true)
+		WHICH=${WHICH:-which}
 		READLINK=$($WHICH readlink || true)
-		if [ "$(uname)" == "Darwin" ] ; then
+		if [ "$(uname || true)" == "Darwin" ] ; then
 			READLINK=
 		fi
-		if [ ! -z "$GREADLINK" ] ; then
-			SRCDIR__=$($GREADLINK -f "$CASK")
-		elif [ ! -z "$READLINK" ] ; then
+		READLINK=${READLINK:-$($WHICH greadlink || true)}
+		if [ ! -z "$READLINK" ] ; then
 			SRCDIR__=$($READLINK -f "$CASK")
 		else
 			SRCDIR__=$(python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
