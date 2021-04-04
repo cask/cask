@@ -5,10 +5,12 @@ on:
     paths-ignore:
     - '**.md'
     - '**.rst'
+    - '**.org'
   push:
     paths-ignore:
     - '**.md'
     - '**.rst'
+    - '**.org'
     branches-ignore:
     - 'master'
     - 'main'
