@@ -2,7 +2,7 @@
 [[file:cask.png]]
 
 
-[[https://github.com/cask/cask/actions/workflows/test.yml][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg?event=pull_request]]
+[[https://github.com/cask/cask/actions/workflows/test.yml][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg]]
 [[https://melpa.org/#/cask][https://melpa.org/packages/cask-badge.svg]]
 [[https://stable.melpa.org/#/cask][https://stable.melpa.org/packages/cask-badge.svg]]
 
