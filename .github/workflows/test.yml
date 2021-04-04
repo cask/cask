@@ -12,27 +12,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         # beginning of time is 24.3 when cl-flet was defined
         emacs_version: [24.3, 24.4, 24.5, 25.3, 26.3, 27.1, snapshot]
-        python_version: [3.7]
+        include:
+          - os: macos-latest
+            emacs_version: 27.1
+          - os: macos-latest
+            emacs_version: snapshot
     steps:
     - uses: actions/checkout@v2
     - uses: purcell/setup-emacs@master
-      if: startsWith(runner.os, 'Linux') || startsWith(matrix.emacs_version, '27')
       with:
         version: ${{ matrix.emacs_version }}
     - uses: actions/setup-python@v1
-      if: startsWith(runner.os, 'Linux') || startsWith(matrix.emacs_version, '27')
       with:
-        python-version: ${{ matrix.python_version }}
+        python-version: 3.7
     - name: paths
-      if: startsWith(runner.os, 'Linux') || startsWith(matrix.emacs_version, '27')
       run: |
         echo "$HOME/local/bin" >> $GITHUB_PATH
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
         echo "$HOME/.local/bin" >> $GITHUB_PATH
         echo "LD_LIBRARY_PATH=$HOME/.local/lib" >> $GITHUB_ENV
     - run: 'make test'
-      if: startsWith(runner.os, 'Linux') || startsWith(matrix.emacs_version, '27')
       continue-on-error: ${{ matrix.emacs_version == 'snapshot' }}
