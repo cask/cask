@@ -3,9 +3,11 @@ name: CI
 on:
   pull_request:
     paths-ignore:
+    - '**.rst'
     - '**.org'
   push:
     paths-ignore:
+    - '**.rst'
     - '**.org'
     branches-ignore:
     - 'master'
