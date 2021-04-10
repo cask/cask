@@ -576,27 +576,32 @@ The legacy argument _DEEP is assumed true."
 If dependency does not exist, the error `cask-missing-dependency'
 is signaled.
 INDEX is the current install index of TOTAL indices."
-  (let ((name (cask-dependency-name dependency))
-        (version (cask-dependency-version dependency)))
+  (let* ((name (cask-dependency-name dependency))
+         (version (cask-dependency-version dependency))
+	 (epl-package (epl-package-create
+		       :name name :description
+		       (package-desc-create :name name
+					    :version (if (listp version)
+							 version
+						       (version-to-list version))))))
     (cask-print
      (format "  - Installing [%2d/%d]" (1+ index) total)
      " " (green "%s" name) " "
      "(" (yellow "%s" (or version "latest")) ")... ")
     (when (cask-linked-p bundle name)
       (cask-print "linked\n"))
-    (when (epl-package-installed-p name)
-      (cask-print (bold (black "already present")) "\n"))
-    (unless (cask--dependency-installed-p bundle dependency)
+    (if (epl-package-installed-p epl-package)
+	(cask-print (bold (black "already present")) "\n")
       (if (cask-dependency-fetcher dependency)
           (shut-up
             (let ((package-path (cask--checkout-and-package-dependency dependency)))
               (epl-refresh)
               (epl-install-file package-path)))
-        (let ((package (cask--find-available-package name)))
+	(let ((package (cask--find-available-package name)))
           (if package
               (progn
-                (cask-print "downloading\e[F\n")
-                (shut-up (epl-package-install package)))
+		(cask-print "downloading\e[F\n")
+		(shut-up (epl-package-install package)))
             (unless (epl-built-in-p name)
               (cask-print (bold (red "not available")) "\n")
               (signal 'cask-missing-dependency (list dependency))))))
@@ -687,17 +692,9 @@ Return list of updated packages."
     :refresh t
     (epl-find-upgrades)))
 
-(defun cask--dependency-installed-p (bundle dependency)
-  "Return non-nil if DEPENDENCY is installed.
-
-An installed dependency is one which is already present or
-locally linked with \"cask link\"."
-  (let ((name (cask-dependency-name dependency)))
-    (or (epl-package-installed-p name) (cask-linked-p bundle name))))
-
 (defsubst cask--build-install-dependencies (bundle)
   "Maybe incur cost of \"cask install\" before attempting to byte-compile."
-  (unless (cl-every (lambda (dep) (cask--dependency-installed-p bundle dep))
+  (unless (cl-every (lambda (dep) (epl-package-installed-p dep))
                     (cask-runtime-dependencies bundle))
     (cask-install bundle)))
 
