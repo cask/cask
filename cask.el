@@ -88,6 +88,15 @@ Defaults to `error'."
 (define-error 'cask-no-cask-file "Cask file does not exist" 'cask-error)
 (define-error 'cask-empty-archive-contents "Empty archive contents" 'cask-error)
 
+(defmacro cask--shut-up-unless-debug (&rest body)
+  "The shut-up module is singularly designed to defeat *every*
+ attempt at making your elisp package tractable."
+  (declare (indent defun))
+  `(if debug-on-error
+       (cl-flet ((shut-up-current-output () (ignore)))
+	 ,@body)
+     (shut-up ,@body)))
+
 (cl-defstruct cask-dependency
   "Structure representing a dependency.
 
@@ -292,7 +301,7 @@ If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
   (setq package-user-dir (cask-elpa-path bundle))
   (dolist (source (cask-bundle-sources bundle))
     (epl-add-archive (cask-source-name source) (cask-source-url source)))
-  (shut-up
+  (cask--shut-up-unless-debug
     (condition-case err
         (progn
           (when refresh (epl-refresh))
@@ -485,7 +494,7 @@ The BUNDLE is initialized when the elpa directory exists."
    :name (epl-requirement-name epl-requirement)
    :version (epl-requirement-version-string epl-requirement)))
 
-(defun cask--find-available-package-jit (bundle name)
+(defun cask--find-available-package-jit (bundle name version)
   "Ensure `cask--find-available-package' has `package-archive-contents'."
   (when (and (not package-archive-contents)
              (cask-bundle-sources bundle))
@@ -494,7 +503,8 @@ The BUNDLE is initialized when the elpa directory exists."
       (signal 'cask-empty-archive-contents
               (list (mapcar #'cask-source-url
                             (cask-bundle-sources bundle))))))
-  (cask--find-available-package name))
+  (when (or version (not (epl-built-in-p name)))
+    (cask--find-available-package name)))
 
 (defun cask--find-available-package (name)
   "Find first available package with NAME."
@@ -514,7 +524,7 @@ The BUNDLE is initialized when the elpa directory exists."
 (defun cask--compute-dependencies (dependencies package-function errback)
   "Topologically sort full dependency graph.
 
-PACKAGE-FUNCTION is a function that takes a name as argument and
+PACKAGE-FUNCTION is a function that takes a name and version as argument and
 returns an `epl-package' object."
   (cl-loop with result
            with seen = (mapcar #'cask-dependency-name dependencies)
@@ -522,7 +532,8 @@ returns an `epl-package' object."
            until (null queue)
            for dep = (pop queue)
            for name = (cask-dependency-name dep)
-           for package = (funcall package-function name)
+	   for version = (cask-dependency-version dep)
+           for package = (funcall package-function name version)
            if package
              collect dep into result
              and do (dolist (req (epl-package-requirements package))
@@ -535,7 +546,7 @@ returns an `epl-package' object."
              if (eq name 'emacs)
                collect dep into result
              else
-               do (funcall errback dep)
+	       do (unless (epl-built-in-p name) (funcall errback dep))
              end
            end
            finally return result))
@@ -595,18 +606,32 @@ INDEX is the current install index of TOTAL indices."
     (if installed-p
 	(cask-print (bold (black "already present")) "\n")
       (if (cask-dependency-fetcher dependency)
-          (shut-up
+          (cask--shut-up-unless-debug
             (let ((package-path (cask--checkout-and-package-dependency dependency)))
               (epl-refresh)
               (epl-install-file package-path)))
 	(let ((package (cask--find-available-package name)))
-          (if package
-              (progn
-		(cask-print "downloading\e[F\n")
-		(shut-up (epl-package-install package)))
-            (unless (epl-built-in-p name)
-              (cask-print (bold (red "not available")) "\n")
-              (signal 'cask-missing-dependency (list dependency))))))
+          (cond ((and version*
+		      (epl-package-p package)
+		      (epl-package-version package)
+		      (version-list-< (epl-package-version package) version*))
+		 (cask-print (bold (red "not available")) "\n")
+		 (signal 'cask-missing-dependency (list dependency)))
+		((and (null package)
+		      (epl-built-in-p name))
+		 (cask-print (bold (red "not available")) "\n")
+		 (signal 'cask-missing-dependency (list dependency)))
+		(t (cask-print "downloading\e[F\n")
+		   (cask--shut-up-unless-debug
+		     (condition-case-unless-debug err
+			 ;; `epl-package-install' does not correctly
+			 ;; catch errors, so we get "Wrong type argument"
+			 ;; on failed `package-compute-transaction'
+			 (epl-package-install package)
+		       (error
+			(signal 'cask-missing-dependency
+				(list (error-message-string err)
+				      (shut-up-current-output))))))))))
       (cask-print
        (format "\e[K  - Installing [%2d/%d]" (1+ index) total)
        " " (green "%s" name) " "
@@ -677,8 +702,8 @@ This function return a `cask-bundle' object."
 Return list of updated packages."
   (cask--with-environment bundle
     :refresh t
-    (shut-up
-      (condition-case err
+    (cask--shut-up-unless-debug
+      (condition-case-unless-debug err
           (prog1 (epl-upgrade)
             (let* ((deps (cask--fetcher-dependencies bundle))
                    (total (length deps)))
@@ -747,12 +772,8 @@ to install, and ERR is the original error data."
         (cask--dependencies-and-missing bundle)
       (cask-print :stderr (green "done") "\n")
       (cask-print (green "Package operations: %d installs, %d removals\n" total 0))
-      (shut-up
-        (condition-case-unless-debug err
-            (dotimes (inx total)
-              (cask--install-dependency bundle (nth inx dependencies) inx total))
-          (error (signal 'cask-failed-installation
-                         (list (error-message-string err) (shut-up-current-output))))))
+      (dotimes (inx total)
+        (cask--install-dependency bundle (nth inx dependencies) inx total))
       (when missing-dependencies
         (signal 'cask-missing-dependencies missing-dependencies)))))
 

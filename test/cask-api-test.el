@@ -741,6 +741,12 @@
 			  (make-cask-dependency :name 'package-a :version "0.0.1"))))
       (should-be-same-dependencies actual expected))))
 
+(ert-deftest cask-install-test/unavailable-built-in ()
+  (cask-test/with-bundle
+      '((source localhost)
+	(depends-on "project" "20210113.1134"))
+    (should-error (cask-install bundle) :type 'cask-missing-dependency)))
+
 (ert-deftest cask-install-test/newer-version ()
   (cask-test/with-bundle
       '((source localhost)
@@ -754,11 +760,14 @@
        '((source localhost)
 	 (depends-on "package-a" "0.0.2"))
        cask-file))
-    (let ((bundle (cask-setup cask-test/sandbox-path)))
-      (cask-install bundle)
-      (let ((actual (cask-installed-dependencies bundle))
-            (expected (list (make-cask-dependency :name 'package-a :version "0.0.2"))))
-	(should-be-same-dependencies actual expected)))))
+    (setq bundle (cask-setup cask-test/sandbox-path))
+    (should-error (cask-install bundle) :type 'cask-missing-dependency)
+    (setf (cask-bundle-sources bundle) nil)
+    (cask-add-source bundle "localhost" "http://127.0.0.1:9191/new-packages/")
+    (cask-install bundle)
+    (let ((actual (cask-installed-dependencies bundle))
+          (expected (list (make-cask-dependency :name 'package-a :version "0.0.2"))))
+      (should-be-same-dependencies actual expected))))
 
 (ert-deftest cask-outdated-test/no-cask-file ()
   (cask-test/with-bundle nil
