@@ -578,19 +578,21 @@ is signaled.
 INDEX is the current install index of TOTAL indices."
   (let* ((name (cask-dependency-name dependency))
          (version (cask-dependency-version dependency))
-	 (epl-package (epl-package-create
-		       :name name :description
-		       (package-desc-create :name name
-					    :version (if (listp version)
-							 version
-						       (version-to-list version))))))
+	 (version* (if (listp version) version (version-to-list version)))
+	 (installed-p
+	  (if (fboundp 'package-desc-create)
+	      (epl-package-installed-p
+	       (epl-package-create
+		:name name
+		:description (package-desc-create :name name :version version*)))
+	    (cask--dependency-installed-p bundle dependency))))
     (cask-print
      (format "  - Installing [%2d/%d]" (1+ index) total)
      " " (green "%s" name) " "
      "(" (yellow "%s" (or version "latest")) ")... ")
     (when (cask-linked-p bundle name)
       (cask-print "linked\n"))
-    (if (epl-package-installed-p epl-package)
+    (if installed-p
 	(cask-print (bold (black "already present")) "\n")
       (if (cask-dependency-fetcher dependency)
           (shut-up
@@ -691,6 +693,12 @@ Return list of updated packages."
   (cask--with-environment bundle
     :refresh t
     (epl-find-upgrades)))
+
+(defun cask--dependency-installed-p (bundle dependency)
+  "Version-agnostic predicate.  Useful only for emacs24."
+  (cl-assert (< emacs-major-version 25))
+  (let ((name (cask-dependency-name dependency)))
+    (or (epl-package-installed-p name) (cask-linked-p bundle name))))
 
 (defsubst cask--build-install-dependencies (bundle)
   "Maybe incur cost of \"cask install\" before attempting to byte-compile."
