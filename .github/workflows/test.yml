@@ -25,8 +25,6 @@ jobs:
         include:
           - os: macos-latest
             emacs_version: 27.1
-          - os: macos-latest
-            emacs_version: snapshot
     steps:
     - uses: actions/checkout@v2
     - uses: purcell/setup-emacs@master
