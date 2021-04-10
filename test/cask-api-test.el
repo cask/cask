@@ -487,7 +487,6 @@
     (should (f-same? (cask-path bundle) cask-test/sandbox-path))))
 
 (ert-deftest cask-file-test ()
-  :expected-result (if (< emacs-major-version 25) t :passed)
   (cask-test/with-bundle 'empty
     (should (f-same? (cask-file bundle) (f-expand "Cask" cask-test/sandbox-path)))))
 
@@ -761,7 +760,8 @@
 	 (depends-on "package-a" "0.0.2"))
        cask-file))
     (setq bundle (cask-setup cask-test/sandbox-path))
-    (should-error (cask-install bundle) :type 'cask-missing-dependency)
+    (when (>= emacs-major-version 25)
+      (should-error (cask-install bundle) :type 'cask-missing-dependency))
     (setf (cask-bundle-sources bundle) nil)
     (cask-add-source bundle "localhost" "http://127.0.0.1:9191/new-packages/")
     (cask-install bundle)
