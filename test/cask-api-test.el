@@ -371,7 +371,7 @@
     (should (string= (cask-package-description bundle) "PACKAGE-A"))))
 
 (ert-deftest cask-version-test ()
-  (should (s-matches? "^[0-9]+\.[0-9]+\.[0-9]+$" (cask-version))))
+  (should (version-to-list (cask-version))))
 
 (ert-deftest cask-elpa-path-test ()
   (cask-test/with-bundle nil

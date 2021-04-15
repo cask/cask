@@ -581,6 +581,23 @@ The legacy argument _DEEP is assumed true."
                                    (cask-dependency-name dep)))
                     (cask--dependencies bundle)))
 
+(defun cask--legacy-dependency-installed-p (bundle dependency)
+  "Version-ignorant predicate.  Useful only for emacs24."
+  (cl-assert (< emacs-major-version 25))
+  (let ((name (cask-dependency-name dependency)))
+    (or (epl-package-installed-p name) (cask-linked-p bundle name))))
+
+(defun cask--dependency-installed-p (bundle dependency)
+  (let* ((name (cask-dependency-name dependency))
+         (version (cask-dependency-version dependency))
+	 (version* (if (listp version) version (version-to-list version))))
+    (if (fboundp 'package-desc-create)
+	(epl-package-installed-p
+	 (epl-package-create
+	  :name name
+	  :description (package-desc-create :name name :version version*)))
+      (cask--legacy-dependency-installed-p bundle dependency))))
+
 (defun cask--install-dependency (bundle dependency index total)
   "In BUNDLE, install DEPENDENCY.
 
@@ -588,22 +605,15 @@ If dependency does not exist, the error `cask-missing-dependency'
 is signaled.
 INDEX is the current install index of TOTAL indices."
   (let* ((name (cask-dependency-name dependency))
-         (version (cask-dependency-version dependency))
-	 (version* (if (listp version) version (version-to-list version)))
-	 (installed-p
-	  (if (fboundp 'package-desc-create)
-	      (epl-package-installed-p
-	       (epl-package-create
-		:name name
-		:description (package-desc-create :name name :version version*)))
-	    (cask--dependency-installed-p bundle dependency))))
+	 (version (cask-dependency-version dependency))
+	 (version* (if (listp version) version (version-to-list version))))
     (cask-print
      (format "  - Installing [%2d/%d]" (1+ index) total)
      " " (green "%s" name) " "
      "(" (yellow "%s" (or version "latest")) ")... ")
     (when (cask-linked-p bundle name)
       (cask-print "linked\n"))
-    (if installed-p
+    (if (cask--dependency-installed-p bundle dependency)
 	(cask-print (bold (black "already present")) "\n")
       (if (cask-dependency-fetcher dependency)
           (cask--shut-up-unless-debug
@@ -719,16 +729,11 @@ Return list of updated packages."
     :refresh t
     (epl-find-upgrades)))
 
-(defun cask--dependency-installed-p (bundle dependency)
-  "Version-agnostic predicate.  Useful only for emacs24."
-  (cl-assert (< emacs-major-version 25))
-  (let ((name (cask-dependency-name dependency)))
-    (or (epl-package-installed-p name) (cask-linked-p bundle name))))
-
-(defsubst cask--build-install-dependencies (bundle)
+(defun cask--build-install-dependencies (bundle)
   "Maybe incur cost of \"cask install\" before attempting to byte-compile."
-  (unless (cl-every (lambda (dep) (epl-package-installed-p dep))
-                    (cask-runtime-dependencies bundle))
+  (unless (cl-every
+	   (apply-partially #'cask--dependency-installed-p bundle)
+           (cask-runtime-dependencies bundle))
     (cask-install bundle)))
 
 (defun cask-list (bundle)
