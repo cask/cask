@@ -533,20 +533,25 @@ returns an `epl-package' object."
            for dep = (pop queue)
            for name = (cask-dependency-name dep)
 	   for version = (cask-dependency-version dep)
+           for fetcher = (cask-dependency-fetcher dep)
            for package = (funcall package-function name version)
-           if package
+           if fetcher
              collect dep into result
-             and do (dolist (req (epl-package-requirements package))
-                      (let ((child-dep
-                             (cask--epl-requirement-to-dependency req)))
-                        (unless (memq (cask-dependency-name child-dep) seen)
-                          (setq queue (append queue (list child-dep)))
-                          (push (cask-dependency-name child-dep) seen))))
            else
-             if (eq name 'emacs)
+             if package
                collect dep into result
+               and do (dolist (req (epl-package-requirements package))
+                        (let ((child-dep
+                               (cask--epl-requirement-to-dependency req)))
+                          (unless (memq (cask-dependency-name child-dep) seen)
+                            (setq queue (append queue (list child-dep)))
+                            (push (cask-dependency-name child-dep) seen))))
              else
-	       do (unless (epl-built-in-p name) (funcall errback dep))
+               if (eq name 'emacs)
+                 collect dep into result
+               else
+                 do (unless (epl-built-in-p name) (funcall errback dep))
+               end
              end
            end
            finally return result))

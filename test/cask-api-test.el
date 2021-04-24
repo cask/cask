@@ -652,6 +652,18 @@
      (git "commit" "-a" "-m" "Add package-a.")
      (cask-install bundle))))
 
+(ert-deftest cask-install-test/fetcher-git-unregistered ()
+  (cask-test/with-git-repo
+   (cask-test/with-bundle
+       `((source localhost)
+         (depends-on "package-not" :git ,cask-test/cvs-repo-path))
+     :packages '(("package-not"))
+     (f-copy (f-join cask-test/fixtures-path "package-not-0.0.1" "package-not.el")
+             cask-test/cvs-repo-path)
+     (git "add" "package-not.el")
+     (git "commit" "-a" "-m" "Add package-not.")
+     (cask-install bundle))))
+
 (ert-deftest cask-install-test/fetcher-files ()
   (cask-test/with-git-repo
    (cask-test/with-bundle
