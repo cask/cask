@@ -1,21 +1,13 @@
 * Cask
-https://github.com/cask/cask/actions/workflows/test.yml/badge.svg
+[[https://github.com/dickmao/cask/actions][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg]]
 [[https://melpa.org/#/cask][https://melpa.org/packages/cask-badge.svg]]
-[[https://stable.melpa.org/#/cask][https://stable.melpa.org/packages/cask-badge.svg]]
+[[https://stable.melpa.org/#/cask][https://stable.melpa.org/packages/cask-badge.svg]]]]
 
-[[#+HTML: <img src="cask_small.png" align="right">]]
+#+HTML: <img src="cask_small.png" align="right">
 
-Cask is =venv= or =maven= for emacs lisp development, although, as with all things emacs,
-is decidedly less sophisticated (but no less arcane).
+Cask can be likened to =venv= or =maven= for Emacs Lisp development, although, as with all things emacs, is decidedly less sophisticated (but no less arcane).
 
-Cask simplifies sandboxing that more expert elisp developers accomplish directly with emacs's built-in =-Q=, =--batch=, and =--eval== switches.  Within that sandbox, Cask provisions dependencies via a user-defined "Cask" file analogous to =requirements-dev.txt= or =pom.xml=.
-
-** Frequently Asked Questions
-
-+ Why must I replicate dependencies in the Cask file? :: You don't, but probably more than half of Cask deployments in the wild needlessly do.  =cask list= automatically shows your package's dependencies if you specify them /pro forma/ in a =Package-Requires= header.  The [[https://cask.readthedocs.io/en/latest/guide/dsl.html#el.function.development][development stanza]] of the Cask DSL is analogous to =requirements-dev.txt=.  Only packages required by your testing apparatus (and not the final deployment), e.g., =ert-runner=, should be added there.
-+ Doesn't Cask make things more complicated? :: In many ways, yes.  Some overlays succeed in decluttering the underlying technology.  A good example of this is LaTeX over pure TeX.  On the other end of the spectrum of helpfulness, some overlays require you to learn a metalanguage that is only slightly less complex but inherently more opaque than the underlying.  Saltstack and Terraform (really the whole enterprise devops space) come to mind.  Cask is somewhere in the middle.
-+ I perused the docs, and I still don't get it? :: The docs were written at a time when Cask intended to be both a developer tool *and* an end-user tool for maintaining emacs packages.  The latter role is no longer advised (and the docs should be re-written).
-+ Is Cask a vassal of MELPA? :: Yes, Cask's early development history is intertwined with that of MELPA's [[https://github.com/melpa/package-build/blob/master/package-build.el][package-build]].  Cask employs that module for all packaging tasks including dependency provisioning.
+Cask simplifies sandboxing that more expert elisp developers accomplish directly with emacs's built-in =-Q=, =--batch=, and =--eval= switches.  Within the sandbox, Cask provisions dependencies via a user-defined "Cask" file analogous to =requirements-dev.txt= or =pom.xml=.
 
 ** Installation
 
@@ -93,5 +85,13 @@ jobs:
           version: snapshot
 #+end_src
 
+** Frequently Asked Questions
+
++ Why must I replicate dependencies in the Cask file? :: You don't, but probably more than half of Cask deployments in the wild needlessly do.  =cask list= automatically shows your package's dependencies if you specify them /pro forma/ in a =Package-Requires= header.  The oft-confused [[https://cask.readthedocs.io/en/latest/guide/dsl.html#el.function.development][development stanza]] is analogous to =requirements-dev.txt=.  Only packages required by your testing apparatus (and not the final deployment), e.g., =ert-runner=, should be added there.
++ Doesn't Cask make things more complicated? :: In many ways, yes.  Some overlays succeed in decluttering the underlying technology.  A good example of this is LaTeX over pure TeX.  On the other end of the spectrum of helpfulness, some overlays require you to learn a metalanguage that is only slightly less complex but inherently more opaque than the underlying.  Saltstack and Terraform (really the whole enterprise devops space) come to mind.  Cask is somewhere in the middle.
++ I perused the docs, and I still don't get it? :: The docs were written at a time when Cask intended to be both a developer tool *and* an end-user tool for maintaining emacs packages.  The latter role is no longer advised (and the docs should be re-written).
++ Is Cask a vassal of MELPA? :: Yes, Cask's early development history is intertwined with that of MELPA's [[https://github.com/melpa/package-build/blob/master/package-build.el][package-build]].  Cask employs that module for all packaging tasks including dependency provisioning.
+
 ** Legacy documentation
+
 See [[http://cask.readthedocs.io/]] for more information.
