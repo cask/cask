@@ -128,7 +128,12 @@ README.makefile: README.org
 	            (lambda () \
 	              (goto-char (point-min)) \
                       (insert \"name: readme\n\") \
-	              (insert \"on: [push, pull_request]\n\") \
+	              (insert \"on:\n\") \
+	              (insert \"  pull_request:\n\") \
+	              (insert \"  push:\n\") \
+	              (insert \"    branches-ignore:\n\") \
+	              (insert \"    - 'master'\n\") \
+	              (insert \"    - 'main'\n\") \
 	              (goto-char (point-max)) \
 	              (insert \"\n      - run: make -f README.makefile test\n\")))" \
 	  --eval "(org-babel-tangle-file \"$(<)\" nil \"yaml\")"
