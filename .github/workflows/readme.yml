@@ -27,4 +27,5 @@ jobs:
         if: steps.cache-cask-executable.outputs.cache-hit != 'true'
         with:
           version: snapshot
+      - run: echo "$HOME/.cask/bin" >> $GITHUB_PATH
       - run: make -f README.makefile test
