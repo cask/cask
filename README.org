@@ -25,6 +25,14 @@ MacOS users might try:
   brew install cask
 #+end_src
 
+** Not-so-quick start
+
+#+begin_src shell
+  cask init --dev
+#+end_src
+
+With just this baseline "Cask" file, you can run most of the commands described in [[http://cask.readthedocs.io/]].
+
 ** Typical Makefile Usage
 
 Egregious boilerplate follows:
@@ -93,7 +101,3 @@ jobs:
 + Doesn't Cask make things more complicated? :: In many ways, yes.  Some overlays succeed in decluttering the underlying technology.  A good example of this is LaTeX over pure TeX.  On the opposite end of the helpfulness spectrum, some overlays require you to learn a metalanguage that is only slightly less complex but inherently more opaque than the underlying.  Saltstack and Terraform (really the whole enterprise DevOps space) come to mind.  Cask is somewhere in the middle.
 + I perused the docs, and I still don't get it? :: The docs were written at a time when Cask aspired to be both a developer tool *and* an end-user tool for managing emacs packages.  The latter role is no longer advised (and the docs should be re-written).
 + Is Cask a vassal of MELPA? :: Yes, Cask's early development history is intertwined with that of MELPA's [[https://github.com/melpa/package-build/blob/master/package-build.el][package-build]].  Cask employs that module for all packaging tasks including dependency provisioning.
-
-** Original documentation
-
-The fusty [[http://cask.readthedocs.io/]] is still relevant in parts.
