@@ -1,0 +1,30 @@
+name: readme
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs-version:
+          - 26.3
+          - 27.2
+    steps:
+      - uses: actions/checkout@v2
+      - uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs-version }}
+      - uses: actions/cache@v2
+        id: cache-cask-packages
+        with:
+          path: .cask
+          key: cache-cask-packages-000
+      - uses: actions/cache@v2
+        id: cache-cask-executable
+        with:
+          path: ~/.cask
+          key: cache-cask-executable-000
+      - uses: conao3/setup-cask@master
+        if: steps.cache-cask-executable.outputs.cache-hit != 'true'
+        with:
+          version: snapshot
+      - run: make -f README.makefile test

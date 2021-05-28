@@ -327,7 +327,9 @@ Evaluate BODY in the package context of BUNDLE.  Then restore package context."
             (package-load-list
              (eval (car (get 'package-load-list 'standard-value))))
             (package-user-dir (cask-elpa-path ,bundle))
-            (package-gnupghome-dir (expand-file-name "gnupg" package-user-dir)))
+	    (,@(if (special-variable-p 'package-gnupghome-dir)
+		   (cons 'package-gnupghome-dir (list (expand-file-name "gnupg" package-user-dir)))
+		 (list '_package-gnupghome-dir))))
        (cask--use-environment ,bundle ,refresh ,no-activate)
        ;; following will evaluate keys e.g., `:activate t` as separate s-exprs
        ;; which ought to be no-ops
@@ -337,8 +339,7 @@ Evaluate BODY in the package context of BUNDLE.  Then restore package context."
   "Workhorse for `cask--dependencies'."
   (let* (missing
          (errback (lambda (dep)
-                    (let ((name (cask-dependency-name dep)))
-                      (push dep missing))))
+                    (push dep missing)))
          (runtime (cask--runtime-dependencies bundle errback))
          (develop (cask--development-dependencies bundle errback)))
     (list runtime develop (cask--uniq-dependencies missing))))
@@ -346,7 +347,7 @@ Evaluate BODY in the package context of BUNDLE.  Then restore package context."
 (defun cask--dependencies (bundle &optional _deep)
   "Return transitive closure of dependencies for BUNDLE.
 The legacy argument _DEEP is assumed true."
-  (cl-destructuring-bind (runtime develop &rest _args)
+  (cl-destructuring-bind (runtime develop &rest args)
       (cask--dependencies-and-missing bundle)
     (cask--uniq-dependencies (append runtime develop))))
 
@@ -526,8 +527,7 @@ The BUNDLE is initialized when the elpa directory exists."
 
 PACKAGE-FUNCTION is a function that takes a name and version as argument and
 returns an `epl-package' object."
-  (cl-loop with result
-           with seen = (mapcar #'cask-dependency-name dependencies)
+  (cl-loop with seen = (mapcar #'cask-dependency-name dependencies)
            with queue = dependencies
            until (null queue)
            for dep = (pop queue)
@@ -652,7 +652,7 @@ INDEX is the current install index of TOTAL indices."
        " " (green "%s" name) " "
        "(" (yellow "%s" (or version "latest")) ")... done\n"))))
 
-(defun cask--delete-dependency (bundle dependency)
+(defun cask--delete-dependency (_bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
   (let* ((name (cask-dependency-name dependency))
          (package (epl-find-installed-packages name)))
@@ -744,7 +744,7 @@ Return list of updated packages."
 (defun cask-list (bundle)
   "List BUNDLE dependencies."
   (cask--with-environment bundle
-    (cl-destructuring-bind (runtime develop &rest _args)
+    (cl-destructuring-bind (runtime develop &rest args)
         (cask--dependencies-and-missing bundle)
       (princ "### Dependencies ###\n\n")
       (princ (format "Runtime [%s]:\n" (length runtime)))
@@ -1022,7 +1022,7 @@ URL is the url to the mirror."
         (when (and (f-file? path) (f-ext? path "el"))
           (if (fboundp 'byte-recompile-file)
               (byte-recompile-file path 'force 0)
-            (byte-compile-file path nil)))))))
+            (byte-compile-file path)))))))
 
 (defun cask-clean-elc (bundle)
   "Remove BUNDLE Elisp byte compiled files."

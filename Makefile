@@ -19,7 +19,15 @@ FIXTURES_DIR = fixtures
 
 all: test
 
-test: cask spaces unit ecukes
+test: compile spaces unit ecukes
+
+.PHONY: compile
+compile: cask
+	if expr $$($(EMACS) -Q --batch --eval '(princ emacs-major-version)') ">" 24 ; then \
+	  ! (cask eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
+	     | egrep -a "(Warning|Error):") ; \
+	  (ret=$$? ; cask clean-elc && exit $$ret) \
+	else echo Not linting emacs24 ; fi
 
 spaces:
 	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p bin/cask \"cask cask cask/bin\" ; cd \"cask cask cask\" ; EMACS=true bash -eux bin/cask"
@@ -110,5 +118,19 @@ clean:
 
 .PHONY: start-server stop-server unit ecukes test all clean \
 	doc html linkcheck cask
+
+README.makefile: README.org
+	$(EMACS) -Q --batch -l ob-tangle --eval "(org-babel-tangle-file \"$(<)\" nil \"makefile\")"
+
+.github/workflows/readme.yml: README.org
+	$(EMACS) -Q --batch -l ob-tangle \
+	  --eval "(add-hook (quote org-babel-tangle-body-hook) \
+	            (lambda () \
+	              (goto-char (point-min)) \
+                      (insert \"name: readme\n\") \
+	              (insert \"on: [push, pull_request]\n\") \
+	              (goto-char (point-max)) \
+	              (insert \"\n      - run: make -f README.makefile test\n\")))" \
+	  --eval "(org-babel-tangle-file \"$(<)\" nil \"yaml\")"
 
 .SILENT: start-server stop-server

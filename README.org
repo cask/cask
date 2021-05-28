@@ -1,18 +1,23 @@
 * Cask
-[[file:cask.png]]
-
-
-[[https://github.com/cask/cask/actions/workflows/test.yml][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg]]
+https://github.com/cask/cask/actions/workflows/test.yml/badge.svg
 [[https://melpa.org/#/cask][https://melpa.org/packages/cask-badge.svg]]
 [[https://stable.melpa.org/#/cask][https://stable.melpa.org/packages/cask-badge.svg]]
 
-Cask is a project management tool for Emacs that helps automate the
-package development cycle; development, dependencies, testing, building,
-packaging and more.
+[[#+HTML: <img src="cask_small.png" align="right">]]
 
-Cask can also be used to manage dependencies for your local Emacs configuration.
+Cask is =venv= or =maven= for emacs lisp development, although, as with all things emacs,
+is decidedly less sophisticated (but no less arcane).
 
-To install Cask, run this command:
+Cask simplifies sandboxing that more expert elisp developers accomplish directly with emacs's built-in =-Q=, =--batch=, and =--eval== switches.  Within that sandbox, Cask provisions dependencies via a user-defined "Cask" file analogous to =requirements-dev.txt= or =pom.xml=.
+
+** Frequently Asked Questions
+
++ Why must I replicate dependencies in the Cask file? :: You don't, but probably more than half of Cask deployments in the wild needlessly do.  =cask list= automatically shows your package's dependencies if you specify them /pro forma/ in a =Package-Requires= header.  The [[https://cask.readthedocs.io/en/latest/guide/dsl.html#el.function.development][development stanza]] of the Cask DSL is analogous to =requirements-dev.txt=.  Only packages required by your testing apparatus (and not the final deployment), e.g., =ert-runner=, should be added there.
++ Doesn't Cask make things more complicated? :: In many ways, yes.  Some overlays succeed in decluttering the underlying technology.  A good example of this is LaTeX over pure TeX.  On the other end of the spectrum of helpfulness, some overlays require you to learn a metalanguage that is only slightly less complex but inherently more opaque than the underlying.  Saltstack and Terraform (really the whole enterprise devops space) come to mind.  Cask is somewhere in the middle.
++ I perused the docs, and I still don't get it? :: The docs were written at a time when Cask intended to be both a developer tool *and* an end-user tool for maintaining emacs packages.  The latter role is no longer advised (and the docs should be re-written).
++ Is Cask a vassal of MELPA? :: Yes, Cask's early development history is intertwined with that of MELPA's [[https://github.com/melpa/package-build/blob/master/package-build.el][package-build]].  Cask employs that module for all packaging tasks including dependency provisioning.
+
+** Installation
 
 #+begin_src shell
   git clone https://github.com/cask/cask ~/.cask
@@ -22,29 +27,71 @@ To install Cask, run this command:
   echo 'PATH=$HOME/.cask/bin:$PATH' >> ~/.bashrc
 #+end_src
 
-Or if you are on a Mac, you can install Cask via Homebrew:
+MacOS users might try (with unclear results):
 
 #+begin_src shell
   brew install cask
 #+end_src
 
-See [[http://cask.readthedocs.io/]] for more information and
-[[https://groups.google.com/forum/#!forum/cask-dev]] for development
-related discussion.
+** Typical Makefile Usage
 
-** License
-This program is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation, either version 3 of the License, or (at your
-option) any later version.
+Egregious boilerplate follows:
 
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-Public License for more details.
+#+begin_src makefile :tangle README.makefile
+export EMACS ?= $(shell which emacs)
+CASK_DIR := $(shell cask package-directory)
 
-You should have received a copy of the GNU General Public License along
-with this program. If not, see http://www.gnu.org/licenses/.
+$(CASK_DIR): Cask
+	cask install
+	@touch $(CASK_DIR)
 
-See [[https://github.com/cask/cask/blob/master/COPYING][COPYING]] for
-details.
+.PHONY: cask
+cask: $(CASK_DIR)
+
+.PHONY: compile
+compile: cask
+	! (cask eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
+           | egrep -a "(Warning|Error):") ; \
+          (ret=$$? ; cask clean-elc && exit $$ret)
+
+.PHONY: test
+test: compile
+	cask exec ert-runner help
+#+end_src
+
+** Typical CI Usage
+
+Cask, in conjunction with [[https://github.com/purcell/setup-emacs][setup-emacs]], is commonly used in Github Actions.  Egregious boilerplate follows:
+
+#+begin_src yaml :tangle .github/workflows/readme.yml
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs-version:
+          - 26.3
+          - 27.2
+    steps:
+      - uses: actions/checkout@v2
+      - uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs-version }}
+      - uses: actions/cache@v2
+        id: cache-cask-packages
+        with:
+          path: .cask
+          key: cache-cask-packages-000
+      - uses: actions/cache@v2
+        id: cache-cask-executable
+        with:
+          path: ~/.cask
+          key: cache-cask-executable-000
+      - uses: conao3/setup-cask@master
+        if: steps.cache-cask-executable.outputs.cache-hit != 'true'
+        with:
+          version: snapshot
+#+end_src
+
+** Legacy documentation
+See [[http://cask.readthedocs.io/]] for more information.

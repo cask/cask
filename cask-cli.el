@@ -178,7 +178,7 @@ Git is available in `exec-path'."
           (error "Cannot update Cask because of dirty tree")
         (git-pull)))))
 
-(defun cask-cli/exec (&rest args)
+(defun cask-cli/exec (&rest _args)
   "Execute ARGS with correct `exec-path' and `load-path'.")
 
 (defun cask-cli/update ()
