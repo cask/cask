@@ -10,10 +10,11 @@ cask: $(CASK_DIR)
 
 .PHONY: compile
 compile: cask
-	! (cask eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
-           | egrep -a "(Warning|Error):") ; \
-          (ret=$$? ; cask clean-elc && exit $$ret)
+	! (cask eval "(let ((byte-compile-error-on-warn t)) \
+	                 (cask-cli/build))" 2>&1 \
+	   | egrep -a "(Warning|Error):") ; \
+	  (ret=$$? ; cask clean-elc && exit $$ret)
 
 .PHONY: test
 test: compile
-	1>/dev/null 2>/dev/null cask exec ert-runner help
+	cask exec ert-runner help

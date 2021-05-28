@@ -19,7 +19,7 @@ Cask simplifies sandboxing that more expert elisp developers accomplish directly
   echo 'PATH=$HOME/.cask/bin:$PATH' >> ~/.bashrc
 #+end_src
 
-MacOS users might try (with unclear results):
+MacOS users might try:
 
 #+begin_src shell
   brew install cask
@@ -42,9 +42,10 @@ cask: $(CASK_DIR)
 
 .PHONY: compile
 compile: cask
-	! (cask eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
-           | egrep -a "(Warning|Error):") ; \
-          (ret=$$? ; cask clean-elc && exit $$ret)
+	! (cask eval "(let ((byte-compile-error-on-warn t)) \
+	                 (cask-cli/build))" 2>&1 \
+	   | egrep -a "(Warning|Error):") ; \
+	  (ret=$$? ; cask clean-elc && exit $$ret)
 
 .PHONY: test
 test: compile
@@ -87,11 +88,11 @@ jobs:
 
 ** Frequently Asked Questions
 
-+ Why must I replicate dependencies in the Cask file? :: You don't, but probably more than half of Cask deployments in the wild needlessly do.  =cask list= automatically shows your package's dependencies if you specify them /pro forma/ in a =Package-Requires= header.  The oft-confused [[https://cask.readthedocs.io/en/latest/guide/dsl.html#el.function.development][development stanza]] is analogous to =requirements-dev.txt=.  Only packages required by your testing apparatus (and not the final deployment), e.g., =ert-runner=, should be added there.
-+ Doesn't Cask make things more complicated? :: In many ways, yes.  Some overlays succeed in decluttering the underlying technology.  A good example of this is LaTeX over pure TeX.  On the other end of the spectrum of helpfulness, some overlays require you to learn a metalanguage that is only slightly less complex but inherently more opaque than the underlying.  Saltstack and Terraform (really the whole enterprise devops space) come to mind.  Cask is somewhere in the middle.
-+ I perused the docs, and I still don't get it? :: The docs were written at a time when Cask intended to be both a developer tool *and* an end-user tool for maintaining emacs packages.  The latter role is no longer advised (and the docs should be re-written).
++ Why must I replicate dependencies in the Cask file? :: You mustn't, but probably more than half of Cask deployments in the wild needlessly do.  =cask list= automatically shows your package's dependencies if you specify them /pro forma/ in a =Package-Requires= header.  The oft-confused [[https://cask.readthedocs.io/en/latest/guide/dsl.html#el.function.development][development stanza]] is analogous to =requirements-dev.txt=.  Only packages required by your testing apparatus, e.g., =ert-runner=, should be added there.
++ Doesn't Cask make things more complicated? :: In many ways, yes.  Some overlays succeed in decluttering the underlying technology.  A good example of this is LaTeX over pure TeX.  On the opposite end of the helpfulness spectrum, some overlays require you to learn a metalanguage that is only slightly less complex but inherently more opaque than the underlying.  Saltstack and Terraform (really the whole enterprise DevOps space) come to mind.  Cask is somewhere in the middle.
++ I perused the docs, and I still don't get it? :: The docs were written at a time when Cask aspired to be both a developer tool *and* an end-user tool for managing emacs packages.  The latter role is no longer advised (and the docs should be re-written).
 + Is Cask a vassal of MELPA? :: Yes, Cask's early development history is intertwined with that of MELPA's [[https://github.com/melpa/package-build/blob/master/package-build.el][package-build]].  Cask employs that module for all packaging tasks including dependency provisioning.
 
-** Legacy documentation
+** Original documentation
 
-See [[http://cask.readthedocs.io/]] for more information.
+The fusty [[http://cask.readthedocs.io/]] is still relevant in parts.
