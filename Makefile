@@ -25,7 +25,7 @@ test: compile spaces unit ecukes
 
 .PHONY: compile
 compile: cask
-	if 1>/dev/null expr $$($(EMACS) -Q --batch --eval '(princ emacs-major-version)') ">" 24 ; then \
+	if 1>/dev/null expr $$(2>&1 $(EMACS) -Q --batch --eval '(princ emacs-major-version (function external-debugging-output))') ">" 24 ; then \
 	  ! (cask eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
 	     | egrep -a "(Warning|Error):") ; \
 	  (ret=$$? ; cask clean-elc && exit $$ret) \
@@ -156,7 +156,7 @@ dist-clean:
 
 .PHONY: dist
 dist: dist-clean
-	bash -c "trap 'ret=$$? ; trap \"\" EXIT; mv -f Cask.orig Cask ; exit $$ret' EXIT ; cp Cask Cask.orig ; 1>/dev/null expr $$($(EMACS) -Q --batch --eval '(princ emacs-major-version)') '<=' 24 && sed -i '/package-build-legacy/d' ./Cask ; $(CASK) package"
+	bash -c "trap 'ret=$$? ; trap \"\" EXIT; mv -f Cask.orig Cask ; exit $$ret' EXIT ; cp Cask Cask.orig ; 1>/dev/null expr $$(2>&1 $(EMACS) -Q --batch --eval '(princ emacs-major-version (function external-debugging-output))') '<=' 24 && sed -i '/package-build-legacy/d' ./Cask ; $(CASK) package"
 
 .PHONY: install
 install: dist
@@ -164,7 +164,7 @@ install: dist
 	  (add-to-list 'package-archives '(\"melpa\" . \"http://melpa.org/packages/\")) \
 	  (package-refresh-contents) \
 	  (package-install-file \"dist/cask-$(shell $(CASK) version).tar\"))"
-	$(eval INSTALLED = $(shell $(EMACS) -Q --batch -f package-initialize --eval "(princ (directory-file-name (file-name-directory (locate-library \"cask\"))))"))
+	$(eval INSTALLED = $(shell 2>&1 $(EMACS) -Q --batch -f package-initialize --eval "(princ (directory-file-name (file-name-directory (locate-library \"cask\"))) (function external-debugging-output))"))
 	@if [ -z "$(INSTALLED)" ] ; then \
 	  echo ERROR: package-install-file failed ; \
 	  false ; \
@@ -189,7 +189,7 @@ install: dist
 	  echo ERROR: Cannot install over $(TARGET) ; \
 	  false ; \
 	elif [ ! -d "$$(dirname $(TARGET))" ]; then \
-	  echo ERROR: Do not know where to install cask ; \
+	  echo ERROR: "$$(dirname $(TARGET))" does not exist ; \
 	  [ ! -z "$${GITHUB_WORKFLOW:-}" ] ; \
 	else \
 	  ln -s $(INSTALLED)/bin/cask $(TARGET) ; \
