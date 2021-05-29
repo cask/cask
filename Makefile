@@ -164,7 +164,11 @@ install: dist
 	  (add-to-list 'package-archives '(\"melpa\" . \"http://melpa.org/packages/\")) \
 	  (package-refresh-contents) \
 	  (package-install-file \"dist/cask-$(shell $(CASK) version).tar\"))"
-	$(eval INSTALLED = $(shell $(EMACS) -Q --batch -f package-initialize --eval "(princ (file-name-directory (locate-library \"cask\")))"))
+	$(eval INSTALLED = $(shell $(EMACS) -Q --batch -f package-initialize --eval "(princ (directory-file-name (file-name-directory (locate-library \"cask\"))))"))
+	@if [ -z "$(INSTALLED)" ] ; then \
+	  echo ERROR: package-install-file failed ; \
+	  false ; \
+	fi
 	$(eval TARGET = \
 	  $(shell if 1>/dev/null which systemd-path ; then \
 	            echo "$$(systemd-path user-binaries)/cask" ; \
@@ -182,7 +186,8 @@ install: dist
 	  rm -f "$(TARGET)" ; \
 	  ln -s $(INSTALLED)/bin/cask $(TARGET) ; \
 	elif [ -e "$(TARGET)" ] ; then \
-	  echo ERROR: Cannot install over $(TARGET) && false ; \
+	  echo ERROR: Cannot install over $(TARGET) ; \
+	  false ; \
 	elif [ ! -d "$$(dirname $(TARGET))" ]; then \
 	  echo ERROR: Do not know where to install cask ; \
 	  [ ! -z "$${GITHUB_WORKFLOW:-}" ] ; \
