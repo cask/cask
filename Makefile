@@ -17,8 +17,10 @@ DOCTREEDIR=$(DOCBUILDDIR)/doctrees
 
 FIXTURES_DIR = fixtures
 
+.PHONY: all
 all: test
 
+.PHONY: test
 test: compile spaces unit ecukes
 
 .PHONY: compile
@@ -29,36 +31,47 @@ compile: cask
 	  (ret=$$? ; cask clean-elc && exit $$ret) \
 	else echo Not linting emacs24 ; fi
 
+.PHONY: spaces
 spaces:
 	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p bin/cask \"cask cask cask/bin\" ; cd \"cask cask cask\" ; EMACS=true bash -eux bin/cask"
 	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p bin/cask \"cask cask cask/bin\" ; cd \"cask cask cask\" ; WHICH=true EMACS=true bash -eux bin/cask"
 
+.PHONY: cask
 cask: $(CASK_DIR)
 
 $(CASK_DIR): Cask
 	$(CASK) install
 	touch $(CASK_DIR)
 
+.PHONY: unit
 unit:
 	$(MAKE) start-server
 	bash -c "trap 'trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server' EXIT ; $(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el | tee /tmp/cask.unit.out"
 	! (grep -q "unexpected results" /tmp/cask.unit.out)
 
+.PHONY: ecukes
 ecukes:
 	$(MAKE) start-server
 	bash -c "trap 'ret=$$? ; trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server; exit $$ret' EXIT ; $(CASK) exec ecukes --reporter magnars"
 
+.PHONY: doc
 doc: html
 
+.PHONY: html
 html:
 	$(SPHINX-BUILD) -b html -d $(DOCTREEDIR) $(SPHINXFLAGS) doc $(DOCBUILDDIR)/html
 
+.PHONY: linkcheck
 linkcheck :
 	$(SPHINX-BUILD) -b linkcheck -d $(DOCTREEDIR) $(SPHINXFLAGS) doc $(DOCBUILDDIR)/linkcheck
 
+.SILENT: start-server
+.PHONY: start-server
 start-server: cask $(SERVANT_DIR)
 	$(CASK) exec $(SERVANT) start > $(SERVANT_TMP_DIR)/servant.log 2>&1 &
 
+.SILENT: stop-server
+.PHONY: stop-server
 stop-server:
 	kill $$(cat $(SERVANT_TMP_DIR)/servant.pid)
 
@@ -112,12 +125,10 @@ $(SERVANT_ARCHIVE_CONTENTS): $(SERVANT_PACKAGES_DIR)/project-99.0.1.el
 $(SERVANT_NEW_ARCHIVE_CONTENTS): $(SERVANT_NEW_PACKAGES_DIR)/package-a-0.0.2.el
 	$(CASK) exec $(SERVANT) index --packages-path $(SERVANT_NEW_PACKAGES_DIR)
 
+.PHONY: clean
 clean:
 	rm -rf $(SERVANT_DIR)
 	rm -rf $(DOCBUILDDIR)
-
-.PHONY: start-server stop-server unit ecukes test all clean \
-	doc html linkcheck cask
 
 README.makefile: README.org
 	$(EMACS) -Q --batch -l ob-tangle --eval "(org-babel-tangle-file \"$(<)\" nil \"makefile\")"
@@ -137,5 +148,3 @@ README.makefile: README.org
 	              (goto-char (point-max)) \
 	              (insert \"\n      - run: make -f README.makefile test\n\")))" \
 	  --eval "(org-babel-tangle-file \"$(<)\" nil \"yaml\")"
-
-.SILENT: start-server stop-server
