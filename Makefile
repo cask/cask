@@ -26,15 +26,15 @@ test: compile spaces unit ecukes
 .PHONY: compile
 compile: cask
 	if 1>/dev/null expr $$(2>&1 $(EMACS) -Q --batch --eval '(princ emacs-major-version (function external-debugging-output))') ">" 24 ; then \
-	  ! (cask eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
+	  ! ($(CASK) eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
 	     | egrep -a "(Warning|Error):") ; \
-	  (ret=$$? ; cask clean-elc && exit $$ret) \
+	  (ret=$$? ; $(CASK) clean-elc && exit $$ret) \
 	else echo Not linting emacs24 ; fi
 
 .PHONY: spaces
 spaces:
-	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p bin/cask \"cask cask cask/bin\" ; cd \"cask cask cask\" ; EMACS=true bash -eux bin/cask"
-	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p bin/cask \"cask cask cask/bin\" ; cd \"cask cask cask\" ; WHICH=true EMACS=true bash -eux bin/cask"
+	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p $(CASK) \"cask cask cask/bin\" ; cd \"cask cask cask\" ; EMACS=true bash -eux $(CASK)"
+	bash -c "trap 'ret=$$? ; trap \"\" EXIT; cd .. ; rm -rf \"cask cask cask\" ; exit $$ret' EXIT ; mkdir -p \"cask cask cask/bin\" ; cp -p $(CASK) \"cask cask cask/bin\" ; cd \"cask cask cask\" ; WHICH=true EMACS=true bash -eux $(CASK)"
 
 .PHONY: cask
 cask: $(CASK_DIR)
