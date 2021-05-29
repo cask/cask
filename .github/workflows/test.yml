@@ -17,14 +17,14 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest]
         # beginning of time is 24.3 when cl-flet was defined
-        emacs_version: [24.3, 24.4, 24.5, 25.3, 26.3, 27.1, snapshot]
+        emacs_version: [24.3, 24.4, 24.5, 25.3, 26.3, 27.2, snapshot]
         include:
           - os: macos-latest
-            emacs_version: 27.1
+            emacs_version: 27.2
     steps:
     - uses: actions/checkout@v2
     - uses: purcell/setup-emacs@master
@@ -41,3 +41,5 @@ jobs:
         echo "LD_LIBRARY_PATH=$HOME/.local/lib" >> $GITHUB_ENV
     - run: 'make test'
       continue-on-error: ${{ matrix.emacs_version == 'snapshot' }}
+    - if: startsWith(matrix.emacs_version, '27')
+      run: 'make install'

@@ -12,17 +12,9 @@ Cask simplifies sandboxing that more expert elisp developers accomplish directly
 ** Installation
 
 #+begin_src shell
-  git clone https://github.com/cask/cask ~/.cask
-  PATH=$HOME/.cask/bin:$PATH
-
-  # If you want to make it permanent
-  echo 'PATH=$HOME/.cask/bin:$PATH' >> ~/.bashrc
-#+end_src
-
-MacOS users might try:
-
-#+begin_src shell
-  brew install cask
+  git clone https://github.com/cask/cask
+  cd cask
+  make install
 #+end_src
 
 ** Not-so-quick start
@@ -31,7 +23,7 @@ MacOS users might try:
   cask init --dev
 #+end_src
 
-With just this baseline "Cask" file, you can run most of the commands described in [[http://cask.readthedocs.io/]].
+With just this baseline "Cask" file, you can run most of the commands described in [[http://cask.readthedocs.io]].
 
 ** Typical Makefile Usage
 

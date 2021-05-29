@@ -25,7 +25,7 @@ test: compile spaces unit ecukes
 
 .PHONY: compile
 compile: cask
-	if expr $$($(EMACS) -Q --batch --eval '(princ emacs-major-version)') ">" 24 ; then \
+	if 1>/dev/null expr $$($(EMACS) -Q --batch --eval '(princ emacs-major-version)') ">" 24 ; then \
 	  ! (cask eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
 	     | egrep -a "(Warning|Error):") ; \
 	  (ret=$$? ; cask clean-elc && exit $$ret) \
@@ -146,5 +146,46 @@ README.makefile: README.org
 	              (insert \"    - 'master'\n\") \
 	              (insert \"    - 'main'\n\") \
 	              (goto-char (point-max)) \
-	              (insert \"\n      - run: make -f README.makefile test\n\")))" \
+	              (insert \"\n\") \
+	              (insert \"      - run: make -f README.makefile test\n\")))" \
 	  --eval "(org-babel-tangle-file \"$(<)\" nil \"yaml\")"
+
+.PHONY: dist-clean
+dist-clean:
+	rm -rf dist
+
+.PHONY: dist
+dist: dist-clean
+	bash -c "trap 'ret=$$? ; trap \"\" EXIT; mv -f Cask.orig Cask ; exit $$ret' EXIT ; cp Cask Cask.orig ; 1>/dev/null expr $$($(EMACS) -Q --batch --eval '(princ emacs-major-version)') '<=' 24 && sed -i '/package-build-legacy/d' ./Cask ; $(CASK) package"
+
+.PHONY: install
+install: dist
+	$(CASK) eval "(progn \
+	  (add-to-list 'package-archives '(\"melpa\" . \"http://melpa.org/packages/\")) \
+	  (package-refresh-contents) \
+	  (package-install-file \"dist/cask-$(shell $(CASK) version).tar\"))"
+	$(eval INSTALLED = $(shell $(EMACS) -Q --batch -f package-initialize --eval "(princ (file-name-directory (locate-library \"cask\")))"))
+	$(eval TARGET = \
+	  $(shell if 1>/dev/null which systemd-path ; then \
+	            echo "$$(systemd-path user-binaries)/cask" ; \
+	          elif [ ! -z "$(XDG_DATA_HOME)" ] ; then \
+	            echo "$(XDG_DATA_HOME)/../bin/cask" ; \
+	          elif [ -d "$(HOME)/.local/bin" ] ; then \
+	            echo "$(HOME)/.local/bin/cask" ; \
+	          elif [ -d "$(HOME)/bin" ] ; then \
+	            echo "$(HOME)/bin/cask" ; \
+	          fi))
+	@if [ -z "$(TARGET)" ] ; then \
+	  echo ERROR: Do not know where to install cask ; \
+	  [ ! -z "$${GITHUB_WORKFLOW:-}" ] ; \
+	elif [ -L "$(TARGET)" ] ; then \
+	  rm -f "$(TARGET)" ; \
+	  ln -s $(INSTALLED)/bin/cask $(TARGET) ; \
+	elif [ -e "$(TARGET)" ] ; then \
+	  echo ERROR: Cannot install over $(TARGET) && false ; \
+	elif [ ! -d "$$(dirname $(TARGET))" ]; then \
+	  echo ERROR: Do not know where to install cask ; \
+	  [ ! -z "$${GITHUB_WORKFLOW:-}" ] ; \
+	else \
+	  ln -s $(INSTALLED)/bin/cask $(TARGET) ; \
+	fi

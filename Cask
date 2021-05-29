@@ -2,7 +2,7 @@
 (source melpa)
 
 (package-file "cask.el")
-(files :defaults (:exclude "package-build-legacy.el" "package-recipe-legacy.el"))
+(files :defaults "bin" (:exclude "package-build-legacy.el" "package-recipe-legacy.el"))
 
 (development
  (depends-on "f")
