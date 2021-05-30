@@ -1,6 +1,6 @@
 * Cask
 
-[[https://github.com/dickmao/cask/actions][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg]]
+[[https://github.com/cask/cask/actions][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg]]
 [[https://melpa.org/#/cask][https://melpa.org/packages/cask-badge.svg]]
 [[https://stable.melpa.org/#/cask][https://stable.melpa.org/packages/cask-badge.svg]]
 #+HTML: <img src="cask_small.png" align="right">
