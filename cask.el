@@ -471,12 +471,6 @@ SCOPE may be nil or 'development."
       (t
        (error "Unknown directive: %S" form)))))
 
-(defun cask--template-get (name)
-  "Return content of template with NAME."
-  (let* ((templates-dir (cask-resource-path "templates"))
-         (template-file (f-expand name templates-dir)))
-    (f-read-text template-file 'utf-8)))
-
 (defun cask--initialized-p (bundle)
   "Return t if BUNDLE is initialized.
 
@@ -786,25 +780,6 @@ to install, and ERR is the original error data."
         (cask--install-dependency bundle (nth inx dependencies) inx total))
       (when missing-dependencies
         (signal 'cask-missing-dependencies missing-dependencies)))))
-
-(defun cask-caskify (bundle &optional dev-mode)
-  "Create Cask-file for BUNDLE path.
-
-If DEV-MODE is true, the dev template is used, otherwise the
-configuration template is used."
-  (let ((cask-file (cask-file bundle))
-        (init-content
-         (cask--template-get (if dev-mode "init-dev.tpl" "init.tpl"))))
-    ;; If there's only a single .el file, use that as the package-file.
-    (when dev-mode
-      (let* ((files (f--files (cask-path bundle) (f-ext? it "el")))
-             (package-file (if (equal (length files) 1)
-                               (f-filename (car files))
-                             "TODO")))
-        (setq init-content (format init-content package-file))))
-    (if (f-file? cask-file)
-        (error "Cask-file already exists")
-      (f-write-text init-content 'utf-8 cask-file))))
 
 (defun cask-package-name (bundle)
   "Return BUNDLE name.

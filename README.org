@@ -18,12 +18,14 @@ Cask simplifies sandboxing that more expert elisp developers accomplish directly
 #+end_src
 
 ** Not-so-quick start
-
-#+begin_src shell
-  cask init --dev
-#+end_src
-
 With just this baseline "Cask" file, you can run most of the commands described in [[http://cask.readthedocs.io]].
+
+#+begin_src emacs-lisp
+(source gnu)
+(source melpa)
+
+(package-file "your-main-file.el")
+#+end_src
 
 ** Typical Makefile Usage
 

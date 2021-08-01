@@ -46,9 +46,6 @@
 (defvar no-emacs-24-warning nil
   "If Cask should show Emacs 24 warning or not.")
 
-(defvar cask-cli--dev-mode nil
-  "If Cask should run in dev mode or not.")
-
 (defvar cask-cli--silent nil
   "If Cask should suppress logging.")
 
@@ -191,14 +188,6 @@ including their dependencies."
       (when upgrades
         (princ "Updated packages:\n")
         (mapc #'cask-cli--print-upgrade upgrades)))))
-
-(defun cask-cli/init ()
-  "Initialize the current directory with a Cask-file.
-
-By default, the created Cask-file will be for an Emacs
-configuration.  If the --dev option is specified, the Cask-file
-will be for an Emacs package."
-  (cask-caskify (cask-cli--bundle) cask-cli--dev-mode))
 
 (defun cask-cli/list ()
   "List this package dependencies."
@@ -378,10 +367,6 @@ Commands:
   "Run command in this PATH instead of in `default-directory'."
   (setq cask-cli--path path))
 
-(defun cask-cli/dev ()
-  "Run in dev mode."
-  (setq cask-cli--dev-mode t))
-
 (defun cask-cli/debug ()
   "Turn on debug output."
   (setq debug-on-error t))
@@ -413,7 +398,6 @@ Commands:
  (command "upgrade" cask-cli/upgrade-cask)
  (command "upgrade-cask" cask-cli/upgrade-cask)
  (command "exec [*]" cask-cli/exec)
- (command "init" cask-cli/init)
  (command "version" cask-cli/version)
  (command "list" cask-cli/list)
  (command "info" cask-cli/info)
@@ -440,7 +424,6 @@ Commands:
 
  (option "--version" cask-cli/cask-version)
  (option "-h [command], --help [command]" cask-cli/help)
- (option "--dev" cask-cli/dev)
  (option "--debug" cask-cli/debug)
  (option "--path <path>" cask-cli/set-path)
  (option "--verbose" cask-cli/verbose)
