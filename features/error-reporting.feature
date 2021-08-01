@@ -75,5 +75,5 @@ Feature: Error Reporting
     When I run cask "install"
     Then I should see command error:
       """
-      Unbalanced parens in Package-Requires in file foo.el
+      Unbalanced parens in Package-Requires
       """

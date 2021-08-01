@@ -490,41 +490,6 @@
   (cask-test/with-bundle 'empty
     (should (f-same? (cask-file bundle) (f-expand "Cask" cask-test/sandbox-path)))))
 
-(ert-deftest cask-caskify-test ()
-  (cask-test/with-bundle nil
-    (should-not (f-file? (f-expand "Cask" cask-test/sandbox-path)))
-    (cask-caskify bundle)
-    (should (f-file? (f-expand "Cask" cask-test/sandbox-path)))))
-
-(ert-deftest cask-caskify-dev ()
-  (cask-test/with-bundle nil
-    (should-not (f-file? (f-expand "Cask" cask-test/sandbox-path)))
-    (cask-caskify bundle t)
-    (should (f-file? (f-expand "Cask" cask-test/sandbox-path)))
-    (should (s-matches? "^\(package-file \"TODO\"\)$"
-                        (f-read-text (f-expand "Cask" cask-test/sandbox-path))))))
-
-(ert-deftest cask-caskify-dev-single-el-file ()
-  (cask-test/with-bundle nil
-    (let ((main-package-file "foo.el"))
-      (should-not (f-file? (f-expand "Cask" cask-test/sandbox-path)))
-      (f-touch (f-expand main-package-file cask-test/sandbox-path))
-      (f-touch (f-expand "bar" cask-test/sandbox-path))
-      (cask-caskify bundle t)
-      (should (f-file? (f-expand "Cask" cask-test/sandbox-path)))
-      (should (s-matches? (format "^\(package-file \"%s\"\)$" main-package-file)
-                          (f-read-text (f-expand "Cask" cask-test/sandbox-path)))))))
-
-(ert-deftest cask-caskify-dev-multi-el-file ()
-  (cask-test/with-bundle nil
-    (should-not (f-file? (f-expand "Cask" cask-test/sandbox-path)))
-    (f-touch (f-expand "foo.el" cask-test/sandbox-path))
-    (f-touch (f-expand "bar.el" cask-test/sandbox-path))
-    (cask-caskify bundle t)
-    (should (f-file? (f-expand "Cask" cask-test/sandbox-path)))
-    (should (s-matches? "^\(package-file \"TODO\"\)$"
-                        (f-read-text (f-expand "Cask" cask-test/sandbox-path))))))
-
 (ert-deftest cask-update-test/no-cask-file ()
   (cask-test/with-bundle nil
     :packages nil
