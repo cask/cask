@@ -161,7 +161,7 @@ dist: dist-clean
 .PHONY: install
 install: dist
 	$(CASK) eval "(progn \
-	  (add-to-list 'package-archives '(\"melpa\" . \"http://melpa.org/packages/\")) \
+	  (add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages/\")) \
 	  (package-refresh-contents) \
 	  (package-install-file \"dist/cask-$(shell $(CASK) version).tar\"))"
 	$(eval INSTALLED = $(shell 2>&1 $(EMACS) -Q --batch --eval "(let ((inhibit-message t)) (package-initialize) (princ (directory-file-name (file-name-directory (locate-library \"cask\"))) (function external-debugging-output)))"))
