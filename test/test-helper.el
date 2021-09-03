@@ -207,4 +207,5 @@ The fixture with name FIXTURE-NAME will be copied to
     (mapcar 'cask-dependency-version actual)
     (mapcar 'cask-dependency-version expected))))
 
+(package-initialize)
 ;;; test-helper.el ends here

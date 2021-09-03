@@ -40,9 +40,10 @@
 ;; Restore several package- variables and `load-path` after let-scope.
 (let (package-alist
       package-archive-contents
+      package--initialized
       (load-path load-path)
       (package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                          ("melpa" . "https://stable.melpa.org/packages/")))
+                          ("melpa" . "https://melpa.org/packages/")))
       (package-user-dir cask-bootstrap-dir)
       (deps '(s f commander git epl shut-up cl-lib cl-generic package-build eieio ansi)))
   (package-initialize)

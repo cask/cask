@@ -695,7 +695,8 @@ This function return a `cask-bundle' object."
   "Initialize packages under PROJECT-PATH or `user-emacs-directory'.
 
 This function return a `cask-bundle' object."
-  (let* ((bundle (cask-setup (or project-path user-emacs-directory)))
+  (let* (package--initialized
+	 (bundle (cask-setup (or project-path user-emacs-directory)))
          (package-load-list
           `(,@(mapcar
                (lambda (elm) (list (cask-dependency-name elm) t))
