@@ -177,7 +177,8 @@ Slots:
 (cl-defmethod package-build--get-commit ((_rcp package-directory-recipe)))
 
 (defvar cask-source-mapping
-  '((gnu          . "https://elpa.gnu.org/packages/")
+  `((gnu          . ,(concat (if (< emacs-major-version 27) "http" "https")
+                             "://elpa.gnu.org/packages/"))
     (celpa        . "https://celpa.conao3.com/packages/")
     (melpa        . "https://melpa.org/packages/")
     (melpa-stable . "https://stable.melpa.org/packages/")
