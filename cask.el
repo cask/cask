@@ -183,6 +183,7 @@ Slots:
     (melpa        . "https://melpa.org/packages/")
     (melpa-stable . "https://stable.melpa.org/packages/")
     (marmalade    . "https://marmalade-repo.org/packages/")
+    (nongnu       . "https://elpa.nongnu.org/nongnu/")
     (org          . "https://orgmode.org/elpa/"))
   "Mapping of source name and url.")
 
