@@ -47,13 +47,6 @@
       (package-user-dir cask-bootstrap-dir)
       (deps '(s f commander git epl shut-up cl-lib cl-generic package-build eieio ansi)))
   (package-initialize)
-  (when (version= emacs-version "24.4")
-    ;; Builtin gnutls on Emacs 24.4 was used incorrectly, and
-    ;; cannot connect to melpa.  Use external openssl instead.
-    (require 'tls)
-    (custom-set-default 'tls-program '("openssl s_client -connect %h:%p -no_ssl3 -no_ssl2 -ign_eof"))
-    (add-function :override (symbol-function 'gnutls-available-p) #'ignore))
-
   ;; Use vendored package-build package (and package-recipe)
   ;; because its newer versions require Emacs25.1+
   (when (version< emacs-version "25.1")

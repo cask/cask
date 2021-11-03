@@ -10,7 +10,7 @@
 ;; Author: Donald Ephraim Curtis <dcurtis@milkbox.net>
 ;; Keywords: tools
 ;; Homepage: https://github.com/melpa/package-build
-;; Package-Requires: ((cl-lib "0.5") (emacs "24.1"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "24.5"))
 ;; Package-Version: 0-git
 
 ;; This file is not (yet) part of GNU Emacs.
