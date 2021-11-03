@@ -306,8 +306,8 @@ If BUNDLE is not a package, the error `cask-no-cask-file' is signaled."
   (cask--shut-up-unless-debug
     (condition-case err
         (progn
-          (when refresh (epl-refresh))
-          (epl-initialize no-activate))
+          (epl-initialize no-activate)
+          (when refresh (epl-refresh)))
       (error (signal 'cask-failed-initialization
                      (list err (shut-up-current-output)))))))
 
