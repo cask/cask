@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         # beginning of time is 24.3 when cl-flet was defined
-        emacs_version: [24.3, 24.4, 24.5, 25.3, 26.3, 27.2, snapshot]
+        emacs_version: [24.5, 25.3, 26.3, 27.2, snapshot]
         include:
           - os: macos-latest
             emacs_version: 27.2
