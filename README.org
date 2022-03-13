@@ -82,7 +82,7 @@ jobs:
         with:
           path: ~/.cask
           key: cache-cask-executable-000
-      - uses: conao3/setup-cask@master
+      - uses: cask/setup-cask@master
         if: steps.cache-cask-executable.outputs.cache-hit != 'true'
         with:
           version: snapshot
