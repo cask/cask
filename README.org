@@ -13,8 +13,7 @@ Cask simplifies sandboxing that more expert elisp developers accomplish directly
 
 #+begin_src shell
   git clone https://github.com/cask/cask
-  cd cask
-  make install
+  make -C cask install
 #+end_src
 
 ** Not-so-quick start
