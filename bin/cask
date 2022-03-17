@@ -21,6 +21,8 @@
 set -euo pipefail
 CASK=$0
 EMACS=${CASK_EMACS:-${EMACS:-emacs}}
+READLINK=${READLINK:-readlink}
+GREADLINK=${GREADLINK:-greadlink}
 
 if [ "$#" -eq "0" ] ; then
 	subcommand=install
@@ -37,16 +39,14 @@ case $subcommand in
 		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" "$@"
 		;;
 	*)
-		WHICH=${WHICH:-which}
-		READLINK=$($WHICH readlink || true)
-		if [ "$(uname || true)" == "Darwin" ] ; then
-			READLINK=
+		set +eu
+		SRCDIR__=$($READLINK -f "$CASK" 2>/dev/null)
+		if [ -z "$SRCDIR__" ] ; then
+		    SRCDIR__=$($GREADLINK -f "$CASK" 2>/dev/null)
 		fi
-		READLINK=${READLINK:-$($WHICH greadlink || true)}
-		if [ ! -z "$READLINK" ] ; then
-			SRCDIR__=$($READLINK -f "$CASK")
-		else
-			SRCDIR__=$(python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
+		set -eu
+		if [ -z "$SRCDIR__" ]; then
+		    SRCDIR__=$(python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
 		fi
 		SRCDIR_=$(dirname "$SRCDIR__")
 		SRCDIR=$(dirname "$SRCDIR_")
