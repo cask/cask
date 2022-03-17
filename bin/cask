@@ -38,10 +38,14 @@ case $subcommand in
 		;;
 	*)
 		WHICH=${WHICH:-which}
-		READLINK=$($WHICH readlink || $WHICH greadlink)
-		if [ -n "$READLINK" ] && eval "$READLINK" -f "$CASK" &>/dev/null; then
-			SRCDIR__=$($READLINK -f "$CASK")
-		else
+		SRCDIR__=
+		for READLINK in "$($WHICH readlink)" "$($WHICH greadlink)"; do
+		  if [ -n "$READLINK" ] && eval "$READLINK" -f "$CASK" &>/dev/null; then
+				SRCDIR__=$($READLINK -f "$CASK")
+				break
+			fi
+		done
+		if [ -z "$SRCDIR__" ]; then
 			SRCDIR__=$(python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
 		fi
 		SRCDIR_=$(dirname "$SRCDIR__")
