@@ -21,7 +21,7 @@ FIXTURES_DIR = fixtures
 all: test
 
 .PHONY: test
-test: compile spaces unit ecukes
+test: compile readlink spaces unit ecukes
 
 .PHONY: compile
 compile: cask
@@ -30,6 +30,11 @@ compile: cask
 	     | egrep -a "(Warning|Error):") ; \
 	  (ret=$$? ; $(CASK) clean-elc && exit $$ret) \
 	else echo Not linting emacs24 ; fi
+
+.PHONY: readlink
+readlink:
+	EMACS=true READLINK=false bash -eux $(CASK)
+	EMACS=true READLINK=false GREADLINK=false bash -eux $(CASK)
 
 .PHONY: spaces
 spaces:
