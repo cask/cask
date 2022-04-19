@@ -1,6 +1,7 @@
 export CASK ?= bin/cask
 export EMACS ?= emacs
 export CASK_DIR := $(shell $(CASK) package-directory)
+SHELL := $(shell which bash)
 SERVANT ?= servant
 SPHINX-BUILD = sphinx-build
 SPHINXFLAGS =
