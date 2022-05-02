@@ -36,7 +36,7 @@ With just this baseline "Cask" file, you can run most of the commands described 
 To run ert tests under an older emacs:
 
 #+begin_src sh
-EMACS=emacs-25.3 cask emacs --batch -l ert -l mytest.el -f ert-run-tests-batch
+EMACS=emacs-25.3 cask emacs --batch -l mytest.el -f ert-run-tests-batch
 #+end_src
 
 /We have deprecated the =cask exec= invocation, and consequently no
@@ -66,7 +66,7 @@ compile: cask
 
 .PHONY: test
 test: compile
-	cask emacs -Q --batch --eval "t"
+	cask emacs --batch -f ert-run-tests-batch
 #+end_src
 
 ** Typical CI Usage

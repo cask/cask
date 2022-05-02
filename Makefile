@@ -52,7 +52,7 @@ $(CASK_DIR): Cask
 .PHONY: unit
 unit:
 	$(MAKE) start-server
-	bash -c "trap 'trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server' EXIT ; $(CASK) emacs --batch -l ert -L ./test -l test-helper -l cask-api-test -l cask-cli-test -f ert-run-tests-batch | tee /tmp/cask.unit.out"
+	bash -c "trap 'trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server' EXIT ; $(CASK) emacs --batch -L ./test -l test-helper -l cask-api-test -l cask-cli-test -f ert-run-tests-batch | tee /tmp/cask.unit.out"
 	! (grep -q "unexpected results" /tmp/cask.unit.out)
 
 .PHONY: ecukes
