@@ -164,13 +164,16 @@ dist-clean:
 dist: dist-clean
 	@bash -c "trap 'ret=$$? ; trap \"\" EXIT; mv -f Cask.orig Cask ; exit $$ret' EXIT ; cp Cask Cask.orig ; 1>/dev/null expr $$(2>&1 $(EMACS) -Q --batch --eval '(let ((inhibit-message t)) (princ emacs-major-version (function external-debugging-output)))') '<=' 24 && sed -i '/package-build-legacy/d' ./Cask ; $(CASK) package"
 
-.PHONY: install
-install: dist
+.PHONY: install-elisp
+install-elisp: dist
 	$(CASK) eval "(progn \
 	  (add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages/\")) \
 	  (package-refresh-contents) \
 	  (package-install-file \"dist/cask-$(shell $(CASK) version).tar\"))"
-	$(eval INSTALLED = $(shell 2>&1 $(EMACS) -Q --batch --eval "(let ((inhibit-message t)) (package-initialize) (princ (directory-file-name (file-name-directory (locate-library \"cask\"))) (function external-debugging-output)))"))
+
+.PHONY: install
+install: install-elisp
+	$(eval INSTALLED = $(shell 2>&1 $(EMACS) -Q --batch --eval "(ignore-errors (let ((inhibit-message t)) (package-initialize) (princ (directory-file-name (file-name-directory (locate-library \"cask\"))) (function external-debugging-output))))"))
 	@if [ -z "$(INSTALLED)" ] ; then \
 	  echo ERROR: package-install-file failed ; \
 	  false ; \
