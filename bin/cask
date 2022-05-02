@@ -31,12 +31,21 @@ else
 	shift
 fi
 
+set +eu
+SRCDIR__=$($READLINK -f "$CASK" 2>/dev/null)
+if [ -z "$SRCDIR__" ] ; then
+    SRCDIR__=$($GREADLINK -f "$CASK" 2>/dev/null)
+fi
+set -eu
+if [ -z "$SRCDIR__" ]; then
+    SRCDIR__=$(python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
+fi
+SRCDIR_=$(dirname "$SRCDIR__")
+SRCDIR=$(dirname "$SRCDIR_")
 case $subcommand in
 	emacs)
 		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" \
-                "$EMACS" -Q -l "cask.el" -l warnings \
-                --eval "(add-to-list (quote warning-suppress-types) (list (quote initialization)))" \
-                --eval "(add-to-list (quote warning-suppress-log-types) (list (quote initialization)))" \
+                "$EMACS" -Q -L "$SRCDIR" -l "$SRCDIR/cask" \
                 --eval "(cask-initialize (expand-file-name default-directory))" \
                 "$@"
 		;;
@@ -44,17 +53,6 @@ case $subcommand in
 		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" "$@"
 		;;
 	*)
-		set +eu
-		SRCDIR__=$($READLINK -f "$CASK" 2>/dev/null)
-		if [ -z "$SRCDIR__" ] ; then
-		    SRCDIR__=$($GREADLINK -f "$CASK" 2>/dev/null)
-		fi
-		set -eu
-		if [ -z "$SRCDIR__" ]; then
-		    SRCDIR__=$(python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
-		fi
-		SRCDIR_=$(dirname "$SRCDIR__")
-		SRCDIR=$(dirname "$SRCDIR_")
 		"$EMACS" -Q --script "$SRCDIR/cask-cli.el" -- $subcommand "$@"
 		;;
 esac

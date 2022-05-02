@@ -705,7 +705,7 @@ As such, it may not be backwards-compatible with earlier contexts."
                (cask-runtime-dependencies bundle))
             all)))
     (cask--use-environment bundle nil nil)
-    (setq user-emacs-directory (cask-bundle-path bundle))
+    (setq user-emacs-directory (expand-file-name ".cask" (cask-bundle-path bundle)))
     bundle))
 
 (defun cask-update (bundle)
