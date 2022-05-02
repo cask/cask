@@ -19,7 +19,7 @@ DOCTREEDIR=$(DOCBUILDDIR)/doctrees
 FIXTURES_DIR = fixtures
 
 .PHONY: all
-all: test
+all: compile
 
 .PHONY: test
 test: compile readlink spaces unit ecukes
@@ -52,7 +52,7 @@ $(CASK_DIR): Cask
 .PHONY: unit
 unit:
 	$(MAKE) start-server
-	bash -c "trap 'trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server' EXIT ; $(CASK) exec ert-runner -L ./test -l test/test-helper.el test/cask-*test.el | tee /tmp/cask.unit.out"
+	bash -c "trap 'trap \"\" EXIT ; $(MAKE) -C $(CURDIR) stop-server' EXIT ; $(CASK) emacs --batch -l ert -L ./test -l test-helper -l cask-api-test -l cask-cli-test -f ert-run-tests-batch | tee /tmp/cask.unit.out"
 	! (grep -q "unexpected results" /tmp/cask.unit.out)
 
 .PHONY: ecukes

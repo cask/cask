@@ -695,9 +695,8 @@ This function return a `cask-bundle' object."
     bundle))
 
 (defun cask-initialize (&optional project-path)
-  "Initialize packages under PROJECT-PATH or `user-emacs-directory'.
-
-This function return a `cask-bundle' object."
+  "In May 2022, this function was repurposed for `cask emacs` invocations.
+As such, it may not be backwards-compatible with earlier contexts."
   (let* (package--initialized
 	 (bundle (cask-setup (or project-path user-emacs-directory)))
          (package-load-list
@@ -705,8 +704,8 @@ This function return a `cask-bundle' object."
                (lambda (elm) (list (cask-dependency-name elm) t))
                (cask-runtime-dependencies bundle))
             all)))
-    (when (equal (epl-package-dir) (epl-default-package-dir))
-      (cask--use-environment bundle nil nil))
+    (cask--use-environment bundle nil nil)
+    (setq user-emacs-directory (cask-bundle-path bundle))
     bundle))
 
 (defun cask-update (bundle)

@@ -11,7 +11,6 @@
  (depends-on "ansi")
  (depends-on "ecukes")
  (depends-on "servant")
- (depends-on "ert-runner")
  (depends-on "el-mock")
  (depends-on "noflet")
  (depends-on "ert-async")

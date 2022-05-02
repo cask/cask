@@ -58,7 +58,7 @@
     ;; Note: Since the Ecukes tests runs with Casks dependencies in
     ;; EMACSLOADPATH, these will also be available in the subprocess
     ;; created here. Removing all Cask dependencies here to solve it.
-    (setenv "EMACSLOADPATH" (s-join path-separator (--reject (s-matches? ".cask" it) load-path)))
+    (setenv "EMACSLOADPATH" (s-join path-separator (--reject (s-matches? "\\.cask" it) load-path)))
     (with-temp-buffer
       (let* ((default-directory (f-full cask-test/sandbox-path))
              (args (shell-split-string (cask-test/template command)))

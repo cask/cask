@@ -33,7 +33,12 @@ fi
 
 case $subcommand in
 	emacs)
-		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" "$EMACS" "$@"
+		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" \
+                "$EMACS" -Q -l cask -l warnings \
+                --eval "(add-to-list (quote warning-suppress-types) (list (quote initialization)))" \
+                --eval "(add-to-list (quote warning-suppress-log-types) (list (quote initialization)))" \
+                --eval "(cask-initialize (expand-file-name default-directory))" \
+                "$@"
 		;;
 	exec)
 		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" "$@"
