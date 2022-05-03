@@ -704,9 +704,11 @@ As such, it may not be backwards-compatible with earlier contexts."
                (lambda (elm) (list (cask-dependency-name elm) t))
                (cask-runtime-dependencies bundle))
             all)))
-    (cask--use-environment bundle nil nil)
-    (setq user-emacs-directory (expand-file-name ".cask" (cask-bundle-path bundle)))
-    bundle))
+    (prog1 bundle
+      (cask--use-environment bundle nil nil)
+      (setq user-emacs-directory (expand-file-name ".cask" (cask-bundle-path bundle)))
+      (setenv "PATH" (mapconcat #'identity (cask-exec-path bundle) path-separator))
+      (setq load-path (cask-load-path bundle)))))
 
 (defun cask-update (bundle)
   "Update BUNDLE dependencies.

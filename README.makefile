@@ -17,4 +17,4 @@ compile: cask
 
 .PHONY: test
 test: compile
-	cask emacs --batch -f ert-run-tests-batch
+	cask emacs --batch -L ./test -l readme-test -f ert-run-tests-batch

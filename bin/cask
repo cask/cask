@@ -44,7 +44,7 @@ SRCDIR_=$(dirname "$SRCDIR__")
 SRCDIR=$(dirname "$SRCDIR_")
 case $subcommand in
 	emacs)
-		EMACSLOADPATH="$($CASK load-path)" PATH="$($CASK path)" EMACS="$EMACS" \
+		EMACS="$EMACS" \
                 "$EMACS" -Q -L "$SRCDIR" -l "$SRCDIR/cask" \
                 --eval "(cask-initialize (expand-file-name default-directory))" \
                 "$@"
