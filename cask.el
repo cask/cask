@@ -694,9 +694,15 @@ This function return a `cask-bundle' object."
             (cask--from-epl-package bundle package)))))
     bundle))
 
-(defun cask-initialize (&optional project-path)
-  "In May 2022, this function was repurposed for `cask emacs` invocations.
-As such, it may not be backwards-compatible with earlier contexts."
+(define-obsolete-function-alias 'cask-initialize nil "22.1"
+  "In particular, I would not =require cask= in your dot.emacs
+since cask is now largely a command-line tool independent of
+whatever you do within emacs.  If you are calling
+=cask-initialize= in your dot.emacs or harken back to the bygone
+era of [[https://github.com/rdallasgray/pallet][pallet]], I'm
+afraid you're on your own.")
+
+(defun cask--initialize (&optional project-path)
   (let* (package--initialized
 	 (bundle (cask-setup (or project-path user-emacs-directory)))
          (package-load-list

@@ -1,2 +1,0 @@
-Sphinx>=1.2.2
-sphinxcontrib-emacs>=0.1

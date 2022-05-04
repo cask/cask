@@ -46,7 +46,7 @@ case $subcommand in
 	emacs)
 		EMACS="$EMACS" \
                 "$EMACS" -Q -L "$SRCDIR" -l "$SRCDIR/cask" \
-                --eval "(cask-initialize (expand-file-name default-directory))" \
+                --eval "(cask--initialize (expand-file-name default-directory))" \
                 "$@"
 		;;
 	exec)

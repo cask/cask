@@ -797,15 +797,6 @@
   ;; TODO: How to test this?
   )
 
-(ert-deftest cask-initialize-test ()
-  (cask-test/with-bundle
-      '((source localhost)
-        (depends-on "package-a" "0.0.1")
-        (depends-on "package-b" "0.0.1"))
-    (cask-install bundle)
-    (should (cask-bundle-p (cask-initialize (cask-path bundle))))
-    (should (equal (mapcar #'car package-alist) '(package-b package-a)))))
-
 (ert-deftest cask-files-test/no-cask-file ()
   (cask-test/with-bundle nil
     (should-error
