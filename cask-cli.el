@@ -250,10 +250,11 @@ If no files directive or no files, do nothing."
         (when patterns
           (dolist (pattern patterns)
             (unless (ignore-errors
-                      (funcall (if (fboundp 'package-build-expand-files-spec)
-                                   #'package-build-expand-files-spec
-                                 #'package-build-expand-file-specs)
-                               path (list pattern)))
+                      (with-no-warnings
+                        (funcall (if (fboundp 'package-build-expand-files-spec)
+                                     #'package-build-expand-files-spec
+                                   #'package-build-expand-file-specs)
+                                 path (list pattern))))
               (cask-warn "Files spec; Pattern `%s' doesn't match anything" pattern)))))))
 
   (dolist (file (cask-files (cask-cli--bundle)))
