@@ -175,6 +175,8 @@ Slots:
   (oref rcp dir))
 
 (cl-defmethod package-build--get-commit ((_rcp package-directory-recipe)))
+(cl-defmethod package-build--get-timestamp ((_rcp package-directory-recipe) _rev)
+  (time-convert (current-time) 'integer))
 
 (defvar cask-source-mapping
   `((gnu          . ,(concat (if (< emacs-major-version 27) "http" "https")
