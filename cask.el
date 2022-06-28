@@ -178,6 +178,8 @@ Slots:
 (cl-defmethod package-build--get-timestamp ((_rcp package-directory-recipe) _rev)
   (let ((now (current-time)))
     (logior (lsh (car now) 16) (cadr now))))
+(cl-defmethod package-build--get-commit-time ((rcp package-directory-recipe) rev)
+  (package-build--get-timestamp rcp rev))
 
 (defvar cask-source-mapping
   `((gnu          . ,(concat (if (< emacs-major-version 27) "http" "https")
