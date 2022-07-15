@@ -102,6 +102,7 @@ jobs:
         if: steps.cache-cask-executable.outputs.cache-hit != 'true'
         with:
           version: snapshot
+      - run: echo "$HOME/.cask/bin" >> $GITHUB_PATH
 #+end_src
 
 ** Frequently Asked Questions
