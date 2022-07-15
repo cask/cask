@@ -47,6 +47,7 @@
       (package-user-dir cask-bootstrap-dir)
       (deps '(s f commander git epl shut-up cl-lib cl-generic package-build eieio ansi)))
   (package-initialize)
+  (setq package-archive-contents nil) ;; force refresh, cask#573, cask#559
   ;; Use vendored package-build package (and package-recipe)
   ;; because its newer versions require Emacs25.1+
   (when (version< emacs-version "25.1")
