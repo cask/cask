@@ -41,11 +41,11 @@
 (let (package-alist
       package-archive-contents
       package--initialized
-      (load-path load-path)
+      (load-path (add-to-list 'load-path "package-build"))
       (package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                           ("melpa" . "https://melpa.org/packages/")))
       (package-user-dir cask-bootstrap-dir)
-      (deps '(s f commander git epl shut-up cl-lib cl-generic package-build eieio ansi)))
+      (deps '(s f commander git epl shut-up cl-lib cl-generic eieio ansi)))
   (package-initialize)
   (setq package-archive-contents nil) ;; force refresh, cask#573, cask#559
   (unless (package-installed-p 'cl-lib)

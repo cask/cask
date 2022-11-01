@@ -27,7 +27,6 @@
 
 (require 'f)
 (require 's)
-(require 'noflet)
 (require 'el-mock)
 (require 'ert-async)
 (require 'cl-lib)
@@ -178,9 +177,9 @@ asserted that only those packages are installed"
      (cask-test/run-command "git" "fetch" "origin")
      (cask-test/run-command "git" "config" "user.name" "Bruce Wayne")
      (cask-test/run-command "git" "config" "user.email" "bruce@wayne.com")
-     (noflet ((git (&rest args)
-                   (let ((default-directory cask-test/cvs-repo-path))
-                     (apply 'cask-test/run-command (cons "git" args)))))
+     (flet ((git (&rest args)
+                 (let ((default-directory cask-test/cvs-repo-path))
+                   (apply 'cask-test/run-command (cons "git" args)))))
              ,@body)))
 
 (defun cask-test/link (bundle name fixture-name)
