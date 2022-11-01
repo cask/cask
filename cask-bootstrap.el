@@ -41,7 +41,8 @@
 (let (package-alist
       package-archive-contents
       package--initialized
-      (load-path (add-to-list 'load-path "package-build"))
+      (load-path (add-to-list
+                  'load-path (expand-file-name "package-build" cask-directory)))
       (package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                           ("melpa" . "https://melpa.org/packages/")))
       (package-user-dir cask-bootstrap-dir)
@@ -54,9 +55,7 @@
       (package-refresh-contents))
     (package-install 'cl-lib))
   (let ((legacy (if (version< emacs-version "25.1") "-legacy" "")))
-    (require 'package-build (expand-file-name
-                             (concat "package-build/package-build" legacy)
-                             cask-directory)))
+    (require (intern (concat "package-build" legacy))))
   (dolist (pkg deps)
     (unless (featurep pkg)
       (unless (package-installed-p pkg)
