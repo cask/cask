@@ -237,23 +237,7 @@ installation."
 
 (defun cask-cli/files ()
   "Print list of files specified in the files directive.
-
 If no files directive or no files, do nothing."
-  ;; this code just show warnings for user experience
-  (let ((bundle (cask-cli--bundle)))
-    (cask--with-file bundle
-      (let* ((path (cask-bundle-path bundle))
-             (file-list (cask-bundle-patterns bundle))
-             (patterns (cond ((null file-list) nil)
-                             ((eq :defaults (car file-list)) nil)
-                             (t file-list))))
-        (dolist (pattern patterns)
-          (with-no-warnings
-            (funcall (if (fboundp 'package-build-expand-files-spec)
-                         #'package-build-expand-files-spec
-                       #'package-build-expand-file-specs)
-                     path (list pattern)))))))
-
   (dolist (file (cask-files (cask-cli--bundle)))
     (princ (concat file "\n"))))
 

@@ -930,6 +930,7 @@ This is done by expanding the patterns in the BUNDLE path.  Files
 in the list are relative to the path."
   (cask--with-file bundle
     (let* ((path (cask-bundle-path bundle))
+           (name (symbol-name (cask-bundle-name bundle)))
            (file-list (cask-bundle-patterns bundle))
            ;; stolen from `package-build--config-file-list'
            (patterns (cond ((null file-list)
@@ -937,8 +938,17 @@ in the list are relative to the path."
                            ((eq :defaults (car file-list))
                             (append package-build-default-files-spec (cdr file-list)))
                            (t
-                            file-list))))
-      (mapcar #'car (ignore-errors (package-build-expand-file-specs path patterns))))))
+                            file-list)))
+           (rcp (package-directory-recipe name
+                                          :name name
+                                          :files patterns
+                                          :dir path))
+           (expander (if (fboundp 'package-build-expand-files-spec) ; new way
+                         (apply-partially 'package-build-expand-files-spec
+                                          rcp nil path)
+                       (apply-partially 'package-build-expand-file-specs
+                                        path))))
+      (mapcar #'car (delq nil (funcall expander patterns))))))
 
 (defun cask-add-dependency (bundle name &rest args)
   "Add dependency to BUNDLE.
