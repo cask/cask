@@ -48,7 +48,7 @@
 (require 'lisp-mnt)
 (require 'json)
 
-(require 'package-recipe)
+(require 'package-recipe-legacy)
 
 ;;; Options
 

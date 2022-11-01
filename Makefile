@@ -169,6 +169,7 @@ install-elisp: dist
 	$(CASK) eval "(progn \
 	  (add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages/\")) \
 	  (package-refresh-contents) \
+	  (package-delete (cadr (assq (quote cask) package-alist)) t) \
 	  (package-install-file \"dist/cask-$(shell $(CASK) version).tar\"))"
 
 .PHONY: install

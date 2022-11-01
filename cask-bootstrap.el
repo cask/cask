@@ -54,9 +54,6 @@
       (package-refresh-contents))
     (package-install 'cl-lib))
   (let ((legacy (if (version< emacs-version "25.1") "-legacy" "")))
-    (require 'package-recipe (expand-file-name
-                              (concat "package-build/package-recipe" legacy)
-                              cask-directory))
     (require 'package-build (expand-file-name
                              (concat "package-build/package-build" legacy)
                              cask-directory)))
