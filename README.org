@@ -33,7 +33,8 @@ With just this baseline "Cask" file, you can run most of the commands described 
 (package-file "your-main-file.el")
 #+end_src
 
-To run ert tests under an older emacs:
+The =EMACS= environment variable governs which emacs binary to test.  For example,
+the following runs ert tests under an older emacs:
 
 #+begin_src sh
 EMACS=emacs-25.3 cask emacs --batch -l mytest.el -f ert-run-tests-batch
