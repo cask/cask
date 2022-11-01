@@ -48,17 +48,18 @@
       (deps '(s f commander git epl shut-up cl-lib cl-generic package-build eieio ansi)))
   (package-initialize)
   (setq package-archive-contents nil) ;; force refresh, cask#573, cask#559
-  ;; Use vendored package-build package (and package-recipe)
-  ;; because its newer versions require Emacs25.1+
-  (when (version< emacs-version "25.1")
+  (unless (package-installed-p 'cl-lib)
     ;; package-build depends on cl-lib
-    (unless (package-installed-p 'cl-lib)
-      (unless package-archive-contents
-        (package-refresh-contents))
-      (package-install 'cl-lib))
-    (require 'package-recipe (expand-file-name "package-recipe-legacy" cask-directory))
-    (require 'package-build (expand-file-name "package-build-legacy" cask-directory)))
-
+    (unless package-archive-contents
+      (package-refresh-contents))
+    (package-install 'cl-lib))
+  (let ((legacy (if (version< emacs-version "25.1") "-legacy" "")))
+    (require 'package-recipe (expand-file-name
+                              (concat "package-build/package-recipe" legacy)
+                              cask-directory))
+    (require 'package-build (expand-file-name
+                             (concat "package-build/package-build" legacy)
+                             cask-directory)))
   (dolist (pkg deps)
     (unless (featurep pkg)
       (unless (package-installed-p pkg)

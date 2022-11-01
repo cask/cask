@@ -1,0 +1,4 @@
+[submodule "package-build"]
+	path = package-build
+	url = git@github.com:melpa/package-build.git
+	ignore = untracked

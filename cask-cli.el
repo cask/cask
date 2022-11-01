@@ -247,15 +247,12 @@ If no files directive or no files, do nothing."
              (patterns (cond ((null file-list) nil)
                              ((eq :defaults (car file-list)) nil)
                              (t file-list))))
-        (when patterns
-          (dolist (pattern patterns)
-            (unless (ignore-errors
-                      (with-no-warnings
-                        (funcall (if (fboundp 'package-build-expand-files-spec)
-                                     #'package-build-expand-files-spec
-                                   #'package-build-expand-file-specs)
-                                 path (list pattern))))
-              (cask-warn "Files spec; Pattern `%s' doesn't match anything" pattern)))))))
+        (dolist (pattern patterns)
+          (with-no-warnings
+            (funcall (if (fboundp 'package-build-expand-files-spec)
+                         #'package-build-expand-files-spec
+                       #'package-build-expand-file-specs)
+                     path (list pattern)))))))
 
   (dolist (file (cask-files (cask-cli--bundle)))
     (princ (concat file "\n"))))
