@@ -11,6 +11,5 @@
  (depends-on "ansi")
  (depends-on "ecukes")
  (depends-on "servant")
- (depends-on "el-mock")
  (depends-on "ert-async")
  (depends-on "shell-split-string"))
