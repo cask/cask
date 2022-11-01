@@ -156,7 +156,7 @@ file is invalid, then raise an error."
     recipe))
 
 ;;; _
-(provide 'package-recipe)
+(provide 'package-recipe-legacy)
 ;; Local Variables:
 ;; coding: utf-8
 ;; checkdoc-minor-mode: 1
