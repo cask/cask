@@ -21,10 +21,10 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         # beginning of time is 24.3 when cl-flet was defined
-        emacs_version: [24.5, 25.3, 26.3, 27.2, 28.1, 28.2, snapshot]
+        emacs_version: [24.5, 25.3, 26.3, 27.2, 28.2, snapshot]
         include:
           - os: macos-latest
-            emacs_version: 28.1
+            emacs_version: 28.2
     steps:
     - uses: actions/checkout@v2
     - uses: purcell/setup-emacs@master
