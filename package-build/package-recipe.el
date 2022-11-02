@@ -1,4 +1,4 @@
-;;; package-recipe.el --- Package recipes as EIEIO objects  -*- lexical-binding:t; coding:utf-8 -*-
+;;; package-recipe.el --- Package recipes as EIEIO objects  -*- lexical-binding:t; coding:utf-8; no-byte-compile: t -*-
 
 ;; Copyright (C) 2018-2022 Jonas Bernoulli
 

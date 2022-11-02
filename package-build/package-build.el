@@ -1,4 +1,4 @@
-;;; package-build.el --- Tools for assembling a package archive  -*- lexical-binding:t; coding:utf-8 -*-
+;;; package-build.el --- Tools for assembling a package archive  -*- lexical-binding:t; coding:utf-8; no-byte-compile: t -*-
 
 ;; Copyright (C) 2011-2022 Donald Ephraim Curtis
 ;; Copyright (C) 2012-2022 Steve Purcell
