@@ -1045,7 +1045,7 @@ This is a copy of `lm-homepage', which first appeared in Emacs 24.4."
 
 ;;; _
 
-(provide 'package-build)
+(provide 'package-build-legacy)
 
 ;; For the time being just require all libraries that contain code
 ;; that was previously located in this library.
