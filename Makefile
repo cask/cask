@@ -26,11 +26,9 @@ test: compile readlink spaces unit ecukes
 
 .PHONY: compile
 compile: cask
-	if 1>/dev/null expr $$(2>&1 $(EMACS) -Q --batch --eval '(let ((inhibit-message t)) (princ emacs-major-version (function external-debugging-output)))') ">" 24 ; then \
-	  ! ($(CASK) eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
-	     | egrep -a "(Warning|Error):") ; \
-	  (ret=$$? ; $(CASK) clean-elc && exit $$ret) \
-	else echo Not linting emacs24 ; fi
+	! ($(CASK) eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
+	  | egrep -a "(Warning|Error):") ; \
+	  (ret=$$? ; $(CASK) clean-elc && exit $$ret)
 
 .PHONY: readlink
 readlink:
@@ -162,7 +160,7 @@ dist-clean:
 
 .PHONY: dist
 dist: dist-clean
-	@bash -c "trap 'ret=$$? ; trap \"\" EXIT; mv -f Cask.orig Cask ; exit $$ret' EXIT ; cp Cask Cask.orig ; 1>/dev/null expr $$(2>&1 $(EMACS) -Q --batch --eval '(let ((inhibit-message t)) (princ emacs-major-version (function external-debugging-output)))') '<=' 24 && sed -i '/package-build-legacy/d' ./Cask ; $(CASK) package"
+	@bash -c "trap 'ret=$$? ; trap \"\" EXIT; mv -f Cask.orig Cask ; exit $$ret' EXIT ; cp Cask Cask.orig ; $(CASK) package"
 
 .PHONY: install-elisp
 install-elisp: dist

@@ -54,8 +54,7 @@
     (unless package-archive-contents
       (package-refresh-contents))
     (package-install 'cl-lib))
-  (let ((legacy (if (version< emacs-version "25.1") "-legacy" "")))
-    (require (intern (concat "package-build" legacy))))
+  (require 'package-build)
   (dolist (pkg deps)
     (unless (featurep pkg)
       (unless (package-installed-p pkg)

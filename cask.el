@@ -9,7 +9,7 @@
 ;; Version: 0.8.9pre
 ;; Keywords: speed, convenience
 ;; URL: http://github.com/cask/cask
-;; Package-Requires: ((emacs "24.5") (s "1.8.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (ansi "0.4.1"))
+;; Package-Requires: ((emacs "25.3") (s "1.8.0") (f "0.16.0") (epl "0.5") (shut-up "0.1.0") (cl-lib "0.3") (ansi "0.4.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -574,13 +574,6 @@ The legacy argument _DEEP is assumed true."
    (apply-partially #'cask--find-available-package-jit bundle)
    (or errback #'ignore)))
 
-(defun cask--remove-vendored (dependencies)
-  "Upper bound for package-build for emacs-24 is vendored."
-  (cl-remove-if
-   (lambda (dep) (and (version< emacs-version "25.1")
-                      (eq (cask-dependency-name dep) 'package-build)))
-   dependencies))
-
 (defun cask--installed-dependencies (bundle &optional _deep)
   "Return installed dependencies for BUNDLE.
 The legacy argument _DEEP is assumed true."
@@ -588,22 +581,14 @@ The legacy argument _DEEP is assumed true."
                                    (cask-dependency-name dep)))
                     (cask--dependencies bundle)))
 
-(defun cask--legacy-dependency-installed-p (bundle dependency)
-  "Version-ignorant predicate.  Useful only for emacs24."
-  (cl-assert (< emacs-major-version 25))
-  (let ((name (cask-dependency-name dependency)))
-    (or (epl-package-installed-p name) (cask-linked-p bundle name))))
-
 (defun cask--dependency-installed-p (bundle dependency)
   (let* ((name (cask-dependency-name dependency))
          (version (cask-dependency-version dependency))
 	 (version* (if (listp version) version (version-to-list version))))
-    (if (fboundp 'package-desc-create)
-	(epl-package-installed-p
-	 (epl-package-create
-	  :name name
-	  :description (package-desc-create :name name :version version*)))
-      (cask--legacy-dependency-installed-p bundle dependency))))
+    (epl-package-installed-p
+     (epl-package-create
+      :name name
+      :description (package-desc-create :name name :version version*)))))
 
 (defun cask--install-dependency (bundle dependency index total)
   "In BUNDLE, install DEPENDENCY.
@@ -785,9 +770,8 @@ to install, and ERR is the original error data."
                             develop
                             missing-dependencies
                             &aux
-                            (dependencies (cask--remove-vendored
-                                           (cask--uniq-dependencies
-                                            (append runtime develop))))
+                            (dependencies (cask--uniq-dependencies
+                                           (append runtime develop)))
                             (total (length dependencies)))
         (cask--dependencies-and-missing bundle)
       (cask-print :stderr (green "done") "\n")
