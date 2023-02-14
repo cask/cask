@@ -760,9 +760,8 @@ missing dependencies.  All available dependencies are installed
 nonetheless.
 
 If a dependency failed to install, signal a
-`cask-failed-installation' error, whose data is a `(DEPENDENCY
-. ERR)', where DEPENDENCY is the `cask-dependency' which failed
-to install, and ERR is the original error data."
+`cask-failed-installation' error, whose data is a `(ERR-STRING
+ OUTPUT)'."
   (cask-print :stderr (green "Loading package information... "))
   (cask--with-environment bundle
     :refresh t

@@ -107,14 +107,10 @@
                message output)))
      (cask-failed-installation
       (let* ((data (cdr err))
-             (dependency (cask-dependency-name (nth 0 data)))
-             (message (error-message-string (nth 1 data)))
-             (output (nth 2 data)))
-        (if dependency
-            (error "Dependency %s failed to install: %s\nOutput:\n%s"
-                   dependency message output)
-          (error "Package installation failed: %s\nOutput:\n%s"
-                 message output))))))
+             (message (nth 0 data))
+             (output (nth 1 data)))
+        (error "Package installation failed: %s\nOutput:\n%s"
+               message output)))))
 
 (defun cask-cli/pkg-file ()
   "Write a `define-package' file.

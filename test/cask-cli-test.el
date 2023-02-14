@@ -45,6 +45,19 @@
         (cask-cli--print-table (cask-links bundle))
         (should (zerop (length (buffer-string))))))))
 
+(ert-deftest cask-cli-test/failed-installation ()
+  (cask-test/with-bundle 'empty
+    (cl-letf (((symbol-function 'epl-upgrade)
+               (apply-partially #'signal 'cask-failed-installation '("foo" "bar"))))
+      (let (debug-on-error)
+        (condition-case err
+            (cask-cli/with-handled-errors
+             (cask-update bundle)
+             ;; should err out before this point
+             (should nil))
+          (error (should (string-match-p "^Package installation failed"
+                                         (car (cdr err))))))))))
+
 (ert-deftest cask-cli-test/print-table-with-links ()
   (cask-test/with-bundle
       '((source localhost)
