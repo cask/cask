@@ -73,6 +73,7 @@ linkcheck :
 .PHONY: start-server
 start-server: cask $(SERVANT_DIR)
 	$(CASK) exec $(SERVANT) start > $(SERVANT_TMP_DIR)/servant.log 2>&1 &
+	bash -c "for i in {1..5} ; do if nc -z 127.0.0.1 9191 ; then break; else sleep 1; fi; done;"
 
 .SILENT: stop-server
 .PHONY: stop-server
