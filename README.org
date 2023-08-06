@@ -82,6 +82,7 @@ jobs:
           - 26.3
           - 27.2
           - 28.2
+          - 29.1
     steps:
       - uses: actions/checkout@v2
       - uses: purcell/setup-emacs@master
