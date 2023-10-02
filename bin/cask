@@ -38,7 +38,7 @@ if [ -z "$SRCDIR__" ] ; then
 fi
 set -eu
 if [ -z "$SRCDIR__" ]; then
-    SRCDIR__=$(python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
+    SRCDIR__=$(python3 -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$CASK")
 fi
 SRCDIR_=$(dirname "$SRCDIR__")
 SRCDIR=$(dirname "$SRCDIR_")
