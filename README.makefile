@@ -1,4 +1,4 @@
-export EMACS ?= $(shell which emacs)
+export EMACS ?= $(shell command -v emacs 2>/dev/null)
 CASK_DIR := $(shell cask package-directory)
 
 $(CASK_DIR): Cask

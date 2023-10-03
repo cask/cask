@@ -1,7 +1,7 @@
 export CASK ?= bin/cask
 export EMACS ?= emacs
 export CASK_DIR := $(shell $(CASK) package-directory)
-SHELL := $(shell which bash)
+SHELL := $(shell command -v bash 2>/dev/null)
 SERVANT ?= servant
 SPHINX-BUILD = sphinx-build
 SPHINXFLAGS =
@@ -179,7 +179,7 @@ install: install-elisp
 	  false ; \
 	fi
 	$(eval TARGET = \
-	  $(shell if 1>/dev/null which systemd-path ; then \
+	  $(shell if 1>/dev/null command -v systemd-path ; then \
 	            echo "$$(systemd-path user-binaries)/cask" ; \
 	          elif [ ! -z "$(XDG_DATA_HOME)" ] ; then \
 	            echo "$(XDG_DATA_HOME)/../bin/cask" ; \
