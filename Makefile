@@ -179,7 +179,9 @@ install: install-elisp
 	  false ; \
 	fi
 	$(eval TARGET = \
-	  $(shell if 1>/dev/null command -v systemd-path ; then \
+	  $(shell if [ ! -z "$(DESTDIR)" ] ; then \
+	            echo "$(DESTDIR)/cask" ; \
+	          elif 1>/dev/null command -v systemd-path ; then \
 	            echo "$$(systemd-path user-binaries)/cask" ; \
 	          elif [ ! -z "$(XDG_DATA_HOME)" ] ; then \
 	            echo "$(XDG_DATA_HOME)/../bin/cask" ; \
