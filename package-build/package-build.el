@@ -586,8 +586,16 @@ still be renamed."
                        (match-string-no-properties 1)))
                 "No description available.")
             (when-let ((require-lines (lm-header-multiline "package-requires")))
-              (package--prepare-dependencies
-               (package-read-from-string (mapconcat #'identity require-lines " "))))
+              (mapcar (lambda (dep)
+                        (cond
+                         ((symbolp dep) `(,dep "0"))
+                         ((stringp dep)
+                          (error "Invalid requirement specifier: %S" dep))
+                         ((and (listp dep) (null (cdr dep)))
+                          (list (car dep) "0"))
+                         (t dep)))
+                      (package-read-from-string
+                       (mapconcat #'identity require-lines " "))))
             :kind       (or type 'single)
             :url        (lm-homepage)
             :keywords   (lm-keywords-list)
