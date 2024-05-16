@@ -450,27 +450,25 @@ that is put in the tarball.  MTIME is used as the modification
 time of all files, making the tarball reproducible."
   (let ((tar (expand-file-name (concat name "-" version ".tar")
                                package-build-archive-dir))
-        (dir (concat name "-" version)))
+        (dir (concat name "-" version))
+        (restore-env (getenv "COPYFILE_DISABLE")))
     (when (eq system-type 'windows-nt)
       (setq tar (replace-regexp-in-string "^\\([a-z]\\):" "/\\1" tar)))
-    (let ((default-directory directory))
-      (process-file
-       package-build-tar-executable nil
-       (get-buffer-create "*package-build-checkout*") nil
-       "-cf" tar dir
-       ;; Arguments that are need to strip metadata that
-       ;; prevent a reproducable tarball as described at
-       ;; https://reproducible-builds.org/docs/archives.
-       "--sort=name"
-       (format "--mtime=@%d" mtime)
-       "--owner=0" "--group=0" "--numeric-owner"
-       "--pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime"))
-    (when (and package-build-verbose noninteractive)
-      (message "Created %s containing:" (file-name-nondirectory tar))
-      (dolist (line (sort (process-lines package-build-tar-executable
-                                         "--list" "--file" tar)
-                          #'string<))
-        (message "  %s" line)))))
+    (unwind-protect
+        (let ((default-directory directory))
+          (setenv "COPYFILE_DISABLE" "1")
+          (process-file
+           package-build-tar-executable nil
+           (get-buffer-create "*package-build-checkout*") nil
+           "-cf" tar dir)
+          (when (and package-build-verbose noninteractive)
+            (message "Created %s containing:" (file-name-nondirectory tar))
+            (dolist (line (sort (process-lines package-build-tar-executable
+                                               "--list" "--file" tar)
+                                #'string<))
+              (message "  %s" line))))
+      (setenv "COPYFILE_DISABLE" restore-env))
+))
 
 (defun package-build--write-pkg-readme (name files directory)
   (when-let ((commentary
