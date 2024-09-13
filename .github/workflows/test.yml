@@ -25,7 +25,7 @@ jobs:
           - os: macos-12
             emacs_version: 29.3
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: purcell/setup-emacs@master
       with:
         version: ${{ matrix.emacs_version }}
