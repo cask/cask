@@ -26,7 +26,7 @@ test: compile readlink spaces unit ecukes
 
 .PHONY: compile
 compile: cask
-	! ($(CASK) eval "(let ((byte-compile-error-on-warn t)) (cask-cli/build))" 2>&1 \
+	! ($(CASK) eval "(cask-cli/build)" 2>&1 \
 	  | egrep -a "(Warning|Error):") ; \
 	  (ret=$$? ; $(CASK) clean-elc && exit $$ret)
 
