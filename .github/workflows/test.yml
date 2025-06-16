@@ -19,10 +19,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-22.04]
         emacs_version: [25.3, 26.3, 27.2, 28.2, 29.3, snapshot]
         include:
-          - os: macos-12
+          - os: macos-13
             emacs_version: 29.3
     steps:
     - uses: actions/checkout@v4
