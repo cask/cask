@@ -184,6 +184,8 @@ Slots:
 (defvar cask-source-mapping
   `((gnu          . ,(concat (if (< emacs-major-version 27) "http" "https")
                              "://elpa.gnu.org/packages/"))
+    (gnu-devel    . ,(concat (if (< emacs-major-version 27) "http" "https")
+                             "://elpa.gnu.org/devel/"))
     (celpa        . "https://celpa.conao3.com/packages/")
     (shmelpa      . "https://shmelpa.commandlinesystems.com/packages/")
     (melpa        . "https://melpa.org/packages/")
