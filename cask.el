@@ -176,8 +176,12 @@ Slots:
 
 (cl-defmethod package-build--get-commit ((_rcp package-directory-recipe)))
 (cl-defmethod package-build--get-timestamp ((_rcp package-directory-recipe) _rev)
-  (let ((now (current-time)))
-    (logior (lsh (car now) 16) (cadr now))))
+  ;; Don't take `current-time' apart by hand: its representation depends on
+  ;; `current-time-list', which defaults to nil as of Emacs 32 and then yields
+  ;; a (TICKS . HZ) pair rather than a (HIGH LOW USEC PSEC) list.  `float-time'
+  ;; accepts either form and, unlike `time-convert' (#570, replaced by #571),
+  ;; exists in every Emacs version Cask supports.
+  (floor (float-time)))
 (cl-defmethod package-build--get-commit-time ((rcp package-directory-recipe) rev)
   (package-build--get-timestamp rcp rev))
 
