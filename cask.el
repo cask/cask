@@ -837,6 +837,12 @@ If BUNDLE is not a package, the error `cask-not-a-package' is signaled."
    (format ".cask/%s.%s/elpa" emacs-major-version emacs-minor-version)
    (cask-bundle-path bundle)))
 
+(defun cask-eln-cache-path (bundle)
+  "Return full path to BUNDLE native-compiled cache directory."
+  (f-expand
+   (format ".cask/%s.%s/eln-cache" emacs-major-version emacs-minor-version)
+   (cask-bundle-path bundle)))
+
 (defun cask-runtime-dependencies (bundle &optional _deep)
   "Return BUNDLE's runtime dependencies.
 The legacy argument _DEEP is assumed true.
@@ -1017,6 +1023,22 @@ URL is the url to the mirror."
       (when (and (f-file? path) (f-ext? path "el"))
         (when (f-file? (concat path "c"))
           (f-delete (concat path "c")))))))
+
+(defun cask-native-comp (bundle)
+  "Native compile BUNDLE Elisp files."
+  (if (not (and (fboundp 'native-comp-available-p)
+                (native-comp-available-p)))
+      (error "Native compilation not available")
+    (cask--with-environment bundle
+      (require 'comp)
+      (cask--build-install-dependencies bundle)
+      (let ((load-path (cons (cask-path bundle) (cask-load-path bundle)))
+            (native-comp-eln-load-path
+             (cons (cask-eln-cache-path bundle) native-comp-eln-load-path)))
+        (dolist (path (cask-files bundle))
+          (when (and (f-file? path) (f-ext? path "el"))
+            (message "Native compiling %s..." path)
+            (native-compile path)))))))
 
 (defun cask-links (bundle)
   "Return a list of all links for BUNDLE.
