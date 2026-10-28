@@ -648,9 +648,8 @@ INDEX is the current install index of TOTAL indices."
 (defun cask--delete-dependency (_bundle dependency)
   "In BUNDLE, delete DEPENDENCY if it is installed."
   (let* ((name (cask-dependency-name dependency))
-         (package (epl-find-installed-packages name)))
-    (when package
-      (epl-package-delete package))))
+         (packages (epl-find-installed-packages name)))
+    (mapc #'epl-package-delete packages)))
 
 (defun cask--dependency-files (dependency)
   "Return DEPENDENCY files.
@@ -720,9 +719,14 @@ Return list of updated packages."
     :refresh t
     (cask--shut-up-unless-debug
       (condition-case-unless-debug err
-          (prog1 (epl-upgrade)
-            (let* ((deps (cask--fetcher-dependencies bundle))
-                   (total (length deps)))
+          (let* ((deps (cask--fetcher-dependencies bundle))
+                 (names (mapcar #'cask-dependency-name deps))
+                 (total (length deps)))
+            (prog1 (let ((pkgs (cl-remove-if
+                                (lambda (pkg) (memq (epl-package-name pkg) names))
+                                (epl-installed-packages))))
+                     (when (or pkgs (null names))
+                       (epl-upgrade pkgs)))
               (dotimes (inx total)
                 (cask--delete-dependency bundle (nth inx deps))
                 (cask--install-dependency bundle (nth inx deps) inx total))))
