@@ -19,19 +19,19 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-26.04]
         emacs_version: [25.3, 26.3, 27.2, 28.2, 29.4, 30.2, snapshot]
         include:
-          - os: macos-13
+          - os: macos-26
             emacs_version: 29.4
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: purcell/setup-emacs@master
       with:
         version: ${{ matrix.emacs_version }}
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v7
       with:
-        python-version: 3.9.19
+        python-version: '3.13'
     - name: paths
       run: |
         echo "$HOME/local/bin" >> $GITHUB_PATH

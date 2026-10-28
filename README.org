@@ -3,16 +3,10 @@
 [[https://github.com/cask/cask/actions][https://github.com/cask/cask/actions/workflows/test.yml/badge.svg]]
 #+HTML: <img src="cask_small.png" align="right">
 
-Cask can be likened to =venv= or =maven= for Emacs Lisp development,
-although, as with all things emacs, is decidedly less sophisticated
-(but no less arcane).
-
-Cask provisions dependencies within a sandbox via a user-defined
-"Cask" file analogous to =requirements-dev.txt= or =pom.xml=.
-
-Cask does not absolve you of having to learn emacs's command flags.
-Cask only constructs the sandbox, one for each version of emacs you
-choose to test.
+=cask= (not to be confused with homebrew cask) was an early
+=npm/uv/cargo= for Emacs Lisp with hardcoded ties to MELPA, an early
+=npmregistry/PyPi/crates.io=.  As of September 2026, emacs still lacks
+an unimprovised =npm/uv/cargo=-like build tool.
 
 ** Installation
 

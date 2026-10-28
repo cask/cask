@@ -45,6 +45,10 @@
 (require 'pcase)
 (require 'subr-x)
 
+(eval-and-compile
+  (unless (fboundp 'when-let*)
+    (defalias 'when-let* (symbol-function 'when-let))))
+
 (require 'package)
 (require 'lisp-mnt)
 (require 'json)
@@ -197,7 +201,7 @@ Otherwise do nothing.  FORMAT-STRING and ARGS are as per that function."
 (defun package-build-get-timestamp-version (rcp)
   (let* ((rev (and (cl-typep rcp 'package-git-recipe)
                    (or (oref rcp commit)
-                       (when-let ((branch (oref rcp branch)))
+                       (when-let* ((branch (oref rcp branch)))
                          (concat "origin/" branch))
                        "origin/HEAD")))
          (time (package-build--get-timestamp rcp rev)))
@@ -471,12 +475,12 @@ time of all files, making the tarball reproducible."
 ))
 
 (defun package-build--write-pkg-readme (name files directory)
-  (when-let ((commentary
-              (let* ((file (concat name ".el"))
-                     (file (or (car (rassoc file files)) file))
-                     (file (and file (expand-file-name file directory))))
-                (and (file-exists-p file)
-                     (lm-commentary file)))))
+  (when-let* ((commentary
+               (let* ((file (concat name ".el"))
+                      (file (or (car (rassoc file files)) file))
+                      (file (and file (expand-file-name file directory))))
+                 (and (file-exists-p file)
+                      (lm-commentary file)))))
     (with-temp-buffer
       (if (>= emacs-major-version 28)
           (insert commentary)
@@ -583,7 +587,7 @@ still be renamed."
                         nil t)
                        (match-string-no-properties 1)))
                 "No description available.")
-            (when-let ((require-lines (lm-header-multiline "package-requires")))
+            (when-let* ((require-lines (lm-header-multiline "package-requires")))
               (mapcar (lambda (dep)
                         (cond
                          ((symbolp dep) `(,dep "0"))
