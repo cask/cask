@@ -924,10 +924,10 @@ in the list are relative to the path."
                             (append package-build-default-files-spec (cdr file-list)))
                            (t
                             file-list)))
-           (rcp (package-directory-recipe name
-                                          :name name
-                                          :files patterns
-                                          :dir path))
+           (rcp (package-directory-recipe
+                 :name name
+                 :files patterns
+                 :dir path))
            (expander (if (fboundp 'package-build-expand-files-spec) ; new way
                          (apply-partially 'package-build-expand-files-spec
                                           rcp nil path)
@@ -1094,7 +1094,7 @@ a directory specified by `cask-dist-path' in the BUNDLE path."
         (setq target-dir (f-expand cask-dist-path path)))
       (unless (f-dir? target-dir)
         (f-mkdir target-dir))
-      (let ((rcp (package-directory-recipe name
+      (let ((rcp (package-directory-recipe
                   :name name
                   :files patterns
                   :dir path))
