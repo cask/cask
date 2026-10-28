@@ -246,6 +246,11 @@ If no files directive or no files, do nothing."
   "Remove all byte compiled Elisp files in the files directive."
   (cask-clean-elc (cask-cli--bundle)))
 
+(defun cask-cli/native-comp ()
+  "Native compile all Elisp files in the files directive."
+  (cask-cli/with-handled-errors
+    (cask-native-comp (cask-cli--bundle))))
+
 (defun cask-cli/link (&optional command-or-name arg)
   "Manage links.
 
@@ -367,6 +372,7 @@ Commands:
  (command "files" cask-cli/files)
  (command "build" cask-cli/build)
  (command "clean-elc" cask-cli/clean-elc)
+ (command "native-comp" cask-cli/native-comp)
  (command "link [*]" cask-cli/link)
  (command "package [target-dir]" cask-cli/package)
  (command "emacs [*]" cask-cli/emacs)
