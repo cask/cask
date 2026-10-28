@@ -542,8 +542,23 @@
       (should (equal orig-load-path load-path)))))
 
 (ert-deftest cask-update-test/fetcher-git ()
-  ;; TODO: How to test this?
-  )
+  (cask-test/with-git-repo
+   (cask-test/with-bundle
+       `((source localhost)
+         (depends-on "package-a" :git ,cask-test/cvs-repo-path))
+     (f-copy (f-join cask-test/fixtures-path "package-a-0.0.1" "package-a.el")
+             cask-test/cvs-repo-path)
+     (git "add" "package-a.el")
+     (let ((process-environment
+            (cons "GIT_COMMITTER_DATE=2012-08-04T00:00:00" process-environment)))
+       (git "commit" "-a" "-m" "Add package-a." "--date=2012-08-04T00:00:00"))
+     (cask-install bundle)
+     (setf (cask-bundle-sources bundle) nil)
+     (cask-add-source bundle "localhost" "http://127.0.0.1:9191/new-packages/")
+     (should-not (cask-update bundle))
+     (let ((installed (cask-test/installed-packages bundle)))
+       (should (= (length installed) 1))
+       (should (string-prefix-p "2012" (cadr (car installed))))))))
 
 (ert-deftest cask-install-test/no-cask-file ()
   (cask-test/with-bundle nil
